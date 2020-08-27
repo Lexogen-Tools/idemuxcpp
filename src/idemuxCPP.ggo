@@ -1,0 +1,66 @@
+
+
+# Name of your program
+package "idemuxCPP" # don't use package if you're using automake
+
+purpose "Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices."
+
+#usage "idemuxCPP [options]\n"
+#version "1.0"   # don't use version if you're using automake
+
+
+# command line options passed to gengetopt
+args "--file-name=idemuxCPP_cmdl --include-getopt --default-optional --func-name=idemuxCPP_cmdline_parser --arg-struct-name=idemuxCPP_args_info"
+
+
+description   "A tool to demultiplex fastq files based on Lexogen i7,i5,i1  barcodes."
+
+
+# Options
+section "General Options"
+
+option  "r1" 1
+"Fastq.gz read file 1.\n"
+string
+required
+default=""
+
+option  "r2" 2
+"Fastq.gz read file 2.\n"
+string
+required
+default=""
+
+option  "out" o
+"Where to write the output files.\n"
+string
+optional
+default="./"
+
+option  "sample-sheet" s
+"Outputs a csv file containing sample names, i7, i5 and i1 barcodes.\n"
+string
+optional
+default="sample-sheet.csv"
+
+option  "i5-rc" v
+"et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
+flag
+off
+
+option  "i1-start" i
+"Start position of the i1 index (0-based) on read 2.\n"
+int
+optional
+default="10"
+
+option  "verbose" -
+"Verbose.\n"
+flag
+off
+
+
+
+
+
+

@@ -1,0 +1,36 @@
+# Maintainer: Gregor Entzian <entzian at tbi dot univie dot ac dot at>
+# Packager: Gregor Entzian <entzian at tbi dot univie dot ac dot at>
+
+pkgbase=idemuxCPP
+pkgname=('idemuxCPP')
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Compute coverage profiles of fragmentation patterns of transcripts."
+arch=('x86_64' 'i686')
+license=('GPLv2')
+url="@PACKAGE_URL@"
+groups=('idemuxCPP')
+makedepends=( 'g++' 'gengetopt' )
+source=(idemuxCPP_${pkgver}.tar.gz)
+
+#create this sum with the command "sha256sum idemuxCPP-${pkgver}.tar.gz" before each build of the package
+sha256sums=('d47a7ab0cee6647201943803930e3e9fb5885daa0c925fc5960ed8255fa29147')
+
+build() {
+  cd "${srcdir}/idemuxCPP-${pkgver}"
+  ./configure
+  make
+}
+
+package_idemuxCPP() {
+  provides=("idemuxCPP=${pkgver}")
+
+  # install idemuxCPP
+  cd "${srcdir}/idemuxCPP-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  cd ../..
+}
+
+
