@@ -1,10 +1,3 @@
-/*
- * Writer.cpp
- *
- *  Created on: Aug 15, 2020
- *      Author: quin
- */
-
 #include <string>
 #include <stdio.h>
 #include <unordered_map>
@@ -29,7 +22,7 @@ void Writer::write_summary(std::unordered_map<string, size_t> counter, string ou
       char open_mode = 'w';
       FILE *csvfile = fopen(output_file.c_str(), &open_mode);
       string csv_header = "sample\twritten_reads";
-      fprintf(csvfile, csv_header.c_str());
+      fwrite(csv_header.c_str(),sizeof(char),csv_header.length(),csvfile);
       string sample_filename;
       size_t counts;
       for(auto it = counter.begin(); it != counter.end(); it++){
@@ -37,7 +30,7 @@ void Writer::write_summary(std::unordered_map<string, size_t> counter, string ou
         counts = it->second;
         fprintf(csvfile, string(sample_filename + "\t%ud").c_str(),counts);
       }
-      fprintf(stdout, "Run complete! Summary statistics saved to %s", output_file);
+      fprintf(stdout, "Run complete! Summary statistics saved to %s", output_file.c_str());
       fclose(csvfile);
 }
 

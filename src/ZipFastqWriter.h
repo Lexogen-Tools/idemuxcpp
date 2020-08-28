@@ -1,10 +1,3 @@
-/*
- * ZipFastqWriter.h
- *
- *  Created on: Aug 26, 2020
- *      Author: gentzian
- */
-
 #ifndef ZIPFASTQWRITER_H_
 #define ZIPFASTQWRITER_H_
 
@@ -16,8 +9,8 @@ using namespace std;
 class ZipFastqWriter {
 public:
 	ZipFastqWriter(string outfile);
-	ZipFastqWriter(const ZipFastqWriter&) = delete; // keine Kopie
-	ZipFastqWriter& operator=(const ZipFastqWriter&) = delete; // keine Zuweisung
+	ZipFastqWriter(const ZipFastqWriter&) = delete; //no copy
+	ZipFastqWriter& operator=(const ZipFastqWriter&) = delete; // no assignment
 	int write(const char* data, size_t len);
 	void write_read(fq_read* r);
 	void write_read_list(fq_read** reads);

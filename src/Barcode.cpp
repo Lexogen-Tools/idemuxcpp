@@ -1,23 +1,17 @@
-/*
- * Barcode.cpp
- *
- *  Created on: Aug 15, 2020
- *      Author: quin
- */
-
 #include <vector>
 #include <string>
 #include <unordered_map>
 #include "Barcode.h"
-
+#include <iostream>
 using namespace std;
 
-Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),
+Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),Name(barcode_type),
+		allowed_lengths({6, 8, 10, 12}),
     lengths_96_barcodes({8, 10, 12}),
-    lengths_384_barcodes({10, 12}), Name("") {
+    lengths_384_barcodes({10, 12}) {
   // TODO Auto-generated constructor stub
 	for(auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
-		this->_sample_map[it->first] = it->second[0];
+		this->_sample_map[it->first] = it->second.size() > 0 ? it->second[0] : "";
 	post_init(reverse_complement);
 }
 
@@ -60,18 +54,22 @@ void Barcode::check_length(){
 				this->length = barcode.length();
 				if(this->observed_lengths.size() > 1){
 					fprintf(stderr, "{self.name} barcodes with a different length "\
-                                 "have been observed for {sample_name}. Barcodes"\
+                                 "have been observed for %s. Barcodes"\
                                  " need to have the same length for all "\
                                  "samples.\nObserved barcode length:"\
-                                 " {len(barcode)} \nPrevious observed length:"\
-                                 " {self._observed_lengths.pop()}");
+                                 " %ld \nPrevious observed length:"\
+                                 " %d",sample_name.c_str(),barcode.length(),(*observed_lengths.begin()));
 					exit(EXIT_FAILURE);
 				}
 			}
 			else{
-				fprintf(stderr,"{self.name} barcodes are {len(barcode)} nt long."\
-                             "{self.name} barcodes are only allowed to be"\
-                             " {self._allowed_lengths} nt long.");
+				string tmplengths = "";
+				for(auto ita = this->allowed_lengths.begin(); ita != this->allowed_lengths.end(); ita++)
+					tmplengths += to_string(*ita) + ", ";
+				std::cout << barcode << std::endl;
+				fprintf(stderr,"%s barcodes are %ld nt long."\
+                             "%s barcodes are only allowed to be"\
+                             " %s nt long.", this->Name.c_str(), barcode.length(), this->Name.c_str(), tmplengths.substr(0,tmplengths.length()-1).c_str());
 				exit(EXIT_FAILURE);
 			}
 

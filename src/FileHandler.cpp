@@ -1,10 +1,3 @@
-/*
- * FileHandler.cpp
- *
- *  Created on: Aug 15, 2020
- *      Author: quin
- */
-
 #include "FileHandler.h"
 #include <unordered_map>
 #include <string>
@@ -81,6 +74,7 @@ namespace utils
 FileHandler::FileHandler(unordered_map<string,string>& barcode_file_map, string output_folder, size_t memory) {
   // TODO Auto-generated constructor stub
 	Barcode_file_map = &barcode_file_map;
+	(*Barcode_file_map)["undetermined"] = "undetermined";
 	Output_folder = output_folder;
 	//Fastq_handler = new unordered_map<ZipFastqWriter,ZipFastqWriter>();
 	int buffer_per_file = int(memory / (barcode_file_map.size()) * 2);
@@ -98,13 +92,20 @@ void FileHandler::init_all_file_handles(){
 		sample_name = it->second;
 		string mate1_path = Output_folder +"/"+ sample_name + "_R1.fastq.gz";
 		string mate2_path = Output_folder +"/"+ sample_name + "_R2.fastq.gz";
-		std::pair<ZipFastqWriter*,ZipFastqWriter*> filepair = {new ZipFastqWriter(mate1_path),new ZipFastqWriter(mate2_path)};
+		ZipFastqWriter *w1 = new ZipFastqWriter(mate1_path);
+		ZipFastqWriter *w2 = new ZipFastqWriter(mate2_path);
+		std::pair<ZipFastqWriter*,ZipFastqWriter*>* filepair = new std::pair<ZipFastqWriter*,ZipFastqWriter*>(w1,w2);
 		Fastq_handler[barcode] = filepair;
 	}
 }
 
-std::pair<ZipFastqWriter*,ZipFastqWriter*> FileHandler::get_file_handles(string &barcode){
-	return Fastq_handler[barcode];
+std::pair<ZipFastqWriter*,ZipFastqWriter*>* FileHandler::get_file_handles(string &barcode){
+	auto it = Fastq_handler.find(barcode);
+	if (it != Fastq_handler.end())
+		return it->second;
+	else
+		return Fastq_handler["undetermined"];
+	return NULL;
 }
 
 /*
@@ -144,8 +145,11 @@ FileHandler::~FileHandler() {
   // TODO Auto-generated destructor stub
 	// clear file handles
 	for(auto it = Fastq_handler.begin(); it != Fastq_handler.end(); it++){
-		delete it->second.first;
-		delete it->second.second;
+		if(it->second->first)
+			delete it->second->first;
+		if(it->second->second)
+			delete it->second->second;
+		delete it->second;
 	}
 }
 

@@ -1,5 +1,3 @@
-
-
 #ifndef BARCODE_H_
 #define BARCODE_H_
 
@@ -19,7 +17,7 @@ public:
 	  vector<string>* keys = new vector<string>();
 	  for(auto it = _sample_map.begin(); it != _sample_map.end(); it++){
 		  if (it->first.compare("") == 0){
-			  keys->push_back(it->second);
+			  keys->push_back(it->first);
 		  }
 	  }
 	  return keys;
@@ -51,6 +49,7 @@ public:
     bool empty(){
 	  unordered_set<string>* uc = this->used_codes();
 	  bool is_empty = uc->size() == 0;
+	  delete uc;
 	  return is_empty;
     };
   inline

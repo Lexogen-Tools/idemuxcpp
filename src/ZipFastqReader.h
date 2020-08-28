@@ -1,10 +1,3 @@
-/*
- * ZipFastqReader.h
- *
- *  Created on: Aug 18, 2020
- *      Author: gentzian
- */
-
 #ifndef ZIPFASTQREADER_H_
 #define ZIPFASTQREADER_H_
 

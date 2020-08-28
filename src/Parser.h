@@ -1,10 +1,3 @@
-/*
- * Parser.h
- *
- *  Created on: Aug 15, 2020
- *      Author: quin
- */
-
 #ifndef PARSER_H_
 #define PARSER_H_
 
@@ -36,14 +29,14 @@ public:
 			int i1_start, int i1_end);
 	void check_mate2_length(fq_read *mate2, int i1_start, int i1_end);
 	void check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
-			bool has_i7, bool has_i5, bool i7_length, int i5_length);
+			bool has_i7, bool has_i5, int i7_length, int i5_length);
 
 	static std::pair<string, string> parse_indices(string input) {
-		size_t index_colon = input.find(":");
-		size_t index_plus1 = input.find("+");
+		size_t index_colon = input.find(':');
+		size_t index_plus1 = input.find('+');
 		static std::pair<string, string> bcs_mate1 = std::pair<string, string>(
-				input.substr(index_colon + 1, index_plus1),
-				input.substr(index_plus1 + 1, input.length()));
+				input.substr(index_colon + 1, index_plus1-index_colon-1),
+				input.substr(index_plus1 + 1, input.length()-index_plus1-1));
 		return bcs_mate1;
 	}
 

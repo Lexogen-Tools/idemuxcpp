@@ -1,10 +1,3 @@
-/*
- * PairedReader.h
- *
- *  Created on: Aug 26, 2020
- *      Author: gentzian
- */
-
 #ifndef PAIREDREADER_H_
 #define PAIREDREADER_H_
 
@@ -17,7 +10,7 @@ using namespace std;
 class PairedReader {
 public:
 	PairedReader(string fastqgz_1, string fastqgz_2);
-	std::vector<std::pair<fq_read*,fq_read*>>* next_reads(int max_size);
+	std::vector<std::pair<fq_read*,fq_read*>>* next_reads(size_t max_size);
 	virtual ~PairedReader();
 private:
 	ZipFastqReader Reader1;

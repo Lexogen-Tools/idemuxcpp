@@ -1,4 +1,3 @@
-
 #ifndef WRITER_H_
 #define WRITER_H_
 
