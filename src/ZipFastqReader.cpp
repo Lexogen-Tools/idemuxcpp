@@ -17,11 +17,11 @@ void error(const char* const msg)
     exit(255);
 }
 
-fq_read* ZipFastqReader::next_read(fq_read *read_in){
-    fq_read* read = read_in;
-    if(!read_in)
-    	read = new fq_read();
-
+fq_read* ZipFastqReader::next_read(){
+    //fq_read* read = read_in;
+    //if(!read_in)
+    //	read = new fq_read();
+	fq_read* read = new fq_read();
     int err, len;
     read_line_index = 0;
     // finish prev. readbuffer.
@@ -105,6 +105,8 @@ fq_read* ZipFastqReader::next_read(fq_read *read_in){
     else{
     	if (len == 0){
     		delete read;
+    		//read->Seq_ID = "";
+    		//return read;
     		return NULL;
     	}
     }

@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef IDEMUXCPP_CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define IDEMUXCPP_CMDLINE_PARSER_VERSION VERSION
+#define IDEMUXCPP_CMDLINE_PARSER_VERSION "1.0.0"
 #endif
 
 /** @brief Where the command line options are stored */
@@ -73,6 +73,30 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *i1_start_help; /**< @brief Start position of the i1 index (0-based) on read 2.
  help description.  */
+  int queue_size_arg;	/**< @brief Queue size for reads that will be processed in one block.
+ (default='4000000').  */
+  char * queue_size_orig;	/**< @brief Queue size for reads that will be processed in one block.
+ original value given at command line.  */
+  const char *queue_size_help; /**< @brief Queue size for reads that will be processed in one block.
+ help description.  */
+  int reading_threads_arg;	/**< @brief Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).
+ (default='2').  */
+  char * reading_threads_orig;	/**< @brief Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).
+ original value given at command line.  */
+  const char *reading_threads_help; /**< @brief Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).
+ help description.  */
+  int writing_threads_arg;	/**< @brief Number of threads used for writing gz files. Default is the number of processor cores.
+.  */
+  char * writing_threads_orig;	/**< @brief Number of threads used for writing gz files. Default is the number of processor cores.
+ original value given at command line.  */
+  const char *writing_threads_help; /**< @brief Number of threads used for writing gz files. Default is the number of processor cores.
+ help description.  */
+  int processing_threads_arg;	/**< @brief Number of threads used for processing the error correction. Default is the number of processor cores.
+.  */
+  char * processing_threads_orig;	/**< @brief Number of threads used for processing the error correction. Default is the number of processor cores.
+ original value given at command line.  */
+  const char *processing_threads_help; /**< @brief Number of threads used for processing the error correction. Default is the number of processor cores.
+ help description.  */
   int verbose_flag;	/**< @brief Verbose.
  (default=off).  */
   const char *verbose_help; /**< @brief Verbose.
@@ -86,6 +110,10 @@ struct idemuxCPP_args_info
   unsigned int sample_sheet_given ;	/**< @brief Whether sample-sheet was given.  */
   unsigned int i5_rc_given ;	/**< @brief Whether i5-rc was given.  */
   unsigned int i1_start_given ;	/**< @brief Whether i1-start was given.  */
+  unsigned int queue_size_given ;	/**< @brief Whether queue-size was given.  */
+  unsigned int reading_threads_given ;	/**< @brief Whether reading-threads was given.  */
+  unsigned int writing_threads_given ;	/**< @brief Whether writing-threads was given.  */
+  unsigned int processing_threads_given ;	/**< @brief Whether processing-threads was given.  */
   unsigned int verbose_given ;	/**< @brief Whether verbose was given.  */
 
 } ;

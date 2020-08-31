@@ -2,7 +2,19 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Run in DEBUG mode with additional assertions and debug output */
-#define DEBUG /**/
+/* #undef DEBUG */
+
+/* define if the Boost library is available */
+#define HAVE_BOOST /**/
+
+/* define if the Boost::Filesystem library is available */
+#define HAVE_BOOST_FILESYSTEM /**/
+
+/* define if the Boost::System library is available */
+#define HAVE_BOOST_SYSTEM /**/
+
+/* define if the Boost::Unit_Test_Framework library is available */
+#define HAVE_BOOST_UNIT_TEST_FRAMEWORK /**/
 
 /* define if the compiler supports basic C++11 syntax */
 /* #undef HAVE_CXX11 */
@@ -12,6 +24,9 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
+
+/* Define if OpenMP is enabled */
+#define HAVE_OPENMP 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -35,7 +50,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Run in normal mode with minimal assertions */
-/* #undef NDEBUG */
+#define NDEBUG /**/
 
 /* Name of package */
 #define PACKAGE "idemuxCPP"
@@ -60,6 +75,9 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
+
+/* Enable unit tests */
+#define TESTS /**/
 
 /* Version number of package */
 #define VERSION "1.2.0"

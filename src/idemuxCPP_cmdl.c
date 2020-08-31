@@ -33,16 +33,20 @@ const char *idemuxCPP_args_info_versiontext = "";
 const char *idemuxCPP_args_info_description = "A tool to demultiplex fastq files based on Lexogen i7,i5,i1  barcodes.";
 
 const char *idemuxCPP_args_info_help[] = {
-  "  -h, --help                 Print help and exit",
-  "  -V, --version              Print version and exit",
+  "  -h, --help                    Print help and exit",
+  "  -V, --version                 Print version and exit",
   "\nGeneral Options:",
-  "  -1, --r1=STRING            Fastq.gz read file 1.\n                                 (default=`')",
-  "  -2, --r2=STRING            Fastq.gz read file 2.\n                                 (default=`')",
-  "  -o, --out=STRING           Where to write the output files.\n                                 (default=`./')",
-  "  -s, --sample-sheet=STRING  Outputs a csv file containing sample names, i7, i5\n                               and i1 barcodes.\n                                 (default=`sample-sheet.csv')",
-  "  -v, --i5-rc                et this flag if the i5 barcode has been sequenced\n                               as reverse complement and the barcodes you\n                               provided should be reverse complemented.\n                                 (default=off)",
-  "  -i, --i1-start=INT         Start position of the i1 index (0-based) on read\n                               2.\n                                 (default=`10')",
-  "      --verbose              Verbose.\n                                 (default=off)",
+  "  -1, --r1=STRING               Fastq.gz read file 1.\n                                    (default=`')",
+  "  -2, --r2=STRING               Fastq.gz read file 2.\n                                    (default=`')",
+  "  -o, --out=STRING              Where to write the output files.\n                                    (default=`./')",
+  "  -s, --sample-sheet=STRING     Outputs a csv file containing sample names, i7,\n                                  i5 and i1 barcodes.\n                                    (default=`sample-sheet.csv')",
+  "  -5, --i5-rc                   et this flag if the i5 barcode has been\n                                  sequenced as reverse complement and the\n                                  barcodes you provided should be reverse\n                                  complemented.\n                                    (default=off)",
+  "  -i, --i1-start=INT            Start position of the i1 index (0-based) on\n                                  read 2.\n                                    (default=`10')",
+  "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block.\n                                    (default=`4000000')",
+  "  -r, --reading-threads=INT     Number of threads used for reading gz files.\n                                  Either 1 or 2 (one thread per input file is\n                                  used).\n                                    (default=`2')",
+  "  -w, --writing-threads=INT     Number of threads used for writing gz files.\n                                  Default is the number of processor cores.\n",
+  "  -p, --processing-threads=INT  Number of threads used for processing the error\n                                  correction. Default is the number of\n                                  processor cores.\n",
+  "  -v, --verbose                 Verbose.\n                                    (default=off)",
     0
 };
 
@@ -78,6 +82,10 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->sample_sheet_given = 0 ;
   args_info->i5_rc_given = 0 ;
   args_info->i1_start_given = 0 ;
+  args_info->queue_size_given = 0 ;
+  args_info->reading_threads_given = 0 ;
+  args_info->writing_threads_given = 0 ;
+  args_info->processing_threads_given = 0 ;
   args_info->verbose_given = 0 ;
 }
 
@@ -96,6 +104,12 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->i5_rc_flag = 0;
   args_info->i1_start_arg = 10;
   args_info->i1_start_orig = NULL;
+  args_info->queue_size_arg = 4000000;
+  args_info->queue_size_orig = NULL;
+  args_info->reading_threads_arg = 2;
+  args_info->reading_threads_orig = NULL;
+  args_info->writing_threads_orig = NULL;
+  args_info->processing_threads_orig = NULL;
   args_info->verbose_flag = 0;
   
 }
@@ -113,7 +127,11 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->sample_sheet_help = idemuxCPP_args_info_help[6] ;
   args_info->i5_rc_help = idemuxCPP_args_info_help[7] ;
   args_info->i1_start_help = idemuxCPP_args_info_help[8] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[9] ;
+  args_info->queue_size_help = idemuxCPP_args_info_help[9] ;
+  args_info->reading_threads_help = idemuxCPP_args_info_help[10] ;
+  args_info->writing_threads_help = idemuxCPP_args_info_help[11] ;
+  args_info->processing_threads_help = idemuxCPP_args_info_help[12] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[13] ;
   
 }
 
@@ -122,7 +140,7 @@ idemuxCPP_cmdline_parser_print_version (void)
 {
   printf ("%s %s\n",
      (strlen(IDEMUXCPP_CMDLINE_PARSER_PACKAGE_NAME) ? IDEMUXCPP_CMDLINE_PARSER_PACKAGE_NAME : IDEMUXCPP_CMDLINE_PARSER_PACKAGE),
-     IDEMUXCPP_CMDLINE_PARSER_VERSION);
+     (char*)IDEMUXCPP_CMDLINE_PARSER_VERSION);
 
   if (strlen(idemuxCPP_args_info_versiontext) > 0)
     printf("\n%s\n", idemuxCPP_args_info_versiontext);
@@ -206,6 +224,10 @@ idemuxCPP_cmdline_parser_release (struct idemuxCPP_args_info *args_info)
   free_string_field (&(args_info->sample_sheet_arg));
   free_string_field (&(args_info->sample_sheet_orig));
   free_string_field (&(args_info->i1_start_orig));
+  free_string_field (&(args_info->queue_size_orig));
+  free_string_field (&(args_info->reading_threads_orig));
+  free_string_field (&(args_info->writing_threads_orig));
+  free_string_field (&(args_info->processing_threads_orig));
   
   
 
@@ -252,6 +274,14 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "i5-rc", 0, 0 );
   if (args_info->i1_start_given)
     write_into_file(outfile, "i1-start", args_info->i1_start_orig, 0);
+  if (args_info->queue_size_given)
+    write_into_file(outfile, "queue-size", args_info->queue_size_orig, 0);
+  if (args_info->reading_threads_given)
+    write_into_file(outfile, "reading-threads", args_info->reading_threads_orig, 0);
+  if (args_info->writing_threads_given)
+    write_into_file(outfile, "writing-threads", args_info->writing_threads_orig, 0);
+  if (args_info->processing_threads_given)
+    write_into_file(outfile, "processing-threads", args_info->processing_threads_orig, 0);
   if (args_info->verbose_given)
     write_into_file(outfile, "verbose", 0, 0 );
   
@@ -1145,9 +1175,13 @@ idemuxCPP_cmdline_parser_internal (
         { "r2",	1, NULL, '2' },
         { "out",	1, NULL, 'o' },
         { "sample-sheet",	1, NULL, 's' },
-        { "i5-rc",	0, NULL, 'v' },
+        { "i5-rc",	0, NULL, '5' },
         { "i1-start",	1, NULL, 'i' },
-        { "verbose",	0, NULL, 0 },
+        { "queue-size",	1, NULL, 'q' },
+        { "reading-threads",	1, NULL, 'r' },
+        { "writing-threads",	1, NULL, 'w' },
+        { "processing-threads",	1, NULL, 'p' },
+        { "verbose",	0, NULL, 'v' },
         { 0,  0, 0, 0 }
       };
 
@@ -1156,7 +1190,7 @@ idemuxCPP_cmdline_parser_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hV1:2:o:s:vi:", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hV1:2:o:s:5i:q:r:w:p:v", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1229,13 +1263,13 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case 'v':	/* et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
+        case '5':	/* et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
 .  */
         
         
           if (update_arg((void *)&(args_info->i5_rc_flag), 0, &(args_info->i5_rc_given),
               &(local_args_info.i5_rc_given), optarg, 0, 0, ARG_FLAG,
-              check_ambiguity, override, 1, 0, "i5-rc", 'v',
+              check_ambiguity, override, 1, 0, "i5-rc", '5',
               additional_error))
             goto failure;
         
@@ -1253,23 +1287,71 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
+        case 'q':	/* Queue size for reads that will be processed in one block.
+.  */
+        
+        
+          if (update_arg( (void *)&(args_info->queue_size_arg), 
+               &(args_info->queue_size_orig), &(args_info->queue_size_given),
+              &(local_args_info.queue_size_given), optarg, 0, "4000000", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "queue-size", 'q',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'r':	/* Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).
+.  */
+        
+        
+          if (update_arg( (void *)&(args_info->reading_threads_arg), 
+               &(args_info->reading_threads_orig), &(args_info->reading_threads_given),
+              &(local_args_info.reading_threads_given), optarg, 0, "2", ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "reading-threads", 'r',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'w':	/* Number of threads used for writing gz files. Default is the number of processor cores.
+.  */
+        
+        
+          if (update_arg( (void *)&(args_info->writing_threads_arg), 
+               &(args_info->writing_threads_orig), &(args_info->writing_threads_given),
+              &(local_args_info.writing_threads_given), optarg, 0, 0, ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "writing-threads", 'w',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'p':	/* Number of threads used for processing the error correction. Default is the number of processor cores.
+.  */
+        
+        
+          if (update_arg( (void *)&(args_info->processing_threads_arg), 
+               &(args_info->processing_threads_orig), &(args_info->processing_threads_given),
+              &(local_args_info.processing_threads_given), optarg, 0, 0, ARG_INT,
+              check_ambiguity, override, 0, 0,
+              "processing-threads", 'p',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'v':	/* Verbose.
+.  */
+        
+        
+          if (update_arg((void *)&(args_info->verbose_flag), 0, &(args_info->verbose_given),
+              &(local_args_info.verbose_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "verbose", 'v',
+              additional_error))
+            goto failure;
+        
+          break;
 
         case 0:	/* Long option with no short option */
-          /* Verbose.
-.  */
-          if (strcmp (long_options[option_index].name, "verbose") == 0)
-          {
-          
-          
-            if (update_arg((void *)&(args_info->verbose_flag), 0, &(args_info->verbose_given),
-                &(local_args_info.verbose_given), optarg, 0, 0, ARG_FLAG,
-                check_ambiguity, override, 1, 0, "verbose", '-',
-                additional_error))
-              goto failure;
-          
-          }
-          
-          break;
         case '?':	/* Invalid option.  */
           /* `getopt_long' already printed an error message.  */
           goto failure;

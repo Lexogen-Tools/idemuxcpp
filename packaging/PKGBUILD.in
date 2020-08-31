@@ -1,35 +1,35 @@
-# Maintainer: Gregor Entzian <entzian at tbi dot univie dot ac dot at>
-# Packager: Gregor Entzian <entzian at tbi dot univie dot ac dot at>
+# Maintainer: Gregor Entzian <gregor dot entzian at tbi dot lexogen dot com>
+# Packager: Gregor Entzian <gregor dot entzian at tbi dot lexogen dot com>
 
-pkgbase=idemuxCPP
-pkgname=('idemuxCPP')
+pkgbase=idemuxcpp
+pkgname=('idemuxcpp')
 pkgver=@VERSION@
 pkgrel=1
-pkgdesc="Compute coverage profiles of fragmentation patterns of transcripts."
+pkgdesc="Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices."
 arch=('x86_64' 'i686')
-license=('GPLv2')
+license=('custom')
 url="@PACKAGE_URL@"
 groups=('idemuxCPP')
-makedepends=( 'g++' 'gengetopt' )
+makedepends=( 'g++' 'gengetopt' 'libboost' 'libboost-filesystem' 'libboost-system')
 source=(idemuxCPP_${pkgver}.tar.gz)
 
 #create this sum with the command "sha256sum idemuxCPP-${pkgver}.tar.gz" before each build of the package
 sha256sums=('d47a7ab0cee6647201943803930e3e9fb5885daa0c925fc5960ed8255fa29147')
 
 build() {
-  cd "${srcdir}/idemuxCPP-${pkgver}"
+  cd "${srcdir}/idemuxcpp-${pkgver}"
   ./configure
   make
 }
 
-package_idemuxCPP() {
-  provides=("idemuxCPP=${pkgver}")
+package_idemuxcpp() {
+  provides=("idemuxcpp=${pkgver}")
 
   # install idemuxCPP
-  cd "${srcdir}/idemuxCPP-${pkgver}"
+  cd "${srcdir}/idemuxcpp-${pkgver}"
   make DESTDIR="${pkgdir}" install
 
-  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 LICENCE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
   cd ../..
 }
 

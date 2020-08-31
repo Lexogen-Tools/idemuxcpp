@@ -1,0 +1,44 @@
+sudo: false
+dist: trusty
+
+compiler:
+- g++
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++
+    - gengetopt
+    - libboost-dev
+    - libboost-filesystem-dev
+    - libboost-system-dev
+
+before_script:
+- autoreconf -i
+
+script:
+- ./configure --enable-tests
+- make -j${CPU_COUNT}
+
+before_deploy:
+- make dist-gzip
+- make dist-zip
+- export DIST_GZIP=$(ls idemuxcpp-*.tar.gz)
+- export DIST_ZIP=$(ls idemuxcpp-*.zip)
+- echo "Deploying Changelog and autoconf's dists (${DIST_GZIP} and ${DIST_ZIP}) to GitHub releases"
+
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  skip_cleanup: true
+  file_glob: true
+  overwrite: true
+  file:
+  - "${DIST_GZIP}"
+  - "${DIST_ZIP}"
+  - CHANGELOG.rst
+  on:
+    repo: Lexogen-Tools/idemuxcpp
+    tags: true
