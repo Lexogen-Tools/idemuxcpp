@@ -34,7 +34,7 @@ public:
 	static std::pair<string, string> parse_indices(string input) {
 		size_t index_colon = input.find(':');
 		size_t index_plus1 = input.find('+');
-		static std::pair<string, string> bcs_mate1 = std::pair<string, string>(
+		std::pair<string, string> bcs_mate1 = std::pair<string, string>(
 				input.substr(index_colon + 1, index_plus1-index_colon-1),
 				input.substr(index_plus1 + 1, input.length()-index_plus1-1));
 		return bcs_mate1;

@@ -17,6 +17,17 @@ struct fq_read{
 	~fq_read(){
 
 	};
+	inline string to_string(){
+		string read =  string(this->Seq_ID);
+				read.append("\n");
+				read.append(this->Sequence);
+				read.append("\n");
+				read.append(this->Plus_ID);
+				read.append("\n");
+				read.append(this->QualityCode);
+				read.append("\n");
+				return read;
+	};
 };
 
 class ZipFastqReader {

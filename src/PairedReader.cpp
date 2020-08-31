@@ -11,7 +11,7 @@ std::vector<std::pair<fq_read*, fq_read*>>* PairedReader::next_reads(
 	std::vector<std::pair<fq_read*, fq_read*>> *pairs = new std::vector<std::pair<fq_read*, fq_read*>>();
 	for (size_t i = 0; i < max_size; i++) {
 		fq_read *read1 = Reader1.next_read(NULL);
-		fq_read *read2 = Reader1.next_read(NULL);
+		fq_read *read2 = Reader2.next_read(NULL);
 		if (read1 != NULL && read2 != NULL) {
 			pairs->push_back(std::pair<fq_read*, fq_read*>(read1, read2));
 		}

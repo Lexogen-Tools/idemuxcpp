@@ -36,9 +36,9 @@ using namespace std;
 string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 		unordered_set<string> *i7_wanted, unordered_set<string> *i5_wanted,
 		unordered_set<string> *i1_wanted,
-		unordered_map<string, string> &map_i7,
-		unordered_map<string, string> &map_i5,
-		unordered_map<string, string> &map_i1, int i1_start, int i1_end,
+		unordered_map<string, string> *map_i7,
+		unordered_map<string, string> *map_i5,
+		unordered_map<string, string> *map_i1, int i1_start, int i1_end,
 		std::pair<fq_read*, fq_read*> &mate_pair_out) {
 
 	string fastq_header(mate_pair.first->Seq_ID);
@@ -47,19 +47,17 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 	string i7_bc, i5_bc;
 
 	// when there are 2 barcodes in the fastq header the orientation is i7,i5
-	i7_bc = barcodes.first;
-	i5_bc = barcodes.second;
+	string tmp_i7_bc = barcodes.first;
+	string tmp_i5_bc = barcodes.second;
 	if(i7_wanted->size() == 0)
 		i7_bc = "";
 	if(i5_wanted->size() == 0)
 		i5_bc = "";
 
-	i7_bc = map_i7.at(i7_bc);
-	i5_bc = map_i5.at(i5_bc);
+	i7_bc = map_i7->at(tmp_i7_bc);
+	i5_bc = map_i5->at(tmp_i5_bc);
 
 	string i1_bc = "";
-	//auto it7 = i7_wanted->find(i7_bc);
-	//auto it5 = i5_wanted->find(i5_bc);
 
 	//if i7_bc in i7_wanted and i5_bc in i5_wanted:
 	//if (it7 != i7_wanted->end() and it5 != i5_wanted->end()) {
@@ -68,16 +66,14 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 	if(i1_wanted->size() > 0){
 		i1_bc = mate_pair.second->Sequence.substr(i1_start, i1_end - i1_start);
 		//i1_bc = mate_pair[1][1][i1_start:i1_end]
-		auto iti1c = map_i1.find(i1_bc);
-		if (iti1c != map_i1.end()) {
+		auto iti1c = map_i1->find(i1_bc);
+		if (iti1c != map_i1->end()) {
 			string _i1_corrected = iti1c->second;
 			//_i1_corrected = map_i1.get(i1_bc)
 
 			//if _i1_corrected in i1_wanted:
 			auto it1 = i1_wanted->find(_i1_corrected);
 			if (it1 != i1_wanted->end()) {
-				//std::cout << "i1 corrected " << i1_bc << std::endl;
-				//(m1_hdr, m1_seq, m1_opt, m1_qcs), (m2_hdr, m2_seq, m2_opt, m2_qcs) = mate_pair
 
 				r1c->Seq_ID = string(mate_pair.first->Seq_ID) + "+" + i1_bc;
 				//m1_hdr = f"{m1_hdr[:-1]}+{i1_bc}\n"
@@ -85,16 +81,16 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 				r1c->Plus_ID = string(mate_pair.first->Plus_ID);
 				r1c->QualityCode = string(mate_pair.first->QualityCode);
 
-				r2c->Seq_ID = string(mate_pair.first->Seq_ID) + "+" + i1_bc;
-				r2c->Sequence = string(mate_pair.first->Sequence).substr(0,
+				r2c->Seq_ID = string(mate_pair.second->Seq_ID) + "+" + i1_bc;
+				r2c->Sequence = string(mate_pair.second->Sequence).substr(0,
 						i1_start)
-						+ string(mate_pair.first->Sequence).substr(i1_end,
-								mate_pair.first->Sequence.length()-i1_end);
-				r2c->Plus_ID = string(mate_pair.first->Plus_ID);
-				r2c->QualityCode = string(mate_pair.first->QualityCode).substr(
+						+ string(mate_pair.second->Sequence).substr(i1_end,
+								mate_pair.second->Sequence.length()-i1_end);
+				r2c->Plus_ID = string(mate_pair.second->Plus_ID);
+				r2c->QualityCode = string(mate_pair.second->QualityCode).substr(
 						0, i1_start)
-						+ string(mate_pair.first->QualityCode).substr(i1_end,
-								mate_pair.first->QualityCode.length() - i1_end);
+						+ string(mate_pair.second->QualityCode).substr(i1_end,
+								mate_pair.second->QualityCode.length() - i1_end);
 				//m2_hdr = f"{m2_hdr[:-1]}+{i1_bc}\n"
 				//m2_seq = f"{m2_seq[:i1_start]}{m2_seq[i1_end:]}"
 				//m2_qcs = f"{m2_qcs[:i1_start]}{m2_qcs[i1_end:]}"
@@ -123,9 +119,9 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	unordered_set<string> *i7_wanted = i7->used_codes();
 	unordered_set<string> *i5_wanted = i5->used_codes();
 	unordered_set<string> *i1_wanted = i1->used_codes();
-	unordered_map<string, string> map_i7 = i7->correction_map;
-	unordered_map<string, string> map_i5 = i5->correction_map;
-	unordered_map<string, string> map_i1 = i1->correction_map;
+	unordered_map<string, string> *map_i7 = i7->correction_map;
+	unordered_map<string, string> *map_i5 = i5->correction_map;
+	unordered_map<string, string> *map_i1 = i1->correction_map;
 	int i1_end = i1_start + i1->length;
 
 	// if None is in *_wanted no barcode has been specified
@@ -138,10 +134,11 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 			i7->length, i5->length, i1_start, i1_end);
 
 	//read_counter = Counter()
-	std::cout << "Staring demultiplexing" << std::endl;
+	std::cout << "Starting demultiplexing" << std::endl;
 	// first we need to open the output files the reads should get sorted into
 	FileHandler *file_handler = new FileHandler(*barcode_sample_map, output_dir,
 			(size_t) pow(2, 30));
+
 	//with FileHandler(barcode_sample_map, output_dir) as file_handler:
 	// then we iterate over all the paired end reads
 	PairedReader pr(read1, read2);
@@ -184,6 +181,9 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	delete i7_wanted;
 	delete i5_wanted;
 	delete i1_wanted;
+	delete map_i7;
+	delete map_i5;
+	delete map_i1;
 }
 
 

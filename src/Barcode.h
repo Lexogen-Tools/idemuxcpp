@@ -91,7 +91,7 @@ public:
   void check_length();
   // barcode -> sample.
   string Name;
-  unordered_map<string,string> correction_map;
+  unordered_map<string,string> *correction_map;
   unordered_map<string,string> _sample_map;
   unordered_set<int> allowed_lengths;
   unordered_set<int> observed_lengths;

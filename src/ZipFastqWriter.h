@@ -15,6 +15,9 @@ public:
 	void write_read(fq_read* r);
 	void write_read_list(fq_read** reads);
 	virtual ~ZipFastqWriter();
+	inline string get_output_name(){
+		return OutputFile;
+	}
 private:
 	string OutputFile;
 	gzFile GZ_file_handle;

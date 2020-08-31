@@ -222,7 +222,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		string tmp_i7 = row[1];
 		string i7_bc = tmp_i7; // has i7.
 		if (tmp_i7.compare("") == 0) {
-			i7_bc = "None";
+			i7_bc = "";
 		}
 
 		// i5 can be sequenced as reverse complement, translate if needed
@@ -232,13 +232,13 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		}
 		string i5_bc = tmp_i5;
 		if (tmp_i5.compare("") == 0) {
-			i5_bc = "None";
+			i5_bc = "";
 		}
 
 		string tmp_i1 = row[3];
 		string i1_bc = tmp_i1; // has i1.
 		if (tmp_i1.compare("") == 0) {
-			i1_bc = "None";
+			i1_bc = "";
 		}
 		//std::cout << sample_name << tmp_i7 <<  tmp_i5 << tmp_i1 << std::endl;
 		// add barcodes and sample_names to dict so we can do some value checking
@@ -261,15 +261,15 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 			exit(EXIT_FAILURE);
 		}
 
-		(*barcode_sample_map)[barcodes] = sample_name;
+		barcode_sample_map->insert({barcodes, sample_name});
 		// barcodes of different length are a problem as 8, 10, 12 nucleotide
 		// barcodes are a subset of each other. Therefore we only allow one
 		// length per barcode type
-		if (i7_bc.compare("None") != 0)
+		if (i7_bc.compare("") != 0)
 			i7_lengths.insert(i7_bc.length());
-		if (i5_bc.compare("None") != 0)
+		if (i5_bc.compare("") != 0)
 			i7_lengths.insert(i5_bc.length());
-		if (i5_bc.compare("None") != 0)
+		if (i5_bc.compare("") != 0)
 			i7_lengths.insert(i5_bc.length());
 	}
 	in_file_sample_sheet.close();
@@ -575,8 +575,8 @@ Barcode* Parser::load_correction_map(Barcode &barcode) {
 	if (barcode.length == 0) {
 		fprintf(stdout, "No barcodes have been specified for %s.\n",
 				barcode.Name.c_str());
-		barcode.correction_map.clear();
-		barcode.correction_map.insert({"", ""});
+		barcode.correction_map = new unordered_map<string, string>(); //.clear();
+		barcode.correction_map->insert({"", ""});
 		return &barcode;
 		//barcode.correction_map = NULL; //unordered_map<string,string> {"None": "None"};
 		//return NULL;
@@ -612,11 +612,11 @@ Barcode* Parser::load_correction_map(Barcode &barcode) {
 			printf(
 					"Correct set found. Used set is %d barcodes with %d nt length.\n",
 					set_size, barcode.length);
-			barcode.correction_map.clear();
-			for (auto it = corr_map->begin(); it != corr_map->end(); it++)
-				barcode.correction_map[it->first] = it->second;
-
-			delete corr_map;
+			//barcode.correction_map.clear();
+			//for (auto it = corr_map->begin(); it != corr_map->end(); it++)
+			//	barcode.correction_map[it->first] = it->second;
+			barcode.correction_map = corr_map;
+			//delete corr_map;
 			return &barcode;
 		}
 		delete corr_map;
@@ -634,9 +634,9 @@ Barcode* Parser::load_correction_map(Barcode &barcode) {
 						"error correction will take place for this barcode. Are you using "
 						"valid Lexogen barodes?\n", barcode.Name.c_str());
 		unordered_set<string> *_bc_list = barcode.used_codes();
-		barcode.correction_map.clear();
+		barcode.correction_map = new unordered_map<string, string>(); //.clear();
 		for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
-			barcode.correction_map[*it] = *it;
+			barcode.correction_map->insert({*it,*it});
 		}
 		delete _bc_list;
 	}
