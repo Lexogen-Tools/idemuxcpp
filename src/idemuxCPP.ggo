@@ -43,7 +43,7 @@ string
 optional
 default="sample-sheet.csv"
 
-option  "i5-rc" v
+option  "i5-rc" 5
 "et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
 flag
 off
@@ -54,7 +54,30 @@ int
 optional
 default="10"
 
-option  "verbose" -
+option  "queue-size" q
+"Queue size for reads that will be processed in one block.\n"
+int
+optional
+default="4000000"
+
+option  "reading-threads" r
+"Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).\n"
+int
+optional
+default="2"
+
+option  "writing-threads" w
+"Number of threads used for writing gz files. Default is the number of processor cores.\n"
+int
+optional
+
+option  "processing-threads" p
+"Number of threads used for processing the error correction. Default is the number of processor cores.\n"
+int
+optional
+
+
+option  "verbose" v
 "Verbose.\n"
 flag
 off

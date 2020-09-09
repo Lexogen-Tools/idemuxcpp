@@ -1,0 +1,55 @@
+# idemuxCPP.spec
+
+%{!?_pkgdocdir: %global _pkgdocdir %%{_docdir}/%{name}}
+
+Name:           idemuxcpp
+Version:        @PACKAGE_VERSION@
+Release:        1%{?dist}
+Summary:        Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
+
+Vendor:         Gregor Entzian <gregor dot entzian at lexogen dot com>
+
+Group:          -
+License:        custom
+URL:            https://github.com/idemuxcpp
+Source0:        idemuxCPP_%{version}.tar.gz
+BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
+
+BuildRequires:  autoconf
+BuildRequires:  automake
+BuildRequires:  rpm-devel
+
+BuildRequires:  libstdc++-devel gcc gcc-c++ gengetopt libboost-dev libboost-filesystem-dev libboost-system-dev
+
+%description
+Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
+ Idemux can demultiplex based on i7, i5, and i1 inline barcodes. While this tool
+ can generally   be used to demultiplex any barcodes (as long as they are
+ correctly supplied and in the fastq header), it performs best when used in
+ combination with Lexogen indices, as it will correct common sequencing errors
+ in the sequenced barcodes. This will allow you to retain more reads from your
+ sequencing experiment while minimizing cross contamination.
+
+Requires: libstdc++
+
+%prep
+%setup -n idemuxcpp-%{version} -q
+
+%build
+%configure --prefix=%{_prefix} --docdir=%{_pkgdocdir} --mandir=%{_mandir}
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+
+%{__make} install DESTDIR=$RPM_BUILD_ROOT
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root,-)
+%{_bindir}/*
+%{_datadir}/idemuxcpp/
+%doc README.md
+%{_mandir}/*/*

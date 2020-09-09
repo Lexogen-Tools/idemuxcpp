@@ -1,15 +1,15 @@
+#include "config.h"
 #include <iostream>
 #include <unordered_set>
 #include <unordered_map>
 #include "Parser.h"
 #include "Barcode.h"
 #include "PairedReader.h"
+#include "helper.h"
 
 #include <istream>
-#include <fstream>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 enum class CSVState {
 	UnquotedField, QuotedField, QuotedQuote
@@ -66,8 +66,11 @@ std::vector<std::string> readCSVRow(const std::string &row) {
 	return fields;
 }
 
+Parser::Parser() {
+}
+
 /// Read CSV file, Excel dialect. Accept "quoted fields ""with quotes"""
-std::vector<std::vector<std::string>> readCSV(std::istream &in) {
+std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
 	std::vector<std::vector<std::string>> table;
 	std::string row;
 	while (!in.eof()) {
@@ -79,11 +82,6 @@ std::vector<std::vector<std::string>> readCSV(std::istream &in) {
 		table.push_back(fields);
 	}
 	return table;
-}
-
-Parser::Parser() {
-	// TODO Auto-generated constructor stub
-
 }
 
 /**
@@ -167,7 +165,7 @@ Parser::Parser() {
  ValueError: Will initiate sys.exit(1)
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
-		bool i5_rc, vector<Barcode*> &barcodes_out) {
+		bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath) {
 	// we use these to keep track which lengths are beeing used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
@@ -195,8 +193,9 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 			in_file_sample_sheet);
 
 	if (csv_lines.size() == 0) {
-		fprintf(stderr, "Error: the sample sheet is empty!");
-		exit(EXIT_FAILURE);
+		delete barcode_sample_map;
+		string message("Error: the sample sheet is empty!");
+		throw(std::runtime_error(message));
 	}
 	//check header:
 	string s1, s2;
@@ -205,15 +204,19 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		s1 = csv_lines[0][i];
 		s2 = sample_sheet_header[i];
 		if (s1.compare(s2) != 0) {
-			fprintf(stderr,
+			string message = string_format(
 					"Incorrect sample sheet header. Expected header: %s\n"
 							"Observed header: %s", s1.c_str(), s2.c_str());
+			throw(std::runtime_error(message));
 		}
 	}
 	// check file
 	for (size_t i = 1; i < csv_lines.size(); i++) {
 		std::vector<std::string> row = csv_lines[i];
-
+		if (row.size() < 4){
+			delete barcode_sample_map;
+			throw(runtime_error("Error: less than 4 fields in csv file!\n"));
+		}
 		lines_read += 1;
 		string sample_name = row[0];
 
@@ -240,7 +243,6 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		if (tmp_i1.compare("") == 0) {
 			i1_bc = "";
 		}
-		//std::cout << sample_name << tmp_i7 <<  tmp_i5 << tmp_i1 << std::endl;
 		// add barcodes and sample_names to dict so we can do some value checking
 		// later as not all combinations should be allowed
 		i7_barcodes[i7_bc].push_back(sample_name);
@@ -252,16 +254,17 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		auto it_bc = barcode_sample_map->find(barcodes);
 		if (it_bc != barcode_sample_map->end()) {
 			string same_barcode = barcode_sample_map->at(barcodes);
-			fprintf(stderr,
+			string message = string_format(
 					"Duplicate barcode combination detected. Sample: %s "
 							"Barcodes: %s\n Already observed for: %s\n Each "
 							"barcode combination has to be unique.",
 					sample_name.c_str(), barcodes.c_str(),
 					same_barcode.c_str());
-			exit(EXIT_FAILURE);
+			delete barcode_sample_map;
+			throw(runtime_error(message));
 		}
 
-		barcode_sample_map->insert({barcodes, sample_name});
+		barcode_sample_map->insert( { barcodes, sample_name });
 		// barcodes of different length are a problem as 8, 10, 12 nucleotide
 		// barcodes are a subset of each other. Therefore we only allow one
 		// length per barcode type
@@ -290,8 +293,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	// sample names have to be unique as they determine the outfile name. Otherwise
 	// we get problems when we try to write reads belonging to different barcode
 	// combinations to one file.
-	//TODO: correct this
-	bool duplicated_sample_names = false; //[k for k, v in sample_count.items() if v > 1]
+	bool duplicated_sample_names = false;
 	string duplicated_sample_names_str = "";
 	for (auto it = sample_count.begin(); it != sample_count.end(); it++) {
 		if (it->second > 1) {
@@ -304,22 +306,19 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		string error_msg =
 				"The sample sheet contains duplicate sample names. Sample "
 						"names have to be unique!\n Sample names: "
-						+\
- duplicated_sample_names_str;
-		std::cerr << error_msg << std::endl;
-		exit(EXIT_FAILURE);
+						+ duplicated_sample_names_str;
+		delete barcode_sample_map;
+		throw(runtime_error(error_msg));
 	}
 
 	// we have made it until here until raising an exception. That means the sample sheet
 	// information should be okay and we can return required data from the sample sheet.
-	//TODO:
-	//barcodes = [load_correction_map(bc) for bc in barcodes]
-	Barcode *bc7 = load_correction_map(*i7);
-	Barcode *bc5 = load_correction_map(*i5);
-	Barcode *bc1 = load_correction_map(*i1);
-	barcodes_out.push_back(bc7);
-	barcodes_out.push_back(bc5);
-	barcodes_out.push_back(bc1);
+	i7->load_correction_map(relative_exepath);
+	i5->load_correction_map(relative_exepath);
+	i1->load_correction_map(relative_exepath);
+	barcodes_out.push_back(i7);
+	barcodes_out.push_back(i5);
+	barcodes_out.push_back(i1);
 	//return barcode_sample_map, barcodes
 	return barcode_sample_map;
 }
@@ -350,34 +349,29 @@ string Parser::reverse_complement(string sequence) {
 	base_complements['G'] = 'C';
 	base_complements['T'] = 'A';
 	base_complements['N'] = 'N';
-	try {
-		// get the reverse complement
-		string rc_sequence = "";
-		for (int i = 0; i < sequence.length(); i++) {
-			auto it_comp = base_complements.find(sequence[i]);
-			if (it_comp != base_complements.end())
-				rc_sequence += it_comp->second;
+
+	// get the reverse complement
+	string rc_sequence = "";
+	string invalid_bases = "";
+	for (int i = sequence.length() - 1; i >= 0; i--) {
+		auto it_comp = base_complements.find(sequence[i]);
+		if (it_comp != base_complements.end())
+			rc_sequence += it_comp->second;
+		else {
+			invalid_bases += sequence[i];
 		}
-		//= [base_complements[nt] for nt in sequence[::-1]];
-		return rc_sequence; //"".join(rc_sequence);
-	} catch (const std::exception &e) {
-		// we only get a key error if sequence contains letter that are not covered
-		// above
-		string invalid_bases = "";
-		for (int i = 0; i < sequence.length(); i++) {
-			auto it_comp = base_complements.find(sequence[i]);
-			if (it_comp == base_complements.end())
-				invalid_bases += sequence[i];
-		}
-		string error_message =
+	}
+	//we only get a key error if sequence contains letter that are not covered above
+	if (invalid_bases.length() > 0) {
+		string message = string_format(
 				"The following barcode sequence from the sample sheet "
 						"contains bases that can't be mapped to their reverse "
-						"complement.\nBarcodes: %s\nBases %s";
-		fprintf(stderr, error_message.c_str(), sequence.c_str(),
+						"complement.\nBarcodes: %s\nBases %s", sequence.c_str(),
 				invalid_bases.c_str());
-		exit(EXIT_FAILURE);
-	};
-	return "";
+		throw(runtime_error(message));
+	}
+
+	return rc_sequence;
 }
 
 /*
@@ -459,199 +453,10 @@ bool Parser::has_valid_barcode_combinations(Barcode &i7, Barcode &i5,
 		error_messages.append(error_msg);
 	}
 	// if we did not return true earlier it is error raising time!
-	std::cerr << error_messages << std::endl;
+	throw(runtime_error(error_messages));
 	return false;
 }
 
-/*
- * Generator that opens two paired fastq.gz files and yields them as utf-8 strings.
-
- Args:
- fq_gz_1: Path to read1 of the mate pair.
- fq_gz_2: Path to read2 of the mate pair.
-
- Yields:
- iter,iter: Zipped iterator for read1 and read2
- */
-void Parser::get_pe_fastq(string fq_gz_1, string fq_gz_2) {
-	fprintf(stderr, "TO IMPLEMENT! --> Replaced by PairedReader.cpp");
-	/*
-	 @contextmanager
-	 def get_pe_fastq(fq_gz_1, fq_gz_2):
-
-	 try:
-	 input_streams = list()
-	 input_streams.append(gzip.open(fq_gz_1, 'rt', encoding='utf-8'))
-	 input_streams.append(gzip.open(fq_gz_2, 'rt', encoding='utf-8'))
-	 fastq_1 = fastq_lines_to_reads(input_streams[0])
-	 fastq_2 = fastq_lines_to_reads(input_streams[1])
-	 yield zip(fastq_1, fastq_2)
-	 finally:
-	 for fq_file in input_streams:
-	 log.debug('Trying to close file: %s' % fq_file.name)
-	 try:
-	 fq_file.close()
-	 except IOError:
-	 log.exception("Could not close the following input file: %s"
-	 % fq_file.name)
-
-	 */
-}
-
-void Parser::fastq_lines_to_reads(string fastq_lines) {
-	fprintf(stderr, "TO IMPLEMENT! --> Replaced by PairedReader");
-	/*
-	 def fastq_lines_to_reads(fastq_lines):
-	 """Collect fastq lines and chucks them into reads. Base on itertools
-	 grouper example (see https://docs.python.org/3/library/itertools.html).
-
-	 Args:
-	 fastq_lines (iterable <str>): An iterable of lines from a fastq file.
-
-	 Return:
-	 iter: All fastq lines grouped into reads (chunks of 4 lines).
-	 """
-	 # convert fastq lines into chunked iterator with a length of lines_per_read
-	 lines_per_read = 4
-	 chunked_lines = [iter(fastq_lines)] * lines_per_read
-	 # zip longest calls next when zipping the chunked iterator
-	 # this leads to all fastq_lines grouped by chunks of size lines_per_read
-	 return zip_longest(*chunked_lines)
-	 */
-}
-
-/*
- * load error correction map from misc folder.
- */
-unordered_map<string, string>* Parser::get_map_from_resource(string package,
-		string resource) {
-	printf("Loading error correction map from %s\n", resource.c_str());
-	unordered_map<string, string> *mapping =
-			new unordered_map<string, string>();
-
-	ifstream dataFile;
-	string filepath = package + "/" + resource;
-	dataFile.open(filepath);
-	fprintf(stdout, "checking file for valid barcodes: %s\n", filepath.c_str());
-	int tabidx;
-	int return_idx; //for windows files
-	string v1, v2;
-	while (!dataFile.eof()) {
-		std::string temp = "";
-		while (std::getline(dataFile, temp)) {
-			tabidx = temp.find('\t');
-			return_idx = temp.find('\r');
-			if (!return_idx)
-				return_idx = temp.length();
-			if (tabidx >= 0 && tabidx < temp.length()) {
-				v1 = temp.substr(0, tabidx);
-				v2 = temp.substr(tabidx + 1, return_idx - tabidx - 1);
-				//std::cout << "row" << v1 << ", " << v2 << std::endl;
-				mapping->insert({v1, v2});
-			}
-			temp = "";
-		}
-	}
-	return mapping;
-
-}
-
-/**
- * Reads a tsv barcodes file, converts them to byes and returns them as a dict.
- These dicts are used to map erroneous barcodes to their corrected version.
- Args:
- barcode_type (str): A path pointing to a error correction map file.
- barcode_length (int): A path pointing to a error correction map file.
-
- Return:
- dict (dict): correction_map : <b'erroneous_barcode', b'corrected_barcode'>
- //TODO: correction map is appended to barcode --> make this a function of the Barcode class.
- */
-Barcode* Parser::load_correction_map(Barcode &barcode) {
-	fprintf(stdout, "Trying to find the appropriate barcode set for %s...\n",
-			barcode.Name.c_str());
-
-	// When there are no barcodes specified, there is nothing to correct.
-	if (barcode.length == 0) {
-		fprintf(stdout, "No barcodes have been specified for %s.\n",
-				barcode.Name.c_str());
-		barcode.correction_map = new unordered_map<string, string>(); //.clear();
-		barcode.correction_map->insert({"", ""});
-		return &barcode;
-		//barcode.correction_map = NULL; //unordered_map<string,string> {"None": "None"};
-		//return NULL;
-	}
-	unordered_set<int> *tmp_sizes = barcode.get_set_sizes();
-	vector<int> sizes(tmp_sizes->begin(), tmp_sizes->end());
-	delete tmp_sizes;
-	std::sort(sizes.begin(), sizes.end());
-	bool drop_none = true;
-	int set_size;
-	for (auto it = sizes.begin(); it != sizes.end(); it++) {
-		set_size = (*it);
-		string package_str = "./misc/barcodes/" + barcode.Name;
-		string file_str = "base_mapping_b" + to_string(set_size) + "_l"
-				+ to_string(barcode.length) + ".tsv";
-
-		unordered_map<string, string> *corr_map = get_map_from_resource(
-				package_str, file_str);
-		//_barcode_set = set(corr_map.values());
-		unordered_set<string> *_barcodes_given = barcode.get_used_codes(
-				drop_none);
-		bool is_contained = true;
-		for (auto it_test = _barcodes_given->begin();
-				it_test != _barcodes_given->end(); it_test++) {
-			auto it_contained = corr_map->find(*it_test);
-			if (it_contained == corr_map->end()) {
-				is_contained = false;
-				break;
-			}
-		}
-		delete _barcodes_given;
-		if (is_contained) {
-			printf(
-					"Correct set found. Used set is %d barcodes with %d nt length.\n",
-					set_size, barcode.length);
-			//barcode.correction_map.clear();
-			//for (auto it = corr_map->begin(); it != corr_map->end(); it++)
-			//	barcode.correction_map[it->first] = it->second;
-			barcode.correction_map = corr_map;
-			//delete corr_map;
-			return &barcode;
-		}
-		delete corr_map;
-		/*
-		 if _barcodes_given <= _barcode_set:
-		 log.info(f"Correct set found. Used set is {set_size} barcodes with "
-		 f"{barcode.length} nt length.")
-		 barcode.correction_map = corr_map
-		 return barcode;
-		 */
-	}
-	if (barcode.length != 6) {
-		printf(
-				"No fitting Lexogen barcode set found for %s. No "
-						"error correction will take place for this barcode. Are you using "
-						"valid Lexogen barodes?\n", barcode.Name.c_str());
-		unordered_set<string> *_bc_list = barcode.used_codes();
-		barcode.correction_map = new unordered_map<string, string>(); //.clear();
-		for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
-			barcode.correction_map->insert({*it,*it});
-		}
-		delete _bc_list;
-	}
-	/*
-	 if barcode.length != 6:
-	 log.warning(f"No fitting Lexogen barcode set found for {barcode.name}. No "
-	 f"error correction will take place for this barcode. Are you using "
-	 f"valid Lexogen barodes?")
-
-	 _bc_list = list(barcode.used_codes)
-	 barcode.correction_map = dict(zip(_bc_list, _bc_list))
-	 return barcode
-	 */
-	return &barcode;
-}
 
 /*
  Reads the first 100 lines of paired fastq.gz files and checks if everything is
@@ -680,10 +485,16 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 	//vector<fq_read> *pe_reads = get_pe_fastq(fq_gz_1, fq_gz_2);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
 			get_pe_fastq.next_reads(lines_to_check);
-
+	//fq_read* pe_reads = get_pe_fastq.next_reads(lines_to_check);
 	for (int i = 0; i < pe_reads->size(); i++) {
+		//for(size_t i = 0; pe_reads[i+1].Seq_ID != ""; i+=2){
 		// mate_pair in pe_reads:
 		std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
+
+		/*std::pair<fq_read*, fq_read*> mate_pair;
+		 mate_pair.first = &pe_reads[i];
+		 mate_pair.second = &pe_reads[i+1];
+		 */
 		check_mate_pair(mate_pair, has_i7, has_i5, has_i1, i7_length, i5_length,
 				i1_start, i1_end);
 		counter += 1;
@@ -691,10 +502,11 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 			break;
 	}
 	for (int i = 0; i < pe_reads->size(); i++) {
-		delete (*pe_reads)[i].first;
-		delete (*pe_reads)[i].second;
+		delete pe_reads->at(i).first;
+		delete pe_reads->at(i).second;
 	}
 	delete pe_reads;
+
 	std::cout << "Input file formatting seems fine." << std::endl;
 }
 
@@ -703,26 +515,22 @@ void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 		int i1_start, int i1_end) {
 
 	fq_read *mate2 = mate_pair.second;
-	try {
-		check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length);
-		if (has_i1)
-			check_mate2_length(mate2, i1_start, i1_end);
-	} catch (std::exception e) {
-		std::cerr << e.what() << std::endl;
-		exit(EXIT_FAILURE);
-	}
+	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length);
+	if (has_i1)
+		check_mate2_length(mate2, i1_start, i1_end);
 }
 
 void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
-	int seq_idx = 1;
-	string seq = mate2->Seq_ID; //[seq_idx]
-	if (seq.length() < i1_end)
-		fprintf(stderr,
+	string seq = mate2->Sequence; //[seq_idx]
+	if (seq.length() < i1_end) {
+		string message = string_format(
 				"Mate 2 is too short for the provided i1 barcode settings. "
 						"According to your settings i1 starts at position %d "
 						"and has a length of %d. The sequence of "
 						"mate 2 is however only %ld nt long.", i1_start,
 				i1_end - i1_start, seq.length());
+		throw(runtime_error(message));
+	}
 
 }
 
@@ -745,34 +553,32 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 	int header_idx = 0;
 	fq_read *m_1 = mate_pair.first;
 	fq_read *m_2 = mate_pair.second;
-	//header_mate_1, header_mate_2 = m_1[header_idx], m_2[header_idx]
+
 	string header_mate_1(m_1->Seq_ID);
 	string header_mate_2(m_2->Seq_ID);
 
 	// get the barcodes from the fastq header
-	std::pair<string, string> bcs_mate1; // = header_mate_1.strip().rpartition(":")[-1].split("+")
-	std::pair<string, string> bcs_mate2; // = header_mate_2.strip().rpartition(":")[-1].split("+")
-	//std::cout << header_mate_1 << std::endl;
+	std::pair<string, string> bcs_mate1;
+	std::pair<string, string> bcs_mate2;
 	bcs_mate1 = Parser::parse_indices(header_mate_1);
-	//std::cout << bcs_mate1.first << ", " << bcs_mate1.second << std::endl;
-	//exit(0);
 	bcs_mate2 = Parser::parse_indices(header_mate_2);
 
-	if (bcs_mate1 != bcs_mate2) {
-		string error_msg =
+	if ((bcs_mate1.first.compare(bcs_mate2.first) != 0)
+			&& (bcs_mate1.second.compare(bcs_mate2.second) != 0)) {
+		string message = string_format(
 				"Mate1 and mate2 contain different barcode information. Please "
 						"make sure the reads in your fastq files are paired.\n"
 						"Mate1 header: %s\n"
-						"Mate2 header: %s\n";
-		fprintf(stderr, error_msg.c_str(), header_mate_1, header_mate_2);
-		exit(EXIT_FAILURE);
+						"Mate2 header: %s\n", header_mate_1.c_str(),
+				header_mate_2.c_str());
+		throw(runtime_error(message));
 	}
 
 	int number_bc_m1 = bcs_mate1.first == "" || bcs_mate1.second == "" ? 1 : 2;
 	int number_bc_m2 = bcs_mate2.first == "" || bcs_mate2.second == "" ? 1 : 2;
 
 	int number_bc_present[] = { number_bc_m1, number_bc_m2 };
-	int expected_number = 0; //sum([has_i7, has_i5])
+	int expected_number = 0;
 	if (has_i7)
 		expected_number += 1;
 	if (has_i5)
@@ -793,27 +599,28 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 		}
 	}
 
-	if (not right_number_of_barcodes) { //not all(right_number_of_barcodes):
+	if (! right_number_of_barcodes) { //not all(right_number_of_barcodes):
 		string example_header =
 				expected_number == 2 ? example_header_2 : example_header_1;
-		string error_msg =
-				"The fastq file does not contain sufficient barcode information "
-						"in the header.\nExpected number of barcodes: %\n"
-						"Observed number of barcodes: %d\n"
-						"Please check your input file. Your fastq header should look "
-						"similar to this example.\n"
-						"Example: %s\n"
-						"Observed headers: %s, %s";
-		fprintf(stderr, error_msg.c_str(), expected_number, number_bc_present,
-				example_header, header_mate_1, header_mate_2);
-		exit(EXIT_FAILURE);
+		string message =
+				string_format(
+						"The fastq file does not contain sufficient barcode information "
+								"in the header.\nExpected number of barcodes: %\n"
+								"Observed number of barcodes: %d\n"
+								"Please check your input file. Your fastq header should look "
+								"similar to this example.\n"
+								"Example: %s\n"
+								"Observed headers: %s, %s", expected_number,
+						number_bc_present, example_header, header_mate_1,
+						header_mate_2);
+		throw(runtime_error(message));
 	}
 
 	// when there are 2 barcodes in the fastq header the orientation is i7,i5
 	if (has_i7 && has_i5)
 		if (bcs_mate1.first.length() != i7_length
 				|| bcs_mate1.second.length() != i5_length) {
-			fprintf(stderr,
+			string message = string_format(
 					"i7 and i5 have a different length than specified in the "
 							"sample_sheet. "
 							"Observed length(i7,i5): %ld"
@@ -821,30 +628,32 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 							"Expected length(i7,i5): %d,%d",
 					bcs_mate1.first.length(), bcs_mate1.second.length(),
 					i7_length, i5_length);
-			exit(EXIT_FAILURE);
+			throw(runtime_error(message));
 		}
 	if (has_i7 && !has_i5)
 		if (bcs_mate1.first.length() != i7_length) {
-			fprintf(stderr, "i7 has a different length than specified in the "
-					"sample_sheet. "
-					"Observed length(i7): %ld\n"
-					"Expected length(i7): %d\n", bcs_mate1.first.length(),
-					i7_length);
-			exit(EXIT_FAILURE);
+			string message = string_format(
+					"i7 has a different length than specified in the "
+							"sample_sheet. "
+							"Observed length(i7): %ld\n"
+							"Expected length(i7): %d\n",
+					bcs_mate1.first.length(), i7_length);
+			throw(runtime_error(message));
 		}
 	if (!has_i7 && has_i5)
 		if (bcs_mate1.first.length() != i5_length) {
-			fprintf(stderr, "i5 has a different length than specified in the "
-					"sample_sheet. "
-					"Observed length(i5): %ld\n"
-					"Expected length(i5): %d\n", bcs_mate1.first.length(),
-					i5_length);
-			exit(EXIT_FAILURE);
+			string message = string_format(
+					"i5 has a different length than specified in the "
+							"sample_sheet. "
+							"Observed length(i5): %ld\n"
+							"Expected length(i5): %d\n",
+					bcs_mate1.first.length(), i5_length);
+			throw(runtime_error(message));
 		}
 
 }
 
-Parser::~Parser() {
-	// TODO Auto-generated destructor stub
+Parser::~Parser(){
+
 }
 

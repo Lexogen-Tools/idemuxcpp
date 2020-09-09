@@ -33,7 +33,7 @@ struct fq_read{
 class ZipFastqReader {
 public:
 	ZipFastqReader(string filename);
-	fq_read* next_read(fq_read *read);
+	fq_read* next_read();
 	void close();
 	virtual ~ZipFastqReader();
 private:

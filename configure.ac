@@ -6,10 +6,10 @@ m4_define([idemuxCPP_version_patch], [0])
 my_url="my_url"
 AC_PREREQ([2.59])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [idemuxCPP], 
+AC_INIT( [idemuxcpp], 
          idemuxCPP_version_major.idemuxCPP_version_minor.idemuxCPP_version_patch, 
          [], 
-         [idemuxCPP], [my_url] )
+         [idemuxcpp], [my_url] )
 
 AC_CANONICAL_HOST
 AC_CONFIG_AUX_DIR([.])
@@ -54,9 +54,9 @@ AC_LANG([C++])
 
 # include openMP for multithreading.
 dnl Check for OpenMP and prepare flags
-#AX_OPENMP([],[]) # not used
+AX_OPENMP([],[]) # not used
 
-#AC_SUBST(OPENMP_CXXFLAGS)
+AC_SUBST(OPENMP_CXXFLAGS)
 AC_SUBST(AM_CXXFLAGS,"$OPENMP_CXXFLAGS")
 
 ###############################################################################
@@ -94,6 +94,7 @@ fi
 # todo: ax_check for gzlib
 
 AC_LIB_LINKFLAGS([z])
+AC_LIB_LINKFLAGS([dl])
 #AM_LDFLAGS="$AM_LDFLAGS -lz"
 
 ############  CHECKS  ############################################
@@ -103,6 +104,24 @@ AC_TYPE_SIZE_T
 
 # Checks for header files.
 AC_HEADER_STDC
+
+###############################################################################
+# Boost unit tests check
+###############################################################################
+AX_BOOST_BASE([1.55], [], AC_MSG_ERROR([Could not find a useful version of boost]))
+AX_BOOST_SYSTEM
+AX_BOOST_FILESYSTEM
+
+AC_ARG_ENABLE([tests],
+        [AS_HELP_STRING([--enable-tests],
+            [enable boost unit tests (def=no)])],
+        [tests="$enableval"])
+AC_MSG_RESULT([$tests])
+if test x"$tests" = x"yes"; then
+        AC_DEFINE([TESTS], [], [Enable unit tests])
+        AX_BOOST_UNIT_TEST_FRAMEWORK
+fi
+
 
 ###############################################################################
 # help2man check
@@ -120,7 +139,9 @@ AC_SUBST([LIBS])
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([src/Makefile])
 AC_CONFIG_FILES([doc/Makefile])
+AC_CONFIG_FILES([misc/Makefile])
+AC_CONFIG_FILES([tests/Makefile])
 
 # generate the final Makefile etc.
-AC_OUTPUT([packaging/idemuxCPP.spec packaging/PKGBUILD])
+AC_OUTPUT([packaging/idemuxcpp.spec packaging/PKGBUILD])
 

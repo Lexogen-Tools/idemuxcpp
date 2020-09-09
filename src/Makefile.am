@@ -10,7 +10,7 @@ GENGETOPT_FILES =  idemuxCPP.ggo
 
 EXTRA_DIST =  ${GENGETOPT_FILES} ${GENGETOPT_CMDL}
 
-LDADD = $(LIBZ)
+LDADD = $(LIBZ) $(BOOST_FILESYSTEM_LIB) $(BOOST_SYSTEM_LIB)
 
 # remove all generated content
 maintainer-clean-local:
@@ -39,7 +39,9 @@ idemuxCPP_SOURCES =  ${GENGETOPT_CMDL} \
                    FileHandler.h \
                    FileHandler.cpp \
                    Barcode.h \
-                   Barcode.cpp
+                   Barcode.cpp \
+                   helper.h \
+                   Demux.h
 
 
 

@@ -26,9 +26,7 @@ public:
   unordered_set<string>*used_codes(){
 	  unordered_set<string>* keys = new unordered_set<string>();
 	  for(auto it = _sample_map.begin(); it != _sample_map.end(); it++){
-		  if (it->first.compare("") != 0){
-			  keys->insert(it->first);
-		  }
+		  keys->insert(it->first);
 	  }
 	  return keys;
   };
@@ -48,7 +46,8 @@ public:
   inline
     bool empty(){
 	  unordered_set<string>* uc = this->used_codes();
-	  bool is_empty = uc->size() == 0;
+	  //None in self.used_codes and len(self.used_codes) == 1
+	  bool is_empty = (this->sparse() && uc->size() == 1) || uc->size() == 0;
 	  delete uc;
 	  return is_empty;
     };
@@ -89,12 +88,12 @@ public:
 
   void post_init(bool reverse_complement);
   void check_length();
-  // barcode -> sample.
+  void load_correction_map(string relative_exepath);
+
   string Name;
   unordered_map<string,string> *correction_map;
   unordered_map<string,string> _sample_map;
   unordered_set<int> allowed_lengths;
-  unordered_set<int> observed_lengths;
   unordered_set<int> lengths_96_barcodes;
   unordered_set<int> lengths_384_barcodes;
   unordered_set<int>* get_set_sizes();

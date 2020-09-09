@@ -3,13 +3,19 @@
 #include <unordered_map>
 #include "Barcode.h"
 #include <iostream>
+#include <istream>
+#include <fstream>
+#include "helper.h"
+#include <stdexcept>
+#include <algorithm>
+#include "Parser.h"
 using namespace std;
 
 Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),Name(barcode_type),
 		allowed_lengths({6, 8, 10, 12}),
     lengths_96_barcodes({8, 10, 12}),
-    lengths_384_barcodes({10, 12}) {
-  // TODO Auto-generated constructor stub
+    lengths_384_barcodes({10, 12}), correction_map(NULL) {
+
 	for(auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
 		this->_sample_map[it->first] = it->second.size() > 0 ? it->second[0] : "";
 	post_init(reverse_complement);
@@ -44,121 +50,162 @@ void Barcode::check_length(){
 // and the ones of 10 in 12. if we dont enforce the same length per barcode there
 // might be a possibility we cant tell with certainty to which sample a
 // barcoded read belongs.
+	unordered_set<int> observed_lengths;
 	for(auto it = this->_sample_map.begin(); it != this->_sample_map.end(); it++){
 		string barcode = it->first;
 		string sample_name = it->second;
 		if (barcode.compare("") != 0){
-			auto itl = this->allowed_lengths.find(barcode.length());
+			auto itl = this->allowed_lengths.find((int)barcode.length());
 			if(itl != this->allowed_lengths.end()){
-				this->observed_lengths.insert(barcode.length());
-				this->length = barcode.length();
-				if(this->observed_lengths.size() > 1){
-					fprintf(stderr, "{self.name} barcodes with a different length "\
+				observed_lengths.insert(barcode.length());
+				if(observed_lengths.size() > 1){
+					string message = string_format("%s barcodes with a different length "\
                                  "have been observed for %s. Barcodes"\
                                  " need to have the same length for all "\
                                  "samples.\nObserved barcode length:"\
                                  " %ld \nPrevious observed length:"\
-                                 " %d",sample_name.c_str(),barcode.length(),(*observed_lengths.begin()));
-					exit(EXIT_FAILURE);
+                                 " %ld",sample_name.c_str(),sample_name.c_str(),barcode.length(), this->length);
+					throw(std::runtime_error(message));
 				}
+				this->length = (int)barcode.length();
 			}
 			else{
 				string tmplengths = "";
 				for(auto ita = this->allowed_lengths.begin(); ita != this->allowed_lengths.end(); ita++)
 					tmplengths += to_string(*ita) + ", ";
-				std::cout << barcode << std::endl;
-				fprintf(stderr,"%s barcodes are %ld nt long."\
-                             "%s barcodes are only allowed to be"\
-                             " %s nt long.", this->Name.c_str(), barcode.length(), this->Name.c_str(), tmplengths.substr(0,tmplengths.length()-1).c_str());
-				exit(EXIT_FAILURE);
+				string message = string_format("%s barcodes are %ld nt long.\n"\
+                        "%s barcodes are only allowed to be"\
+                        " %s nt long.", this->Name.c_str(), barcode.length(), this->Name.c_str(), tmplengths.substr(0,tmplengths.length()-1).c_str());
+				throw(std::runtime_error(message));
 			}
 
 		}
 	}
 }
-/*
 
+/**
+ * Reads a tsv barcodes file, converts them to byes and returns them as a dict.
+ These dicts are used to map erroneous barcodes to their corrected version.
+ Args:
+ barcode_type (str): A path pointing to a error correction map file.
+ barcode_length (int): A path pointing to a error correction map file.
 
-@dataclass
-class Barcode:
-    name: str
-    _sample_map: defaultdict = field(default_factory=lambda: defaultdict(list))
-    reverse_complement: bool = False
-    _observed_lengths: set = field(default_factory=set)
-    correction_map: dict = None
-    length: int = None
-    _lengths_96_barcodes = {8, 10, 12}
-    _lengths_384_barcodes = {10, 12}
-    _allowed_lengths = {6, 8, 10, 12}
-
-    def __post_init__(self):
-        # if the barcode is reverse complement add _rc to the name
-        # we need this later to load the correction maps
-        if self.reverse_complement:
-            self.name = f"{self.name}_rc"
-        self._check_length()
-
-    def _check_length(self):
-        # barcodes for each type need to be of the same length. This is as the
-        # sequences of 8 nt long barcodes are contained within 10 nt long barcodes,
-        # and the ones of 10 in 12. if we dont enforce the same length per barcode there
-        # might be a possibility we cant tell with certainty to which sample a
-        # barcoded read belongs.
-        for barcode, sample_name in self._sample_map.items():
-            if barcode is not None:
-                if len(barcode) in self._allowed_lengths:
-                    self._observed_lengths.add(len(barcode))
-                    self.length = len(barcode)
-                    if len(self._observed_lengths) > 1:
-                        raise ValueError(f"{self.name} barcodes with a different length "
-                                         f"have been observed for {sample_name}. Barcodes"
-                                         f" need to have the same length for all "
-                                         f"samples.\nObserved barcode length:"
-                                         f" {len(barcode)} \nPrevious observed length:"
-                                         f" {self._observed_lengths.pop()}")
-                else:
-                    raise ValueError(f"{self.name} barcodes are {len(barcode)} nt long."
-                                     f"{self.name} barcodes are only allowed to be"
-                                     f" {self._allowed_lengths} nt long.")
-
-    def get_set_sizes(self):
-        set_sizes = []
-        if self.length in self._allowed_lengths:
-            if self.length in self._lengths_96_barcodes:
-                set_sizes.append(96)
-            if self.length in self._lengths_384_barcodes:
-                set_sizes.append(384)
-        return set_sizes
-
-    def get_used_codes(self, drop_none=False):
-        _return_val = self.used_codes.copy()
-        if drop_none:
-            _return_val.discard(None)
-        return _return_val
-
-    # attribute getters
-    @property
-    def samples_without_barcodes(self):
-        return self._sample_map.get(None)
-
-    @property
-    def used_codes(self):
-        return set(self._sample_map.keys())
-
-    @property
-    def sparse(self):
-        return None in self.used_codes and len(self.used_codes) > 1
-
-    @property
-    def empty(self):
-        return None in self.used_codes and len(self.used_codes) == 1
-
-    @property
-    def full(self):
-        return None not in self.used_codes
+ Return:
+ dict (dict): correction_map : <b'erroneous_barcode', b'corrected_barcode'>
  */
+void Barcode::load_correction_map(string relative_exepath) {
+	fprintf(stdout, "Trying to find the appropriate barcode set for %s...\n",
+			this->Name.c_str());
+
+	// When there are no barcodes specified, there is nothing to correct.
+	if (this->length == 0) {
+		fprintf(stdout, "No barcodes have been specified for %s.\n",
+				this->Name.c_str());
+		this->correction_map = new unordered_map<string, string>(); //.clear();
+		this->correction_map->insert( { "", "" });
+		return;
+		//barcode.correction_map = NULL; //unordered_map<string,string> {"None": "None"};
+		//return NULL;
+	}
+	unordered_set<int> *tmp_sizes = this->get_set_sizes();
+	vector<int> sizes(tmp_sizes->begin(), tmp_sizes->end());
+	delete tmp_sizes;
+	std::sort(sizes.begin(), sizes.end());
+	bool drop_none = true;
+	int set_size;
+
+	//size_t path_buffer = 10000;
+	//char *buffer = (char*)malloc(sizeof(char)*path_buffer);
+	//char * cwd = GETCWD(buffer, path_buffer);
+	int index = relative_exepath.find_last_of(PATH_SEP);
+
+	// try package path
+	string package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
+			+ PATH_SEP + "misc" + PATH_SEP + "barcodes" + PATH_SEP
+			+ this->Name;
+	if (!Parser::PathExists(package_str)) {
+		// try install path
+		package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
+				+ PATH_SEP + "share" + PATH_SEP + "idemuxCPP" + PATH_SEP
+				+ "barcodes" + PATH_SEP + this->Name;
+		if (!Parser::PathExists(package_str)) {
+			throw(runtime_error(
+					string_format("Error: the path %s is not available!\n",
+							package_str.c_str())));
+		}
+	}
+	std::cout << package_str << std::endl;
+
+	//free(cwd);
+
+	for (auto it = sizes.begin(); it != sizes.end(); it++) {
+		set_size = (*it);
+		string file_str = "base_mapping_b" + to_string(set_size) + "_l"
+				+ to_string(this->length) + ".tsv";
+
+		unordered_map<string, string> *corr_map = Parser::get_map_from_resource(
+				package_str, file_str);
+		//_barcode_set = set(corr_map.values());
+		unordered_set<string> *_barcodes_given = this->get_used_codes(
+				drop_none);
+		bool is_contained = true;
+		for (auto it_test = _barcodes_given->begin();
+				it_test != _barcodes_given->end(); it_test++) {
+			auto it_contained = corr_map->find(*it_test);
+			if (it_contained == corr_map->end()) {
+				is_contained = false;
+				break;
+			}
+		}
+		delete _barcodes_given;
+		if (is_contained) {
+			printf(
+					"Correct set found. Used set is %d barcodes with %d nt length.\n",
+					set_size, this->length);
+			//this->correction_map.clear();
+			//for (auto it = corr_map->begin(); it != corr_map->end(); it++)
+			//	this->correction_map[it->first] = it->second;
+			this->correction_map = corr_map;
+			//delete corr_map;
+			return;
+		}
+		delete corr_map;
+		/*
+		 if _barcodes_given <= _barcode_set:
+		 log.info(f"Correct set found. Used set is {set_size} barcodes with "
+		 f"{this->length} nt length.")
+		 barcode.correction_map = corr_map
+		 return barcode;
+		 */
+	}
+	if (this->length != 6) {
+		printf(
+				"Warning: No fitting Lexogen barcode set found for %s. No "
+						"error correction will take place for this barcode. Are you using "
+						"valid Lexogen barodes?\n", this->Name.c_str());
+	}
+	unordered_set<string> *_bc_list = this->used_codes();
+	this->correction_map = new unordered_map<string, string>(); //.clear();
+	for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
+		this->correction_map->insert( { *it, *it });
+	}
+	delete _bc_list;
+
+	/*
+	 if barcode.length != 6:
+	 log.warning(f"No fitting Lexogen barcode set found for {barcode.name}. No "
+	 f"error correction will take place for this barcode. Are you using "
+	 f"valid Lexogen barodes?")
+
+	 _bc_list = list(barcode.used_codes)
+	 barcode.correction_map = dict(zip(_bc_list, _bc_list))
+	 return barcode
+	 */
+}
+
 
 Barcode::~Barcode() {
-  // TODO Auto-generated destructor stub
+ 	if(this->correction_map)
+ 		delete this->correction_map;
 }
 

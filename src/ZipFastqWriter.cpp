@@ -3,12 +3,11 @@
 #include "ZipFastqReader.h"
 #include "ZipFastqWriter.h"
 
-
 ZipFastqWriter::ZipFastqWriter(string outfile) : OutputFile(outfile) {
 	GZ_file_handle = gzopen(outfile.c_str(),"wb4");
 	if(GZ_file_handle==NULL){
-		fprintf(stderr, "Error: could not open gz file for writing!\n");
-		exit(EXIT_FAILURE);
+		string message = "Error: could not open gz file for writing!\n";
+		throw(runtime_error(message));
 	}
 }
 

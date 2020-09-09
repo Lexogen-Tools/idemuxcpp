@@ -6,7 +6,7 @@
 class Writer {
 public:
   Writer();
-  void write_summary(std::unordered_map<std::string, size_t>, std::string output_dir);
+  void write_summary(std::unordered_map<std::string, size_t> &counter, std::string output_dir);
   virtual ~Writer();
 };
 
