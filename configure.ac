@@ -108,9 +108,16 @@ AC_HEADER_STDC
 ###############################################################################
 # Boost unit tests check
 ###############################################################################
-AX_BOOST_BASE([1.55], [], AC_MSG_ERROR([Could not find a useful version of boost]))
+AC_ARG_ENABLE([skipboostcheck],
+        [AS_HELP_STRING([--enable-skipboostcheck],
+            [skip check for  boost sub libraries (def=no)])],
+        [skipboostcheck="$enableval"])
+AC_MSG_RESULT([$skipboostcheck])
+if test x"$skipboostcheck" != x"yes"; then
+AX_BOOST_BASE([1.50], [], AC_MSG_ERROR([Could not find a useful version of boost]))
 AX_BOOST_SYSTEM
 AX_BOOST_FILESYSTEM
+fi
 
 AC_ARG_ENABLE([tests],
         [AS_HELP_STRING([--enable-tests],

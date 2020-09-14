@@ -14,7 +14,7 @@
 #define HAVE_BOOST_SYSTEM /**/
 
 /* define if the Boost::Unit_Test_Framework library is available */
-#define HAVE_BOOST_UNIT_TEST_FRAMEWORK /**/
+/* #undef HAVE_BOOST_UNIT_TEST_FRAMEWORK */
 
 /* define if the compiler supports basic C++11 syntax */
 /* #undef HAVE_CXX11 */
@@ -53,19 +53,19 @@
 #define NDEBUG /**/
 
 /* Name of package */
-#define PACKAGE "idemuxCPP"
+#define PACKAGE "idemuxcpp"
 
 /* Define to the address where bug reports for this package should be sent. */
 #define PACKAGE_BUGREPORT ""
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME "idemuxCPP"
+#define PACKAGE_NAME "idemuxcpp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "idemuxCPP 1.2.0"
+#define PACKAGE_STRING "idemuxcpp 1.2.0"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "idemuxCPP"
+#define PACKAGE_TARNAME "idemuxcpp"
 
 /* Define to the home page for this package. */
 #define PACKAGE_URL "my_url "
@@ -77,7 +77,7 @@
 #define STDC_HEADERS 1
 
 /* Enable unit tests */
-#define TESTS /**/
+/* #undef TESTS */
 
 /* Version number of package */
 #define VERSION "1.2.0"

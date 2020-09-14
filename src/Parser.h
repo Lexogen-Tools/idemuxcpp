@@ -95,7 +95,7 @@ public:
 				return_idx = temp.find('\r');
 				if (!return_idx)
 					return_idx = temp.length();
-				if (tabidx >= 0 && tabidx < temp.length()) {
+				if (tabidx >= 0 && tabidx < (int)temp.length()) {
 					v1 = temp.substr(0, tabidx);
 					v2 = temp.substr(tabidx + 1, return_idx - tabidx - 1);
 					//std::cout << "row" << v1 << ", " << v2 << std::endl;

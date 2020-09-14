@@ -6,6 +6,7 @@ SUBDIRS = src doc misc tests
 pkgconfigdir = $(libdir)/pkgconfig
 
 EXTRA_DIST =  packaging/debian \
-              README.md \
+              doc/man/man1/idemuxCPP.1 \
+              README.rst \
               LICENCE
 

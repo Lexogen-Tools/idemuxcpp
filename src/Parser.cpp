@@ -200,7 +200,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	//check header:
 	string s1, s2;
 	//std::cout << "sizeof " << sample_sheet_header.size() << std::endl;
-	for (int i = 0; i < sample_sheet_header.size(); i++) {
+	for (size_t i = 0; i < sample_sheet_header.size(); i++) {
 		s1 = csv_lines[0][i];
 		s2 = sample_sheet_header[i];
 		if (s1.compare(s2) != 0) {
@@ -290,6 +290,8 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 
 	// test if the supplied barcode combinations are valid
 	bool is_valid = has_valid_barcode_combinations(*i7, *i5, *i1);
+	if (!is_valid)
+            throw(runtime_error("Error: Invalid barcode combinations"));
 	// sample names have to be unique as they determine the outfile name. Otherwise
 	// we get problems when we try to write reads belonging to different barcode
 	// combinations to one file.
@@ -486,7 +488,7 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
 			get_pe_fastq.next_reads(lines_to_check);
 	//fq_read* pe_reads = get_pe_fastq.next_reads(lines_to_check);
-	for (int i = 0; i < pe_reads->size(); i++) {
+	for (size_t i = 0; i < pe_reads->size(); i++) {
 		//for(size_t i = 0; pe_reads[i+1].Seq_ID != ""; i+=2){
 		// mate_pair in pe_reads:
 		std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
@@ -501,7 +503,7 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 		if (counter == lines_to_check)
 			break;
 	}
-	for (int i = 0; i < pe_reads->size(); i++) {
+	for (size_t i = 0; i < pe_reads->size(); i++) {
 		delete pe_reads->at(i).first;
 		delete pe_reads->at(i).second;
 	}
@@ -522,13 +524,14 @@ void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 
 void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
 	string seq = mate2->Sequence; //[seq_idx]
-	if (seq.length() < i1_end) {
+        int length = (int)seq.length();
+	if (length < i1_end) {
 		string message = string_format(
 				"Mate 2 is too short for the provided i1 barcode settings. "
 						"According to your settings i1 starts at position %d "
 						"and has a length of %d. The sequence of "
-						"mate 2 is however only %ld nt long.", i1_start,
-				i1_end - i1_start, seq.length());
+						"mate 2 is however only %d nt long.", i1_start,
+				i1_end - i1_start, length);
 		throw(runtime_error(message));
 	}
 
@@ -550,7 +553,6 @@ void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
 void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 		bool has_i7, bool has_i5, int i7_length, int i5_length) {
 
-	int header_idx = 0;
 	fq_read *m_1 = mate_pair.first;
 	fq_read *m_2 = mate_pair.second;
 
@@ -618,8 +620,8 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 
 	// when there are 2 barcodes in the fastq header the orientation is i7,i5
 	if (has_i7 && has_i5)
-		if (bcs_mate1.first.length() != i7_length
-				|| bcs_mate1.second.length() != i5_length) {
+		if ((int)bcs_mate1.first.length() != i7_length
+				|| (int)bcs_mate1.second.length() != i5_length) {
 			string message = string_format(
 					"i7 and i5 have a different length than specified in the "
 							"sample_sheet. "
@@ -631,7 +633,7 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 			throw(runtime_error(message));
 		}
 	if (has_i7 && !has_i5)
-		if (bcs_mate1.first.length() != i7_length) {
+		if ((int)bcs_mate1.first.length() != i7_length) {
 			string message = string_format(
 					"i7 has a different length than specified in the "
 							"sample_sheet. "
@@ -641,7 +643,7 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 			throw(runtime_error(message));
 		}
 	if (!has_i7 && has_i5)
-		if (bcs_mate1.first.length() != i5_length) {
+		if ((int)bcs_mate1.first.length() != i5_length) {
 			string message = string_format(
 					"i5 has a different length than specified in the "
 							"sample_sheet. "

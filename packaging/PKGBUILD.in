@@ -9,16 +9,16 @@ pkgdesc="Demultiplex RNA-seq reads from fastq.gz files into separate files accor
 arch=('x86_64' 'i686')
 license=('custom')
 url="@PACKAGE_URL@"
-groups=('idemuxCPP')
-makedepends=( 'g++' 'gengetopt' 'libboost' 'libboost-filesystem' 'libboost-system')
-source=(idemuxCPP_${pkgver}.tar.gz)
+groups=('idemuxcpp')
+makedepends=( 'gcc' 'gzip' 'zlib' 'boost-libs')
+source=(idemuxcpp_${pkgver}.tar.gz)
 
 #create this sum with the command "sha256sum idemuxCPP-${pkgver}.tar.gz" before each build of the package
-sha256sums=('d47a7ab0cee6647201943803930e3e9fb5885daa0c925fc5960ed8255fa29147')
+sha256sums=('0897043e105aa2714770cbff3888c82269c7fd5184fd5dc06588d0ecc4c5e980')
 
 build() {
   cd "${srcdir}/idemuxcpp-${pkgver}"
-  ./configure
+  ./configure --enable-skipboostcheck
   make
 }
 

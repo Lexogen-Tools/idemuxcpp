@@ -12,15 +12,21 @@ Packager:       Gregor Entzian <gregor dot entzian at lexogen dot com>
 
 Group:          -
 License:        custom
-URL:            https://github.com/idemuxcpp
-Source0:        idemuxCPP_%{version}.tar.gz
+URL:            https://github.com/Lexogen-Tools/idemuxcpp
+Source0:        idemuxcpp_%{version}.tar.gz
 BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:  autoconf
 BuildRequires:  automake
 BuildRequires:  rpm-devel
 
-BuildRequires:  libstdc++-devel gcc gcc-c++ gengetopt libboost-dev libboost-filesystem-dev libboost-system-dev
+BuildRequires:  libstdc++-devel gcc gcc-c++ 
+
+%if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
+BuildRequires: boost-devel >= 1.50 zlib-devel
+%else
+BuildRequires: zlib1g-dev libboost-dev >= 1.50 libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
+%endif
 
 %description
 Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
@@ -31,14 +37,27 @@ Demultiplex RNA-seq reads from fastq.gz files into separate files according to t
  in the sequenced barcodes. This will allow you to retain more reads from your
  sequencing experiment while minimizing cross contamination.
 
-Requires: libstdc++ libboost-filesystem-dev libboost-system-dev
+
+
+%if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
+Requires: libstdc++ zlib boost >= 1.50
+%else
+Requires: libstdc++ zlib1g-dev libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
+%endif
 
 %prep
 %setup -n idemuxcpp-%{version} -q
 
+%if 0%{?suse_version}
+%build
+%configure --prefix=%{_prefix} --docdir=%{_pkgdocdir} --mandir=%{_mandir} --enable-skipboostcheck
+make
+%else
 %build
 %configure --prefix=%{_prefix} --docdir=%{_pkgdocdir} --mandir=%{_mandir}
 make
+%endif
+
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -52,5 +71,5 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_datadir}/idemuxcpp/
-%doc README.md
+%doc README.rst
 %{_mandir}/*/*

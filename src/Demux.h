@@ -176,7 +176,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 				vector<std::pair<fq_read*, fq_read*>>> map_pairs;
 		if (pe_reads != NULL && pe_reads->size() > 0) {
 #pragma omp parallel for num_threads(nproc_processing) shared(pe_reads, i7_wanted, i5_wanted, i1_wanted,map_i7, map_i5, map_i1, file_handler, map_pairs)
-			for (int i = 0; i < pe_reads->size(); i++){
+			for (int i = 0; i < (int)pe_reads->size(); i++){
 				std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
 				std::pair<fq_read*, fq_read*> processed_mates;
 				string s_barcodes = process_mate_pair(mate_pair, i7_wanted, i5_wanted,
@@ -196,7 +196,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 
 			t1 = Clock::now();
 #pragma omp parallel for num_threads(nproc_writing) shared(read_counter, keys, map_pairs, file_handler)
-			for (int i = 0; i < keys.size(); i++) {
+			for (int i = 0; i < (int)keys.size(); i++) {
 				std::pair<ZipFastqWriter*, ZipFastqWriter*> *key = keys[i];
 				vector<std::pair<fq_read*, fq_read*>> val = map_pairs[key];
 				string s1 = "";
@@ -211,7 +211,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 				key->second->write(s2.c_str(), s2.length());
 			}
 			// count the number of reads in an separate loop (maybe faster without locks)
-			for (int i = 0; i < keys.size(); i++) {
+			for (int i = 0; i < (int)keys.size(); i++) {
 				std::pair<ZipFastqWriter*, ZipFastqWriter*> *key = keys[i];
 				string sample_name = file_handler->get_sample_name(key);
 				vector<std::pair<fq_read*, fq_read*>> val = map_pairs[key];

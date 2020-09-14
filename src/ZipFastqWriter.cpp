@@ -1,5 +1,6 @@
 #include <string>
 #include <zlib.h>
+#include <stdexcept>
 #include "ZipFastqReader.h"
 #include "ZipFastqWriter.h"
 

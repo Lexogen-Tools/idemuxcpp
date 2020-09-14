@@ -44,9 +44,6 @@ std::vector<std::pair<fq_read*, fq_read*>>* PairedReader::next_reads2(
 		size_t max_size, int reading_threads) {
 	std::vector<std::pair<fq_read*, fq_read*>> *pairs = new std::vector<std::pair<fq_read*, fq_read*>>();
 
-	ZipFastqReader* readers[2];
-	readers[0] = &Reader1;
-	readers[1] = &Reader2;
 	fq_read** reads1 = new fq_read*[max_size];
 	fq_read** reads2 = new fq_read*[max_size];
 

@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 	int reading_threads;
 	int writing_threads = -1;
 	int processing_threads = -1;
-	bool verbose = false;
+	//bool verbose = false;
 	string relative_exepath = string(argv[0]);
 	std::cout << relative_exepath << std::endl;
 
@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
 
 	i5_rc = args_info.i5_rc_flag;
 	i1_start = args_info.i1_start_arg;
-	verbose = args_info.verbose_flag;
+	//verbose = args_info.verbose_flag;
 
 	Parser p;
 	vector<Barcode*> barcodes;
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 			i1_start, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads);
 
 	delete barcode_sample_map;
-	for (int i = 0; i < barcodes.size(); i++)
+	for (size_t i = 0; i < barcodes.size(); i++)
 		delete barcodes[i];
 	idemuxCPP_cmdline_parser_free(&args_info);
 	return EXIT_SUCCESS;

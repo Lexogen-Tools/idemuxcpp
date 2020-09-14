@@ -12,9 +12,9 @@
 using namespace std;
 
 Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),Name(barcode_type),
-		allowed_lengths({6, 8, 10, 12}),
+		correction_map(NULL), allowed_lengths({6, 8, 10, 12}),
     lengths_96_barcodes({8, 10, 12}),
-    lengths_384_barcodes({10, 12}), correction_map(NULL) {
+    lengths_384_barcodes({10, 12}) {
 
 	for(auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
 		this->_sample_map[it->first] = it->second.size() > 0 ? it->second[0] : "";

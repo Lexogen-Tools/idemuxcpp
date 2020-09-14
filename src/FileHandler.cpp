@@ -8,8 +8,6 @@ FileHandler::FileHandler(unordered_map<string,string>& barcode_file_map, string 
 	Barcode_file_map = &barcode_file_map;
 	(*Barcode_file_map)["undetermined"] = "undetermined";
 	Output_folder = output_folder;
-	int buffer_per_file = int(memory / (barcode_file_map.size()) * 2);
-
 	if (!utils::folder_exists(output_folder))
 		utils::mkdir(output_folder.c_str());
 	init_all_file_handles();
