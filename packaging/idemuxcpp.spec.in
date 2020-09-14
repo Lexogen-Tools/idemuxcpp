@@ -7,7 +7,8 @@ Version:        @PACKAGE_VERSION@
 Release:        1%{?dist}
 Summary:        Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
 
-Vendor:         Gregor Entzian <gregor dot entzian at lexogen dot com>
+Vendor:         Lexogen GmbH
+Packager:       Gregor Entzian <gregor dot entzian at lexogen dot com>
 
 Group:          -
 License:        custom
@@ -24,13 +25,13 @@ BuildRequires:  libstdc++-devel gcc gcc-c++ gengetopt libboost-dev libboost-file
 %description
 Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
  Idemux can demultiplex based on i7, i5, and i1 inline barcodes. While this tool
- can generally   be used to demultiplex any barcodes (as long as they are
+ can generally be used to demultiplex any barcodes (as long as they are
  correctly supplied and in the fastq header), it performs best when used in
  combination with Lexogen indices, as it will correct common sequencing errors
  in the sequenced barcodes. This will allow you to retain more reads from your
  sequencing experiment while minimizing cross contamination.
 
-Requires: libstdc++
+Requires: libstdc++ libboost-filesystem-dev libboost-system-dev
 
 %prep
 %setup -n idemuxcpp-%{version} -q

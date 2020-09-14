@@ -1,6 +1,5 @@
 Source: idemuxcpp
-Maintainer: name <name@lexogen.com>
-Uploaders: name <name@lexogen.com>
+Maintainer: Lexogen <gregor.entzian@lexogen.com>
 Section: science
 Priority: optional
 Standards-Version: 3.9.8
@@ -14,7 +13,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
  Idemux can demultiplex based on i7, i5, and i1 inline barcodes. While this tool
- can generally   be used to demultiplex any barcodes (as long as they are 
+ can generally be used to demultiplex any barcodes (as long as they are 
  correctly supplied and in the fastq header), it performs best when used in 
  combination with Lexogen indices, as it will correct common sequencing errors 
  in the sequenced barcodes. This will allow you to retain more reads from your 
