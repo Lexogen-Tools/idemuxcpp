@@ -8,5 +8,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 EXTRA_DIST =  packaging/debian \
               doc/man/man1/idemuxCPP.1 \
               README.rst \
-              LICENCE
+              LICENCE \
+              misc/barcodes/* \
+              tests/resources/*
 
