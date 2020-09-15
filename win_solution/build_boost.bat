@@ -1,10 +1,12 @@
 
-::PUSHD "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build"
-PUSHD F:\VS19\VS_IDE\VC\Auxiliary\Build
+PUSHD "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build"
+::PUSHD F:\VS19\VS_IDE\VC\Auxiliary\Build
 call vcvars64.bat
 POPD
 
-PUSHD ".\boost"
+::curl -O https://dl.bintray.com/boostorg/release/1.74.0/source/boost_1_74_0.zip
+
+PUSHD ".\boost_1_74_0\boost_1_74_0"
 call bootstrap.bat
 ::copy /Y ..\..\files\project-config.jam .
 .\b2 headers
