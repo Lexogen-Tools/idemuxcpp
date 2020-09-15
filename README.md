@@ -76,18 +76,18 @@ To configure, compile and install execute the following commands on your command
 <th> Ubuntu </th>
 </tr></thead><tbody><tr>
 <td style="vertical-align:top">
-<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_0.1.2-1_i386.deb"> idemuxcpp - 0.1.2 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
 </details>
-<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_0.1.2-1_i386.deb"> idemuxcpp - 0.1.2 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
 </details></td>
 <td style="vertical-align:top">
-<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
-<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
-<details><summary>xUbuntu_18.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
+<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
+<details><summary>xUbuntu_18.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
+</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
+</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
 </details></td>
 </tr></tbody></table>
 
