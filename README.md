@@ -38,9 +38,9 @@ in order to decrease the runtime. It is 2 times faster than the python version.
 ## Getting started
 To get stated with demultiplexing you need to:
 
-1. [Install idemuxCPP](#1.-Installation)
-2. [Prepare a sample sheet csv](#2.-Preparing-the-sample-sheet)
-3. [Run idemuxCPP](#3.-Running-idemuxCPP)
+1. [Install idemuxCPP](#1-installation)
+2. [Prepare a sample sheet csv](#2-preparing-the-sample-sheet)
+3. [Run idemuxCPP](#3-running-idemuxcpp)
 
 ## 1. Installation
 dependencies:
@@ -138,7 +138,7 @@ However, idemuxCPP will do its best to tell you where the problem lies, once thi
    complement sequences in the sample sheet. Use the ``--i5-rc`` option!
 
 
-See [below](#Sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
+See [below](#sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
 *disallowed*.
 
 
@@ -181,7 +181,7 @@ After a successful completed run idemuxCPP will write summary report to the outp
 ## Technicalities
 When you run idemuxCPP the following will happen:
 
-* It will check if your sample sheet is okay. See [here](#Sample-sheet-examples) for examples
+* It will check if your sample sheet is okay. See [here](#sample-sheet-examples) for examples
 
 * It will check the fastq header for barcodes and expects them in the following format:
     ```
