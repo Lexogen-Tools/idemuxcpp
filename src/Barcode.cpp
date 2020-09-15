@@ -1,14 +1,16 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "Barcode.h"
+#include <stdexcept>
+#include <algorithm>
 #include <iostream>
 #include <istream>
 #include <fstream>
+#include "config.h"
 #include "helper.h"
-#include <stdexcept>
-#include <algorithm>
 #include "Parser.h"
+#include "Barcode.h"
+
 using namespace std;
 
 Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),Name(barcode_type),
@@ -126,7 +128,7 @@ void Barcode::load_correction_map(string relative_exepath) {
 	if (!Parser::PathExists(package_str)) {
 		// try install path
 		package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
-				+ PATH_SEP + "share" + PATH_SEP + "idemuxCPP" + PATH_SEP
+				+ PATH_SEP + "share" + PATH_SEP + PACKAGE_NAME + PATH_SEP
 				+ "barcodes" + PATH_SEP + this->Name;
 		if (!Parser::PathExists(package_str)) {
 			throw(runtime_error(

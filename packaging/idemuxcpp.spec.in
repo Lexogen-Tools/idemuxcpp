@@ -18,14 +18,13 @@ BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 
 BuildRequires:  autoconf
 BuildRequires:  automake
-BuildRequires:  rpm-devel
 
-BuildRequires:  libstdc++-devel gcc gcc-c++ 
+BuildRequires:  gcc g++
 
 %if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
-BuildRequires: boost-devel >= 1.50 zlib-devel
+BuildRequires: boost-devel >= 1.50 zlib-devel >= 1.2.8
 %else
-BuildRequires: zlib1g-dev libboost-dev >= 1.50 libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
+BuildRequires: zlib1g-dev >= 1.2.8 libboost-dev >= 1.50 libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
 %endif
 
 %description
@@ -40,9 +39,9 @@ Demultiplex RNA-seq reads from fastq.gz files into separate files according to t
 
 
 %if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
-Requires: libstdc++ zlib boost >= 1.50
+Requires: libstdc++ zlib >= 1.2.8 boost >= 1.50
 %else
-Requires: libstdc++ zlib1g-dev libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
+Requires: libstdc++ zlib1g-dev >= 1.2.8 libboost-filesystem-dev >= 1.50 libboost-system-dev >= 1.50
 %endif
 
 %prep
