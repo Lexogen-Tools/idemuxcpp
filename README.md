@@ -86,7 +86,6 @@ To configure, compile and install execute the following commands on your command
 <details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
 <details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
 </details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
-</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
 </details></td>
 </tr></tbody></table>
 
