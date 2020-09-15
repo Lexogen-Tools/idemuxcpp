@@ -1,55 +1,48 @@
-======
-idemuxCPP - inline barcode demultiplexing
-======
 
+# idemuxCPP - inline barcode demultiplexing
 idemuxCPP is a command line tool designed to demultiplex paired-end fastq files from
-`QuantSeq-Pool <https://www.lexogen.com/quantseq-pool-sample-barcoded-3mrna-sequencing/>`_.
+[QuantSeq-Pool](https://www.lexogen.com/quantseq-pool-sample-barcoded-3mrna-sequencing/).
 
 idemuxCPP can demultiplex based on i7, i5 and i1 inline barcodes. While this tool
 can generally be used to demultiplex on any barcodes (as long as they are correctly supplied
 and in the fastq header), it best performs when used in combination with
-`Lexogen indices <https://www.lexogen.com/indexing/12nt-dual-indexing-kits/>`_, as it
+[Lexogen indices](https://www.lexogen.com/indexing/12nt-dual-indexing-kits/), as it
 will correct common sequencing errors in the sequenced barcodes. This will allow you
 to retain more reads from your sequencing experiment, while minimizing cross contamination.
 
 
-idemuxCPP use is permitted under the following `licence <LICENCE>`_.
+idemuxCPP use is permitted under the following [licence](LICENCE).
 
 idemuxCPP is a direct translation of the python tool idemux (https://github.com/lexogen-tools/idemux)
 in order to decrease the runtime. It is 2 times faster than the python version.
 
 **General usage:**
-::
+```
     idemuxCPP [-h] --r1 READ1 --r2 READ2 [--sample-sheet SAMPLE_SHEET] --out OUTPUT_DIR
            [--i1-start I1_START] [--i5-rc] [-v]
-
+```
 
 **Run idemuxCPP:**
-::
-
+```
     idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out /some/output/path --i1-start pos_in_read_2
+```
 
-Features
---------
-
+## Features
 * FASTQ file demultiplexing based on i7, i5 or i1 barcodes
 * Correction of barcode sequencing errors to maximize read yield (only works
-  with `Lexogen 12 nt UDIs <https://www.lexogen.com/indexing/12nt-dual-indexing-kits/>`_,
+  with [Lexogen 12 nt UDIs](https://www.lexogen.com/indexing/12nt-dual-indexing-kits/),
   that have been sequenced at least 8 nt.
 * Reverse complementation in case the i5 index has been sequenced as reverse complement
 
 
-Getting started
----------------
+## Getting started
 To get stated with demultiplexing you need to:
 
-1. `Install idemuxCPP <1. Installation_>`_
-2. `Prepare a sample sheet csv <2. Preparing the sample sheet_>`_
-3. `Run idemuxCPP <3. Running idemuxCPP_>`_
+1. [Install idemuxCPP](#1.-Installation)
+2. [Prepare a sample sheet csv](#2.-Preparing-the-sample-sheet)
+3. [Run idemuxCPP](#3.-Running-idemuxCPP)
 
-1. Installation
-===============
-
+## 1. Installation
 dependencies:
 
 * compiler supporting C++11 standard and OpenMP
@@ -64,53 +57,48 @@ dependencies:
 
 **Windows 10 64bit binary**
 For windows you do not need to install any dependencies (they are included in the package).
-Simply download the pre-compiled windows binary from here `windows binary <win_solution/iDemux_win10_64bit.zip>`_.
+Simply download the pre-compiled windows binary from here [windows binary](win_solution/iDemux_win10_64bit.zip).
 Extract the zip file. To execute the tool press `windows+r`, enter `cmd`, `cd C:\\location_of_the_extracted_zip_file\bin` and execute `.\\idemuxCPP`
 
 
 **From Source**
 
 To configure, compile and install execute the following commands on your command line:
-::
+```
     ./configure [--help for additional configuration options]
     make
     make install
+```
 
 **From Linux Package**
+<table><thead><tr>
+<th> Debian </th>
+<th> Ubuntu </th>
+</tr></thead><tbody><tr>
+<td style="vertical-align:top">
+<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details>
+<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details></td>
+<td style="vertical-align:top">
+<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_18.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details></td>
+</tr></tbody></table>
 
-.. list-table:: Title
-   :header-rows: 2
-
-   * - Debian
-     -
-     - Ubuntu
-   * - 32 bit
-     - 64 bit
-     - 64 bit
-   * - `Debian 10 32 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb>`_
-     - `Debian 10 64 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-     - `Ubuntu 20.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-   * - `Debian 9 32 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb>`_
-     - `Debian 9 64 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-     - `Ubuntu 19.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-   * -
-     -
-     - `Ubuntu 18.10 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-   * -
-     -
-     - `Ubuntu 18.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
-   * -
-     -
-     - `Ubuntu 17.10 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
 
 
 idemuxCPP will also soon be available via bioconda!
 
 
-2. Preparing the sample sheet
-=============================
-In order to run idemuxCPP on your QuantSeq-Pool data you first need to prepare a `csv file
-<https://en.wikipedia.org/wiki/Comma-separated_values>`_.
+## 2. Preparing the sample sheet
+In order to run idemuxCPP on your QuantSeq-Pool data you first need to prepare a 
+[csv file](https://en.wikipedia.org/wiki/Comma-separated_values).
 We call this csv a sample sheet and it specifies which barcodes correspond to each
 sample.
 
@@ -120,14 +108,13 @@ excel spreadsheet and exporting it as csv.
 
 
 Example sample sheet (i7, i5 and i1 demuliplexing):
-::
-
+```
     sample_name,i7,i5,i1
     sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
     sample_1,AAAATCCCAGTT,CCCCTAAACGTT,AAAATCCCAGTT
     sample_2,GAAAATTTACGC,GCCCCTTTCAGA,GAAAATTTACGC
     sample_3,AAACTAACTGTC,CCCATCCATGTA,AAACTAACTGTC
-
+```
 
 A sample sheet consists of 4 columns and  always starts with the header illustrated
 above. 'Sample_name' values will be used as output file names, while the
@@ -137,7 +124,6 @@ Therefore, only specific, unique unambiguous combinations of sample names and ba
 allowed. This means using duplicated or ambiguous combinations will result in an error.
 However, idemuxCPP will do its best to tell you where the problem lies, once this happens.
 
-|
 
 **In brief the rules are:**
 
@@ -151,19 +137,16 @@ However, idemuxCPP will do its best to tell you where the problem lies, once thi
 6. If your i5 has been sequenced as reverse complement, *do not* enter the reverse
    complement sequences in the sample sheet. Use the ``--i5-rc`` option!
 
-|
 
-See `below <Sample sheet examples_>`_. for more showcases of sample/barcode combinations that are *allowed* or
+See [below](#Sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
 *disallowed*.
 
 
-3. Running idemuxCPP
-=================
+## 3. Running idemuxCPP
 Once you have installed the tool you can run it by typing ``idemuxCPP`` in the terminal.
 
 idemuxCPP accepts the following arguments:
-::
-
+```
     required arguments:
       --r1 READ1                   path to gzipped read 1 fastq file
       --r2 READ2                   path to gzipped read 2 fastq file
@@ -176,11 +159,10 @@ idemuxCPP accepts the following arguments:
       --i1_start POS               start position of the i1 index (1-based) on read 2 (default: 11)
       -v, --version                show program's version number and exit
       -h, --help                   show help message and exit
-
+```
 
 Example commands:
-::
-
+```
     # demultiplexes read 1 and 2 into the folder 'demux'
     idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
 
@@ -191,23 +173,22 @@ Example commands:
     # if he i5 has been sequenced as reverse complement use this option and provide
     # the NON reverse complement sequences in the sample sheet.
     idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
+```
 
 After a successful completed run idemuxCPP will write summary report to the output folder
 ('demultipexing_stats.tsv').
 
-Technicalities
----------------
-
+## Technicalities
 When you run idemuxCPP the following will happen:
 
-* It will check if your sample sheet is okay. See `here <Sample sheet examples_>`_ for examples
+* It will check if your sample sheet is okay. See [here](#Sample-sheet-examples) for examples
 
 * It will check the fastq header for barcodes and expects them in the following format:
-
+    ```
     single index (i7 or i5): @NB502007:379:HM7H2BGXF:1:11101:24585:1069 1:N:0:TCAGGTAANNTT
 
     dual index (i7 and i5): @NB502007:379:HM7H2BGXF:1:11101:24585:1069 1:N:0:TCAGGTAANNTT+NANGGNNCNNNN
-
+    ```
 * Reads that cannot be demultiplexed will be written to undetermined_R{1/2}.fastq.gz
 
 * When you demultiplex based on i1 inline barcodes, the a successful recognized barcode
@@ -224,8 +205,7 @@ This allows you to:
 If you sequenced i5 as a reverse complement, make sure to not fill in reverse complement
 barcodes into the sample sheet, but to use the ``--i5-rc`` parameter.
 
-Help
-------
+## Help
 If you are demuliplexing a large number of samples (more than 500) you might encounter the
 following error:
 
@@ -233,22 +213,21 @@ following error:
 
 This error occurs because most OS have a limit on how many files can be opened and
 written to at the ame time. In order to temporarily increase the limit run:
-::
+```
     # multiply your sample number*2 (as data is paired end)
     # then round to the next multiple of 1024
     ulimit -n the_number_above
-
+```
 If you are looking for a permanent solution you can change your ulimit values
-`this way <https://access.redhat.com/solutions/61334>`_.
+[this way](https://access.redhat.com/solutions/61334).
 
 In case you experience any issues with this software please open an issue describing your
 problem. Make sure to post the version of the tool you are running (``-v, --version``)
 and your os.
 
-Sample sheet examples
----------------------
+## Sample sheet examples
 *This is allowed:*
-::
+```
     # demultiplexing via full i7, i5, i1
     sample_name,i7,i5,i1
     sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
@@ -293,9 +272,10 @@ Sample sheet examples
     sample_name,i7,i5,i1
     sample_0,,,AAAACATGCGTT
     sample_1,,,AAAATCCCAGTT
+```
 
 *This is not allowed:*
-::
+```
     # missing i1 column (or any other)
     sample_name,i7,i5,
     sample_0,AAAACATGCGTT,CCCCACTGAGTT
@@ -341,7 +321,7 @@ Sample sheet examples
     # wrong column headers
     wrong_col_name,i7,i5,i1
     sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
-
+```
 
 &copy; Lexogen GmbH, 2020
 

@@ -70,5 +70,5 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_bindir}/*
 %{_datadir}/idemuxcpp/
-%doc README.rst
+%doc README.md
 %{_mandir}/*/*

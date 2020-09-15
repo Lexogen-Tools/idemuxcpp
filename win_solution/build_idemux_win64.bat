@@ -21,7 +21,7 @@ Xcopy .\x64\Release-cluster\test_parser.exe iDemux_win10_64bit\tests\ /E/H/C/I
 Xcopy .\x64\Release-cluster\test_demuxer.exe iDemux_win10_64bit\tests\ /E/H/C/I
 Xcopy .\x64\Release-cluster\test_barcode.exe iDemux_win10_64bit\tests\ /E/H/C/I
 Xcopy ..\LICENCE iDemux_win10_64bit\ /E/H/C/I
-Xcopy ..\README.rst iDemux_win10_64bit\ /E/H/C/I
+Xcopy ..\README.md iDemux_win10_64bit\ /E/H/C/I
 
 :: copy boost support dll or let user install the package Visual C++ Redistributable for Visual Studio 2015 (https://www.microsoft.com/de-at/download/details.aspx?id=48145).
 Xcopy .\vcomp140.dll iDemux_win10_64bit\tests\ /E/H/C/I
