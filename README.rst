@@ -13,7 +13,7 @@ will correct common sequencing errors in the sequenced barcodes. This will allow
 to retain more reads from your sequencing experiment, while minimizing cross contamination.
 
 
-idemuxCPP use is permitted under the following `licence <LICENCE.txt>`_.
+idemuxCPP use is permitted under the following `licence <LICENCE>`_.
 
 idemuxCPP is a direct translation of the python tool idemux (https://github.com/lexogen-tools/idemux)
 in order to decrease the runtime. It is 2 times faster than the python version.
@@ -64,8 +64,8 @@ dependencies:
 
 **Windows 10 64bit binary**
 For windows you do not need to install any dependencies (they are included in the package).
-Simply download the pre-compiled windows binary from here [windows binary](./win_solution/iDemux_win10_64bit.zip)
-Extract the zip file. To execute the tool press `windows+r`, enter `cmd`, `cd C:\location_of_the_extracted_zip_file\bin` and execute `.\idemuxCPP`
+Simply download the pre-compiled windows binary from here `windows binary <win_solution/iDemux_win10_64bit.zip>`_.
+Extract the zip file. To execute the tool press `windows+r`, enter `cmd`, `cd C:\\location_of_the_extracted_zip_file\bin` and execute `.\\idemuxCPP`
 
 
 **From Source**
@@ -78,31 +78,31 @@ To configure, compile and install execute the following commands on your command
 
 **From Linux Package**
 
-.. raw:: html
+.. list-table:: Title
+   :header-rows: 2
 
-<embed>
+   * - Debian
+     -
+     - Ubuntu
+   * - 32 bit
+     - 64 bit
+     - 64 bit
+   * - `Debian 10 32 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb>`_
+     - `Debian 10 64 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+     - `Ubuntu 20.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+   * - `Debian 9 32 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb>`_
+     - `Debian 9 64 bit <href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+     - `Ubuntu 19.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+   * -
+     -
+     - `Ubuntu 18.10 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+   * -
+     -
+     - `Ubuntu 18.04 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
+   * -
+     -
+     - `Ubuntu 17.10 <"https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb>`_
 
-<table><thead><tr>
-<th> Debian </th>
-<th> Ubuntu </th>
-</tr></thead><tbody><tr>
-<td style="vertical-align:top">
-<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details>
-<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details></td>
-<td style="vertical-align:top">
-<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
-<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
-<details><summary>xUbuntu_18.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
-</details></td>
-</tr></tbody></table>
-
-</embed>
 
 idemuxCPP will also soon be available via bioconda!
 
