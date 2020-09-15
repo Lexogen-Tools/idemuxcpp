@@ -78,7 +78,10 @@ To configure, compile and install execute the following commands on your command
 
 **From Linux Package**
 
-### From Linux Package
+.. raw:: html
+
+<embed>
+
 <table><thead><tr>
 <th> Debian </th>
 <th> Ubuntu </th>
@@ -99,6 +102,7 @@ To configure, compile and install execute the following commands on your command
 </details></td>
 </tr></tbody></table>
 
+</embed>
 
 idemuxCPP will also soon be available via bioconda!
 
