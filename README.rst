@@ -1,11 +1,11 @@
 ======
-idemux - inline barcode demultiplexing
+idemuxCPP - inline barcode demultiplexing
 ======
 
-Idemux is a command line tool designed to demultiplex paired-end fastq files from
+idemuxCPP is a command line tool designed to demultiplex paired-end fastq files from
 `QuantSeq-Pool <https://www.lexogen.com/quantseq-pool-sample-barcoded-3mrna-sequencing/>`_.
 
-Idemux can demultiplex based on i7, i5 and i1 inline barcodes. While this tool
+idemuxCPP can demultiplex based on i7, i5 and i1 inline barcodes. While this tool
 can generally be used to demultiplex on any barcodes (as long as they are correctly supplied
 and in the fastq header), it best performs when used in combination with
 `Lexogen indices <https://www.lexogen.com/indexing/12nt-dual-indexing-kits/>`_, as it
@@ -13,18 +13,21 @@ will correct common sequencing errors in the sequenced barcodes. This will allow
 to retain more reads from your sequencing experiment, while minimizing cross contamination.
 
 
-Idemux use is permitted under the following `licence <LICENCE.txt>`_.
+idemuxCPP use is permitted under the following `licence <LICENCE.txt>`_.
+
+idemuxCPP is a direct translation of the python tool idemux (https://github.com/lexogen-tools/idemux)
+in order to decrease the runtime. It is 2 times faster than the python version.
 
 **General usage:**
 ::
-    idemux [-h] --r1 READ1 --r2 READ2 [--sample-sheet SAMPLE_SHEET] --out OUTPUT_DIR
+    idemuxCPP [-h] --r1 READ1 --r2 READ2 [--sample-sheet SAMPLE_SHEET] --out OUTPUT_DIR
            [--i1-start I1_START] [--i5-rc] [-v]
 
 
-**Run idemux:**
+**Run idemuxCPP:**
 ::
 
-    idemux --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out /some/output/path --i1-start pos_in_read_2
+    idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out /some/output/path --i1-start pos_in_read_2
 
 Features
 --------
@@ -40,9 +43,9 @@ Getting started
 ---------------
 To get stated with demultiplexing you need to:
 
-1. `Install idemux <1. Installation_>`_
+1. `Install idemuxCPP <1. Installation_>`_
 2. `Prepare a sample sheet csv <2. Preparing the sample sheet_>`_
-3. `Run idemux <3. Running idemux_>`_
+3. `Run idemuxCPP <3. Running idemuxCPP_>`_
 
 1. Installation
 ===============
@@ -59,6 +62,12 @@ dependencies:
 * [gengetopt](https://www.gnu.org/software/gengetopt/gengetopt.html)
 
 
+**Windows 10 64bit binary**
+For windows you do not need to install any dependencies (they are included in the package).
+Simply download the pre-compiled windows binary from here [windows binary](./win_solution/iDemux_win10_64bit.zip)
+Extract the zip file. To execute the tool press `windows+r`, enter `cmd`, `cd C:\location_of_the_extracted_zip_file\bin` and execute `.\idemuxCPP`
+
+
 **From Source**
 
 To configure, compile and install execute the following commands on your command line:
@@ -67,12 +76,36 @@ To configure, compile and install execute the following commands on your command
     make
     make install
 
-Idemux will also soon be available via bioconda!
+**From Linux Package**
+
+### From Linux Package
+<table><thead><tr>
+<th> Debian </th>
+<th> Ubuntu </th>
+</tr></thead><tbody><tr>
+<td style="vertical-align:top">
+<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details>
+<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_1.2.0-1_i386.deb"> idemuxcpp - 1.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details></td>
+<td style="vertical-align:top">
+<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_18.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details><details><summary>xUbuntu_17.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_17.10/amd64/idemuxcpp_1.2.0-1_amd64.deb"> idemuxcpp - 1.2.0 - 64 bit</a></p>
+</details></td>
+</tr></tbody></table>
+
+
+idemuxCPP will also soon be available via bioconda!
 
 
 2. Preparing the sample sheet
 =============================
-In order to run idemux on your QuantSeq-Pool data you first need to prepare a `csv file
+In order to run idemuxCPP on your QuantSeq-Pool data you first need to prepare a `csv file
 <https://en.wikipedia.org/wiki/Comma-separated_values>`_.
 We call this csv a sample sheet and it specifies which barcodes correspond to each
 sample.
@@ -98,7 +131,7 @@ sequences specified in i7,i5 & i1 will be used for demultiplexing.
 
 Therefore, only specific, unique unambiguous combinations of sample names and barcodes are
 allowed. This means using duplicated or ambiguous combinations will result in an error.
-However, idemux will do its best to tell you where the problem lies, once this happens.
+However, idemuxCPP will do its best to tell you where the problem lies, once this happens.
 
 |
 
@@ -120,11 +153,11 @@ See `below <Sample sheet examples_>`_. for more showcases of sample/barcode comb
 *disallowed*.
 
 
-3. Running idemux
+3. Running idemuxCPP
 =================
-Once you have installed the tool you can run it by typing ``idemux`` in the terminal.
+Once you have installed the tool you can run it by typing ``idemuxCPP`` in the terminal.
 
-Idemux accepts the following arguments:
+idemuxCPP accepts the following arguments:
 ::
 
     required arguments:
@@ -145,23 +178,23 @@ Example commands:
 ::
 
     # demultiplexes read 1 and 2 into the folder 'demux'
-    idemux --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
+    idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
 
     # demultiplexing assuming the i1 barcode starts at the first base
-    idemux --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux --i1_start 1
+    idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux --i1_start 1
 
     # demultiplexing assuming i5 is present as reverse complement in the fastq header
     # if he i5 has been sequenced as reverse complement use this option and provide
     # the NON reverse complement sequences in the sample sheet.
-    idemux --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
+    idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
 
-After a successful completed run idemux will write summary report to the output folder
+After a successful completed run idemuxCPP will write summary report to the output folder
 ('demultipexing_stats.tsv').
 
 Technicalities
 ---------------
 
-When you run idemux the following will happen:
+When you run idemuxCPP the following will happen:
 
 * It will check if your sample sheet is okay. See `here <Sample sheet examples_>`_ for examples
 
