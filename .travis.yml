@@ -12,6 +12,7 @@ addons:
     packages:
     - gcc
     - g++
+    - libstdc++
     - gengetopt
     - help2man
     - zlib1g-dev
