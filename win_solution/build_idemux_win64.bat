@@ -7,7 +7,7 @@ POPD
 
 ::.\build_boost.bat
 
-::"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64\msbuild.exe" "idemuxcpp.sln" /t:Rebuild /p:configuration=Release-cluster
+"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Current\Bin\amd64\msbuild.exe" "idemuxcpp.sln" /t:Rebuild /p:configuration=Release-cluster
 
 if not exist "iDemux_win10_64bit" mkdir iDemux_win10_64bit
 if not exist "iDemux_win10_64bit\tests" mkdir iDemux_win10_64bit\tests
@@ -26,3 +26,5 @@ Xcopy .\vcomp140.dll iDemux_win10_64bit\tests\
 Xcopy .\vcomp140.dll iDemux_win10_64bit\bin\
 if not exist "iDemux_win10_64bit\tests\resources" Xcopy ..\tests\resources .\iDemux_win10_64bit\tests\resources /E/H/C/I
 if not exist "iDemux_win10_64bit\share\idemuxCPP\barcodes" Xcopy ..\misc\barcodes iDemux_win10_64bit\share\idemuxcpp\barcodes /E/H/C/I
+:: create zip file
+tar.exe -a -c -f iDemux_win10_64bit.zip iDemux_win10_64bit
