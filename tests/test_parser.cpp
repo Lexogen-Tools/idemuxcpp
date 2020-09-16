@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE boost_test_barcode
 #include <boost/test/included/unit_test.hpp>
-#include <boost/dll.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -19,8 +18,11 @@ using namespace std;
 
 string RESOURCE = "resources";
 
-string CSVS_TO_FAIL = RESOURCE + PATH_SEP + string("sample_sheet/fail/*.csv");
-string CSVS_TO_PASS = RESOURCE + PATH_SEP + string("sample_sheet/pass/*.csv");
+string Exe_path = utils::getExecutablePath();
+string Exe_dir = Exe_path.length() > 0 ? boost::filesystem::path(Exe_path).parent_path().string() : std::string();
+
+string CSVS_TO_FAIL = Exe_dir + PATH_SEP + RESOURCE + PATH_SEP + string("sample_sheet/fail/*.csv");
+string CSVS_TO_PASS = Exe_dir + PATH_SEP + RESOURCE + PATH_SEP + string("sample_sheet/pass/*.csv");
 
 vector<Barcode*> BARCODES_TO_TEST() {
 	string A6 = string(6, 'A');
@@ -49,7 +51,7 @@ vector<pair<string, string>> FOR_RC_PASS = { { "AAAACATCGTTN", "NAACGATGTTTT" },
 		{ "", "" }, { "", "" } };
 vector<string> FOR_RC_FAIL = { "AAAACATCGTTNXXXXX", to_string(10) };
 
-string FQ_RES = RESOURCE + PATH_SEP + string("fastq");
+string FQ_RES = Exe_dir + PATH_SEP + RESOURCE + PATH_SEP + string("fastq");
 int INDEX_LENGTH = 12;
 int I1_START = 10;
 
@@ -127,7 +129,7 @@ vector<string> csv_files_to_fail = iterate_csv_files(tmp_path.parent_path());
 BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_fail ) {
 	Parser pe;
 	vector<Barcode*> barcodes;
-	boost::filesystem::path p = boost::dll::program_location();
+	boost::filesystem::path p(Exe_path);
 	for (auto it = csv_files_to_fail.begin(); it != csv_files_to_fail.end();
 			it++) {
 		string csv_file = *it;
@@ -149,7 +151,7 @@ vector<string> csv_files_to_pass = iterate_csv_files(tmp_path2.parent_path());
 BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_pass ) {
 	Parser pe;
 	vector<Barcode*> barcodes;
-	boost::filesystem::path p = boost::dll::program_location();
+	boost::filesystem::path p(Exe_path);
 	for (auto it = csv_files_to_pass.begin(); it != csv_files_to_pass.end();
 			it++) {
 		string csv_file = *it;
@@ -164,7 +166,7 @@ BOOST_AUTO_TEST_CASE( test_load_correction_maps ) {
 	vector<Barcode*> bctest = BARCODES_TO_TEST();
 	for (auto it = bctest.begin(); it != bctest.end(); it++) {
 		Barcode *tmp_bc = *it;
-		boost::filesystem::path p = boost::dll::program_location();
+		boost::filesystem::path p(Exe_path);
 		tmp_bc->load_correction_map(p.string());
 		if (!tmp_bc->correction_map) {
 			throw(std::runtime_error("ERROR: could not load correction map!\n"));

@@ -1,6 +1,5 @@
 #define BOOST_TEST_MODULE boost_test_barcode
 #include <boost/test/included/unit_test.hpp>
-#include <boost/dll.hpp>
 #include <boost/filesystem/path.hpp>
 
 #include <unordered_map>
@@ -21,7 +20,8 @@ pair<int, int> I7_POS = { 0, 12 };
 pair<int, int> I5_POS = { 12, 24 };
 pair<int, int> I1_POS = { 24, 36 };
 
-string Exe_path = boost::dll::program_location().parent_path().string();
+string Exe_path = utils::getExecutablePath().length() > 0 ? boost::filesystem::path(utils::getExecutablePath()).parent_path().string() : std::string();
+
 vector<string>* demux_i7_i5_i1() {
 	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
 			+ string("end_to_end");
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i5_i1 ) {
 	Parser pe;
 	vector<Barcode*> barcodes;
 	std::cout << csv << std::endl;
-	boost::filesystem::path p = boost::dll::program_location(); //.parent_path();
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
 			csv, false, barcodes, p.string());
 
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i1) {
 	Parser pe;
 	vector<Barcode*> barcodes;
 	std::cout << csv << std::endl;
-	boost::filesystem::path p = boost::dll::program_location(); //.parent_path();
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
 			csv, false, barcodes, p.string());
 	Barcode *i1 = barcodes[2];
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i5) {
 	Parser pe;
 	vector<Barcode*> barcodes;
 	std::cout << csv << std::endl;
-	boost::filesystem::path p = boost::dll::program_location(); //.parent_path();
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
 			csv, false, barcodes, p.string());
 	Barcode *i1 = barcodes[2];
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i1) {
 	Parser pe;
 	vector<Barcode*> barcodes;
 	std::cout << csv << std::endl;
-	boost::filesystem::path p = boost::dll::program_location(); //.parent_path();
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
 			csv, false, barcodes, p.string());
 	Barcode *i1 = barcodes[2];
@@ -348,7 +348,7 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	Parser pe;
 	vector<Barcode*> barcodes;
 	std::cout << csv << std::endl;
-	boost::filesystem::path p = boost::dll::program_location(); //.parent_path();
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
 			csv, false, barcodes, p.string());
 
