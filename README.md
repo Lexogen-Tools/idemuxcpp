@@ -74,6 +74,7 @@ To configure, compile and install execute the following commands on your command
 <table><thead><tr>
 <th> Debian </th>
 <th> Ubuntu </th>
+<th> Fedora </th>
 </tr></thead><tbody><tr>
 <td style="vertical-align:top">
 <details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_0.1.2-1_i386.deb"> idemuxcpp - 0.1.2 - 32 bit</a></p>
@@ -87,8 +88,11 @@ To configure, compile and install execute the following commands on your command
 <details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
 </details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
 </details><details><summary>xUbuntu_16.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/i386/idemuxcpp_0.1.2-1_i386.deb"> idemuxcpp - 0.1.2 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p>
-</details></td>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/amd64/idemuxcpp_0.1.2-1_amd64.deb"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
+</td>
+<td style="vertical-align:top">
+<details><summary>Fedora 32</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_32/x86_64/idemuxcpp-0.1.2-147.1.x86_64.rpm"> idemuxcpp - 0.1.2 - 64 bit</a></p></details>
+</td>
 </tr></tbody></table>
 
 
