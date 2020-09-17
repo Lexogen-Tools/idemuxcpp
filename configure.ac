@@ -91,32 +91,26 @@ else
 	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -pthread"
 fi
 
-# todo: ax_check for gzlib
-
-AC_LIB_LINKFLAGS([z])
-AC_LIB_LINKFLAGS([dl])
-#AM_LDFLAGS="$AM_LDFLAGS -lz"
-
 ############  CHECKS  ############################################
 
-# Checks for typedefs, structures, and compiler characteristics.
-AC_TYPE_SIZE_T
-
-# Checks for header files.
-AC_HEADER_STDC
-
+# check for gzlib, dl, boost etc.
+AC_LIB_HAVE_LINKFLAGS([z], [], [#include <zlib.h>], [], [zlib is missing!])
+if test "$HAVE_LIBZ" != "yes"; then
+AC_MSG_FAILURE([ERROR: please install the zlib library!])
+fi
+AC_LIB_LINKFLAGS([dl])
 ###############################################################################
 # Boost unit tests check
 ###############################################################################
-AC_ARG_ENABLE([skipboostcheck],
-        [AS_HELP_STRING([--enable-skipboostcheck],
-            [skip check for  boost sub libraries (def=no)])],
-        [skipboostcheck="$enableval"])
-AC_MSG_RESULT([$skipboostcheck])
-if test x"$skipboostcheck" != x"yes"; then
-AX_BOOST_BASE([1.50], [], AC_MSG_ERROR([Could not find a useful version of boost]))
-AX_BOOST_SYSTEM
-AX_BOOST_FILESYSTEM
+
+AX_BOOST_BASE([1.55], [], AC_MSG_ERROR([Could not find a useful version of boost]))
+AC_LIB_HAVE_LINKFLAGS([boost_system], [], [] , [], [Could not link the boost_system library!])
+if test "$HAVE_LIBBOOST_SYSTEM" != "yes"; then
+AC_MSG_FAILURE([ERROR: please install the boost_system library!])
+fi
+AC_LIB_HAVE_LINKFLAGS([boost_filesystem], [boost_system], [#include <boost/filesystem/path.hpp>] , [], [Could not link the boost_filesystem library!])
+if test "$HAVE_LIBBOOST_FILESYSTEM" != "yes"; then
+AC_MSG_FAILURE([ERROR: please install the boost_filesystem library!])
 fi
 
 AC_ARG_ENABLE([tests],
@@ -125,9 +119,18 @@ AC_ARG_ENABLE([tests],
         [tests="$enableval"])
 AC_MSG_RESULT([$tests])
 if test x"$tests" = x"yes"; then
-        AC_DEFINE([TESTS], [], [Enable unit tests])
-        AX_BOOST_UNIT_TEST_FRAMEWORK
+  AC_LIB_HAVE_LINKFLAGS([boost_unit_test_framework], [], [#include <boost/test/unit_test.hpp>] , [using boost::unit_test::test_suite;
+                                                         test_suite* test= BOOST_TEST_SUITE( "Unit test example 1" ); if (test == NULL) { return 1; } else { return 0; }], [Could not link the boost_test library!])
+  if test "$HAVE_LIBBOOST_UNIT_TEST_FRAMEWORK" != "yes"; then
+  AC_MSG_FAILURE([ERROR: please install the boost_test library!])
+  fi
 fi
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_SIZE_T
+
+# Checks for header files.
+AC_HEADER_STDC
 
 
 ###############################################################################

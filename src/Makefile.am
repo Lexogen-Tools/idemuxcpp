@@ -10,7 +10,8 @@ GENGETOPT_FILES =  idemuxCPP.ggo
 
 EXTRA_DIST =  ${GENGETOPT_FILES} ${GENGETOPT_CMDL}
 
-LDADD = $(LIBZ) $(BOOST_FILESYSTEM_LIB) $(BOOST_SYSTEM_LIB)
+CPPADD = @LIBZ@
+LDADD = $(LIBZ) $(LIBBOOST_SYSTEM) $(LIBBOOST_FILESYSTEM)
 
 # remove all generated content
 maintainer-clean-local:
