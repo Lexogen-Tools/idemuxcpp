@@ -1,5 +1,7 @@
 
 # idemuxCPP - inline barcode demultiplexing
+[![GitHub release](https://img.shields.io/github/release/Lexogen-Tools/idemuxcpp.svg)](https://github.com/Lexogen-Tools/idemuxcpp/releases) [![Build Status](https://travis-ci.org/Lexogen-Tools/idemuxcpp.svg?branch=master)](https://travis-ci.org/Lexogen-Tools/idemuxcpp)
+
 idemuxCPP is a command line tool designed to demultiplex paired-end fastq files from
 [QuantSeq-Pool](https://www.lexogen.com/quantseq-pool-sample-barcoded-3mrna-sequencing/).
 
