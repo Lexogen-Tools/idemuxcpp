@@ -1,6 +1,8 @@
 #include <string>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
+#include <vector>
 #include "Writer.h"
 #include "Parser.h"
 
@@ -35,6 +37,14 @@ void Writer::write_summary(std::unordered_map<string, size_t> &counter,
 			output_file.c_str());
 }
 
+struct {
+	bool operator()(const pair<string, size_t> &a, const pair<string, size_t> &b) const{
+		if (a.second == b.second)
+			return a.first.compare(b.first);
+		return a.second < b.second;
+	}
+} compare_barcode_count;
+
 void Writer::write_barcode_summary(
 		correction_counter *counted_corrections_per_index,
 		std::string barcode_corrections_file) {
@@ -65,7 +75,11 @@ void Writer::write_barcode_summary(
 		default:
 			break;
 		}
-		for (auto it = count_map->begin(); it != count_map->end(); it++) {
+		vector<pair<string, size_t>> sorted;
+		for (unordered_map<string, size_t>::iterator it = count_map->begin(); it != count_map->end(); it++)
+			sorted.push_back(pair<string, size_t>(it->first, it->second));
+		sort(sorted.begin(),sorted.end(),compare_barcode_count);
+		for (auto it = sorted.begin(); it != sorted.end(); it++) {
 			barcode = it->first;
 			counts = it->second;
 			csvfile << barcode_type << "\t"<< barcode << "\t" << counts << std::endl;
