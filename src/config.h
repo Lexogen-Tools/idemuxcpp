@@ -7,20 +7,23 @@
 /* define if the Boost library is available */
 #define HAVE_BOOST /**/
 
-/* define if the Boost::Filesystem library is available */
-#define HAVE_BOOST_FILESYSTEM /**/
-
-/* define if the Boost::System library is available */
-#define HAVE_BOOST_SYSTEM /**/
-
-/* define if the Boost::Unit_Test_Framework library is available */
-/* #undef HAVE_BOOST_UNIT_TEST_FRAMEWORK */
-
 /* define if the compiler supports basic C++11 syntax */
 /* #undef HAVE_CXX11 */
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
+
+/* Define if you have the libboost_filesystem library. */
+#define HAVE_LIBBOOST_FILESYSTEM 1
+
+/* Define if you have the libboost_system library. */
+#define HAVE_LIBBOOST_SYSTEM 1
+
+/* Define if you have the libboost_unit_test_framework library. */
+/* #undef HAVE_LIBBOOST_UNIT_TEST_FRAMEWORK */
+
+/* Define if you have the libz library. */
+#define HAVE_LIBZ 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #define HAVE_MEMORY_H 1
@@ -75,9 +78,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
-
-/* Enable unit tests */
-/* #undef TESTS */
 
 /* Version number of package */
 #define VERSION "0.1.2"

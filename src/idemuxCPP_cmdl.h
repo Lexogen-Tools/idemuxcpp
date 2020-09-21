@@ -31,7 +31,7 @@ extern "C" {
 
 #ifndef IDEMUXCPP_CMDLINE_PARSER_VERSION
 /** @brief the program version */
-#define IDEMUXCPP_CMDLINE_PARSER_VERSION "1.0.0"
+#define IDEMUXCPP_CMDLINE_PARSER_VERSION VERSION
 #endif
 
 /** @brief Where the command line options are stored */
@@ -63,6 +63,9 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *sample_sheet_help; /**< @brief Outputs a csv file containing sample names, i7, i5 and i1 barcodes.
  help description.  */
+  char * barcode_corrections_arg;	/**< @brief Outputs a csv file that contains the number of corrected barcodes.  */
+  char * barcode_corrections_orig;	/**< @brief Outputs a csv file that contains the number of corrected barcodes original value given at command line.  */
+  const char *barcode_corrections_help; /**< @brief Outputs a csv file that contains the number of corrected barcodes help description.  */
   int i5_rc_flag;	/**< @brief et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
  (default=off).  */
   const char *i5_rc_help; /**< @brief et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
@@ -108,6 +111,7 @@ struct idemuxCPP_args_info
   unsigned int r2_given ;	/**< @brief Whether r2 was given.  */
   unsigned int out_given ;	/**< @brief Whether out was given.  */
   unsigned int sample_sheet_given ;	/**< @brief Whether sample-sheet was given.  */
+  unsigned int barcode_corrections_given ;	/**< @brief Whether barcode-corrections was given.  */
   unsigned int i5_rc_given ;	/**< @brief Whether i5-rc was given.  */
   unsigned int i1_start_given ;	/**< @brief Whether i1-start was given.  */
   unsigned int queue_size_given ;	/**< @brief Whether queue-size was given.  */

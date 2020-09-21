@@ -43,6 +43,11 @@ string
 optional
 default="sample-sheet.csv"
 
+option "barcode-corrections" b
+"Outputs a csv file that contains the number of corrected barcodes"
+string
+optional
+
 option  "i5-rc" 5
 "et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
 flag

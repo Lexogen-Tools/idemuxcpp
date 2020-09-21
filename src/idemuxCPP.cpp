@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 	string read2_file = "";
 	string outputdirectory = "";
 	string sample_sheet_file = "";
+	string barcode_corrections_file = "";
 	bool i5_rc = false;
 	int i1_start = 10;
 	size_t queue_size;
@@ -67,6 +68,9 @@ int main(int argc, char **argv) {
 	if (args_info.processing_threads_given) {
 		processing_threads = args_info.processing_threads_arg;
 	}
+	if (args_info.barcode_corrections_given){
+		barcode_corrections_file = string(args_info.barcode_corrections_arg);
+	}
 
 	i5_rc = args_info.i5_rc_flag;
 	i1_start = args_info.i1_start_arg;
@@ -79,7 +83,7 @@ int main(int argc, char **argv) {
 
 	// do things.
 	demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
-			i1_start, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads);
+			i1_start, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
 
 	delete barcode_sample_map;
 	for (size_t i = 0; i < barcodes.size(); i++)
