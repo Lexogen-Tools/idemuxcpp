@@ -103,7 +103,7 @@ void demux_loop(string read1, string read2, vector<Barcode*> &barcodes,
 			pair<fq_read*, fq_read*> mate_pair = *it_mp;
 			string s_barcodes = process_mate_pair(mate_pair, i7_wanted,
 					i5_wanted, i1_wanted, map_i7, map_i5, map_i1, i1_start,
-					i1_end, processed_mates);
+					i1_end, processed_mates, NULL);
 			cb(s_barcodes, processed_mates);
 			delete processed_mates.first;
 			delete processed_mates.second;
@@ -362,7 +362,7 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 		utils::mkdir(tmp_path);
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, I1_START,
 			tmp_path, pe, chunk_size, reading_threads, writing_threads,
-			processing_threads);
+			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
