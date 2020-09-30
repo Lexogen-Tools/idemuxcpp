@@ -49,7 +49,7 @@ string
 optional
 
 option  "i5-rc" 5
-"et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
+"Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
 flag
 off
 
