@@ -66,15 +66,15 @@ struct idemuxCPP_args_info
   char * barcode_corrections_arg;	/**< @brief Outputs a csv file that contains the number of corrected barcodes.  */
   char * barcode_corrections_orig;	/**< @brief Outputs a csv file that contains the number of corrected barcodes original value given at command line.  */
   const char *barcode_corrections_help; /**< @brief Outputs a csv file that contains the number of corrected barcodes help description.  */
-  int i5_rc_flag;	/**< @brief et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
+  int i5_rc_flag;	/**< @brief Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
  (default=off).  */
-  const char *i5_rc_help; /**< @brief et this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
+  const char *i5_rc_help; /**< @brief Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
  help description.  */
-  int i1_start_arg;	/**< @brief Start position of the i1 index (0-based) on read 2.
- (default='10').  */
-  char * i1_start_orig;	/**< @brief Start position of the i1 index (0-based) on read 2.
+  int i1_start_arg;	/**< @brief Start position of the i1 index (1-based) on read 2.
+ (default='11').  */
+  char * i1_start_orig;	/**< @brief Start position of the i1 index (1-based) on read 2.
  original value given at command line.  */
-  const char *i1_start_help; /**< @brief Start position of the i1 index (0-based) on read 2.
+  const char *i1_start_help; /**< @brief Start position of the i1 index (1-based) on read 2.
  help description.  */
   int queue_size_arg;	/**< @brief Queue size for reads that will be processed in one block.
  (default='4000000').  */
@@ -100,6 +100,8 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *processing_threads_help; /**< @brief Number of threads used for processing the error correction. Default is the number of processor cores.
  help description.  */
+  int demux_only_flag;	/**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file. (default=off).  */
+  const char *demux_only_help; /**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file. help description.  */
   int verbose_flag;	/**< @brief Verbose.
  (default=off).  */
   const char *verbose_help; /**< @brief Verbose.
@@ -118,6 +120,7 @@ struct idemuxCPP_args_info
   unsigned int reading_threads_given ;	/**< @brief Whether reading-threads was given.  */
   unsigned int writing_threads_given ;	/**< @brief Whether writing-threads was given.  */
   unsigned int processing_threads_given ;	/**< @brief Whether processing-threads was given.  */
+  unsigned int demux_only_given ;	/**< @brief Whether demux-only was given.  */
   unsigned int verbose_given ;	/**< @brief Whether verbose was given.  */
 
 } ;

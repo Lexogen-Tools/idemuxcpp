@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE boost_test_barcode
+#define BOOST_TEST_MODULE boost_test_parser
 #include <boost/test/included/unit_test.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/filesystem/path.hpp>
@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_fail ) {
 		unordered_map<string, string> *rows = NULL;
 		BOOST_CHECK_THROW(
 				rows = pe.parse_sample_sheet(csv_file, false, barcodes,
-						p.string()), std::exception);
+						p.string(),false), std::exception);
 		if (rows)
 			delete rows;
 	}
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_pass ) {
 		string csv_file = *it;
 		//std::cout << csv_file << std::endl;
 		BOOST_CHECK_NO_THROW(
-				pe.parse_sample_sheet(csv_file, false, barcodes, p.string()));
+				pe.parse_sample_sheet(csv_file, false, barcodes, p.string(),false));
 	}
 }
 
@@ -250,3 +250,15 @@ BOOST_AUTO_TEST_CASE( test_fq_gz_parser ) {
 	}
 	delete pe_reads;
 }
+
+
+
+
+
+
+
+
+
+
+
+

@@ -26,11 +26,12 @@ int main(int argc, char **argv) {
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
 	bool i5_rc = false;
-	int i1_start = 10;
+	int i1_start = 10; // zero based index
 	size_t queue_size;
 	int reading_threads;
 	int writing_threads = -1;
 	int processing_threads = -1;
+	bool demux_only = false;
 	//bool verbose = false;
 	string relative_exepath = string(argv[0]);
 	std::cout << relative_exepath << std::endl;
@@ -71,15 +72,21 @@ int main(int argc, char **argv) {
 	if (args_info.barcode_corrections_given){
 		barcode_corrections_file = string(args_info.barcode_corrections_arg);
 	}
+	demux_only = args_info.demux_only_flag;
 
 	i5_rc = args_info.i5_rc_flag;
-	i1_start = args_info.i1_start_arg;
+    //use a zero based starting position internally
+	if (args_info.i1_start_arg < 1){
+		fprintf(stderr, "Error: please enter a starting position >=1!\n");
+		exit(EXIT_FAILURE);
+	}
+	i1_start = args_info.i1_start_arg -1;
 	//verbose = args_info.verbose_flag;
 
 	Parser p;
 	vector<Barcode*> barcodes;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, relative_exepath);
+			sample_sheet_file, i5_rc, barcodes, relative_exepath, demux_only);
 
 	// do things.
 	demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,

@@ -18,7 +18,9 @@ public:
 private:
   unordered_map<string,string>* Barcode_file_map;
   string Output_folder;
+  // map barcode to file handle
   unordered_map<string,std::pair<ZipFastqWriter*,ZipFastqWriter*>*> Fastq_handler;
+  // map file handle to sample name
   unordered_map<std::pair<ZipFastqWriter*,ZipFastqWriter*>*, string> Map_filehandle_sample_name;
 };
 

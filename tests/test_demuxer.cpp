@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE boost_test_barcode
+#define BOOST_TEST_MODULE boost_test_demuxer
 #include <boost/test/included/unit_test.hpp>
 #include <boost/filesystem/path.hpp>
 
@@ -14,7 +14,7 @@
 
 using namespace std;
 
-int I1_START = 10;
+int I1_START = 10; // zero based.
 
 pair<int, int> I7_POS = { 0, 12 };
 pair<int, int> I5_POS = { 12, 24 };
@@ -167,7 +167,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i5_i1 ) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, p.string());
+			csv, false, barcodes, p.string(),false);
 
 	Barcode *i1 = barcodes[2];
 
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i1) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, p.string());
+			csv, false, barcodes, p.string(), false);
 	Barcode *i1 = barcodes[2];
 
 	int i1_end = I1_START + i1->length;
@@ -281,7 +281,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i5) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, p.string());
+			csv, false, barcodes, p.string(), false);
 	Barcode *i1 = barcodes[2];
 
 	int i1_end = I1_START + i1->length;
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i1) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, p.string());
+			csv, false, barcodes, p.string(), false);
 	Barcode *i1 = barcodes[2];
 
 	int i1_end = I1_START + i1->length;
@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, p.string());
+			csv, false, barcodes, p.string(), false);
 
 	int chunk_size = 1000;
 	int reading_threads = 2;
@@ -371,17 +371,110 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	string read_count;
 	for (auto it = tsv_lines->begin(); it != tsv_lines->end(); it++) {
 		// test all sample lines (without header line).
-		if (it->first.rfind("sample_", 0) == 0) {
+		if (it->first.rfind("sample_", 0) == 0 && it->first.compare("sample_name") != 0) {
 			read_count = it->second;
 			stringstream ss(read_count);
 			int n_reads;
 			ss >> n_reads; //strtol(row[1].c_str(), &rest, 10);
+			fprintf(stderr,"reads %d 100 %s\n", n_reads, it->first.c_str());
 			BOOST_CHECK(n_reads == expected_reads);
 		}
 	}
 	delete tsv_lines;
 	utils::rmdir(tmp_path);
 }
+
+bool is_equal_read(fq_read &r1, fq_read r2) {
+	bool is_equal = r1.Seq_ID.compare(r2.Seq_ID) == 0;
+	if(!is_equal)
+		printf("Error: different id %s %s\n", r1.Seq_ID.c_str(), r2.Seq_ID.c_str());
+	is_equal = r1.Sequence.compare(r2.Sequence) == 0 & is_equal;
+	if(!is_equal)
+			printf("Error: different sequence %s %s\n", r1.Sequence.c_str(), r2.Sequence.c_str());
+	is_equal = r1.Plus_ID.compare(r2.Plus_ID) == 0 & is_equal;
+	if(!is_equal)
+			printf("Error: different plus id %s %s\n", r1.Plus_ID.c_str(), r2.Plus_ID.c_str());
+	is_equal = r1.QualityCode.compare(r2.QualityCode) == 0 & is_equal;
+	if(!is_equal)
+			printf("Error: different quality code %s %s\n", r1.QualityCode.c_str(), r2.QualityCode.c_str());
+	return is_equal;
+}
+
+BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
+	string tmp_path = p.parent_path().string() + PATH_SEP + string("test_output");
+	if(!utils::folder_exists(tmp_path))
+		utils::mkdir(tmp_path);
+
+	string samplesheet = string("sample_name,i7,i5,i1\n") + string("test_sample,TCGAGTCC,,ATTCAACC");
+	string tmp_path_samplesheet = tmp_path + PATH_SEP + string("samplesheet.csv");
+	ofstream fs(tmp_path_samplesheet, std::ofstream::out);
+	fs << samplesheet;
+	fs.close();
+
+	fq_read test_r_1, test_r_2;
+	test_r_1.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 1:N:0:TCGAGTCC";
+	test_r_1.Sequence = "CCTGCTTCCTCCAACCCGACATGTGTACCTCAGCTTTTTCCCTCACTTGCATCAATAAAGCTTCTG";
+	test_r_1.Plus_ID = "+";
+	test_r_1.QualityCode = "A/A6AEEEEEEEA/EEAEEEEEEEEEE<EEEEEEEAEEEEEEEEAEEEAEEEEAEE/EEEEEEEE/";
+
+	test_r_2.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 2:N:0:TCGAGTCC";
+	test_r_2.Sequence = "CTCTAGCTATAATCAACC";
+	test_r_2.Plus_ID = "+";
+	test_r_2.QualityCode = "6AAAA//E//E/A6E<AE";
+
+	string tmp_path_r1 = tmp_path + PATH_SEP + string("read1.fastq");
+	ofstream fsr1(tmp_path_r1, std::ofstream::out);
+	fsr1 << test_r_1.to_string();
+	fsr1.close();
+
+	string tmp_path_r2 = tmp_path + PATH_SEP + string("read2.fastq");
+	ofstream fsr2(tmp_path_r2, std::ofstream::out);
+	fsr2 << test_r_2.to_string();
+	fsr2.close();
+
+	Parser pe;
+	vector<Barcode*> barcodes;
+	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
+			tmp_path_samplesheet, false, barcodes, p.string(), false);
+
+	int chunk_size = 1000;
+	int reading_threads = 2;
+	int writing_threads = 1;
+	int processing_threads = 1;
+	demux_paired_end(barcode_sample_map, barcodes, tmp_path_r1, tmp_path_r2, I1_START,
+				tmp_path, pe, chunk_size, reading_threads, writing_threads,
+				processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
+
+	string tmp_r1 = tmp_path + PATH_SEP + string("test_sample_R1.fastq.gz");
+	string tmp_r2 = tmp_path + PATH_SEP + string("test_sample_R2.fastq.gz");
+	BOOST_CHECK(boost::filesystem::exists(tmp_r1));
+	BOOST_CHECK(boost::filesystem::exists(tmp_r1));
+
+	fq_read exp_r_1, exp_r_2;
+	exp_r_1.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 1:N:0:TCGAGTCC+AATCAACC";
+	exp_r_1.Sequence = "CCTGCTTCCTCCAACCCGACATGTGTACCTCAGCTTTTTCCCTCACTTGCATCAATAAAGCTTCTG";
+	exp_r_1.Plus_ID = "+";
+	exp_r_1.QualityCode = "A/A6AEEEEEEEA/EEAEEEEEEEEEE<EEEEEEEAEEEEEEEEAEEEAEEEEAEE/EEEEEEEE/";
+
+	exp_r_2.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 2:N:0:TCGAGTCC+AATCAACC";
+	exp_r_2.Sequence = "CTCTAGCTAT";
+	exp_r_2.Plus_ID = "+";
+	exp_r_2.QualityCode = "6AAAA//E//";
+
+	PairedReader get_pe_fastq(tmp_r1, tmp_r2);
+	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
+			get_pe_fastq.next_reads(100);
+	BOOST_CHECK(pe_reads->size() == 1);
+	for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {
+		BOOST_CHECK(is_equal_read(*it->first, exp_r_1) == true);
+		BOOST_CHECK(is_equal_read(*it->second, exp_r_2) == true);
+		delete it->first;
+		delete it->second;
+	}
+}
+
+
 
 // TODO write test for mixed cases
 

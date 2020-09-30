@@ -24,7 +24,7 @@ void Writer::write_summary(std::unordered_map<string, size_t> &counter,
 	if (output_dir.length() > 0)
 		output_file = output_dir + PATH_SEP + string("demultipexing_stats.tsv");
 	ofstream csvfile(output_file, std::ofstream::out);
-	string csv_header = "sample\twritten_reads";
+	string csv_header = "sample_name\twritten_reads";
 	csvfile << csv_header << std::endl;
 	string sample_filename;
 	size_t counts;

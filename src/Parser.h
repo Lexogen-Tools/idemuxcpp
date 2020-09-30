@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "ZipFastqReader.h"
+#include "FastqReader.h"
 #include "Barcode.h"
 #include "helper.h"
 
@@ -29,7 +29,7 @@ public:
 	Parser();
 	std::vector<std::vector<std::string>> readCSV(std::istream &in);
 	unordered_map<string, string>* parse_sample_sheet(string sample_sheet,
-			bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath);
+			bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath, bool demux_only);
 	string reverse_complement(string sequence);
 	bool has_valid_barcode_combinations(Barcode &i7, Barcode &i5, Barcode &i1);
 	void fastq_lines_to_reads(string fastq_lines);

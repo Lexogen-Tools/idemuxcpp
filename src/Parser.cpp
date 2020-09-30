@@ -165,7 +165,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
  ValueError: Will initiate sys.exit(1)
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
-		bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath) {
+		bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath, bool demux_only) {
 	// we use these to keep track which lengths are beeing used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
@@ -315,9 +315,18 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 
 	// we have made it until here until raising an exception. That means the sample sheet
 	// information should be okay and we can return required data from the sample sheet.
-	i7->load_correction_map(relative_exepath);
-	i5->load_correction_map(relative_exepath);
-	i1->load_correction_map(relative_exepath);
+	if(!demux_only){
+		// with correction
+		i7->load_correction_map(relative_exepath);
+		i5->load_correction_map(relative_exepath);
+		i1->load_correction_map(relative_exepath);
+	}
+	else{
+		//demux only
+		i7->create_one_to_one_map();
+		i5->create_one_to_one_map();
+		i1->create_one_to_one_map();
+	}
 	barcodes_out.push_back(i7);
 	barcodes_out.push_back(i5);
 	barcodes_out.push_back(i1);
@@ -576,8 +585,8 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 		throw(runtime_error(message));
 	}
 
-	int number_bc_m1 = bcs_mate1.first == "" || bcs_mate1.second == "" ? 1 : 2;
-	int number_bc_m2 = bcs_mate2.first == "" || bcs_mate2.second == "" ? 1 : 2;
+	int number_bc_m1 = (bcs_mate1.first == "" || bcs_mate1.second == "") ? 1 : 2;
+	int number_bc_m2 = (bcs_mate2.first == "" || bcs_mate2.second == "") ? 1 : 2;
 
 	int number_bc_present[] = { number_bc_m1, number_bc_m2 };
 	int expected_number = 0;
@@ -604,17 +613,18 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 	if (! right_number_of_barcodes) { //not all(right_number_of_barcodes):
 		string example_header =
 				expected_number == 2 ? example_header_2 : example_header_1;
+		int number_bc_in_header = expected_number == 2 ? number_bc_m2 : number_bc_m1;
 		string message =
 				string_format(
 						"The fastq file does not contain sufficient barcode information "
-								"in the header.\nExpected number of barcodes: %\n"
+								"in the header.\nExpected number of barcodes: %d\n"
 								"Observed number of barcodes: %d\n"
 								"Please check your input file. Your fastq header should look "
 								"similar to this example.\n"
 								"Example: %s\n"
 								"Observed headers: %s, %s", expected_number,
-						number_bc_present, example_header, header_mate_1,
-						header_mate_2);
+								number_bc_in_header, example_header.c_str(), header_mate_1.c_str(),
+						header_mate_2.c_str());
 		throw(runtime_error(message));
 	}
 

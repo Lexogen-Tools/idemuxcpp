@@ -17,9 +17,10 @@
 #include "Parser.h"
 #include "FileHandler.h"
 #include "PairedReader.h"
-#include "ZipFastqReader.h"
+#include "FastqReader.h"
 #include "ZipFastqWriter.h"
 #include "Writer.h"
+#include "Correction_Counter.h"
 #ifdef HAVE_OPENMP
 #include "omp.h"
 #endif
@@ -29,21 +30,6 @@ using namespace std;
 typedef std::chrono::high_resolution_clock Clock;
 
 
-inline void count_correction(unordered_map<string, size_t> &correction_map, string &read_barcode, string &corrected_barcode){
-	if (read_barcode.compare(corrected_barcode) != 0){
-#pragma omp critical
-		{
-			auto it_count = correction_map.find(corrected_barcode);
-			if(it_count == correction_map.end()){
-				correction_map[corrected_barcode] = 1;
-			}
-			else{
-				it_count->second++;
-			}
-		}
-	}
-}
-
 /**
  * process mate pair
 
@@ -51,15 +37,13 @@ inline void count_correction(unordered_map<string, size_t> &correction_map, stri
  -------
  barcodes: ()
  */
-inline
 string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 		unordered_set<string> *i7_wanted, unordered_set<string> *i5_wanted,
 		unordered_set<string> *i1_wanted, unordered_map<string, string> *map_i7,
 		unordered_map<string, string> *map_i5,
 		unordered_map<string, string> *map_i1, int i1_start, int i1_end,
 		std::pair<fq_read*, fq_read*> &mate_pair_out,
-		correction_counter *counted_corrections_per_index) {
-
+		Correction_Counter *counted_corrections_per_index) {
 	string fastq_header(mate_pair.first->Seq_ID);
 	std::pair<string, string> barcodes = Parser::parse_indices(fastq_header);
 	// if not barcodes:
@@ -74,17 +58,20 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 	if (i5_wanted->size() == 0)
 		i5_bc = "";
 
+	bool corrected_i7, corrected_i5, corrected_i1;
+	corrected_i7 = corrected_i5 = corrected_i1 = false;
+
 	auto i7_bc_it = map_i7->find(tmp_i7_bc);
 	if(i7_bc_it != map_i7->end()){
 		i7_bc = i7_bc_it->second;
-		if (counted_corrections_per_index != NULL)
-			count_correction(counted_corrections_per_index->count_i7, tmp_i7_bc, i7_bc);
+		if (counted_corrections_per_index != NULL && i7_bc.compare(tmp_i7_bc) != 0)
+			corrected_i7 = true;
 	}
 	auto i5_bc_it = map_i5->find(tmp_i5_bc);
 	if(i5_bc_it != map_i5->end()){
 		i5_bc = i5_bc_it->second;
-		if (counted_corrections_per_index != NULL)
-			count_correction(counted_corrections_per_index->count_i5, tmp_i5_bc, i5_bc);
+		if (counted_corrections_per_index != NULL && i5_bc.compare(tmp_i5_bc) != 0)
+			corrected_i5 = true;
 	}
 	string i1_bc = "";
 
@@ -95,11 +82,11 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 	fq_read *r2c = new fq_read(*mate_pair.second);
 	if (i1_wanted->size() > 0) {
 		i1_bc = mate_pair.second->Sequence.substr(i1_start, i1_end - i1_start);
+
 		//i1_bc = mate_pair[1][1][i1_start:i1_end]
 		auto iti1c = map_i1->find(i1_bc);
 		if (iti1c != map_i1->end()) {
 			string _i1_corrected = iti1c->second;
-			//_i1_corrected = map_i1.get(i1_bc)
 
 			//if _i1_corrected in i1_wanted:
 			auto it1 = i1_wanted->find(_i1_corrected);
@@ -118,31 +105,35 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 								i1_bc);
 				r2c->Sequence = string(mate_pair.second->Sequence).substr(0,
 						i1_start).append(
-						mate_pair.second->Sequence.substr(i1_end,
-								mate_pair.second->Sequence.length() - i1_end));
+						mate_pair.second->Sequence.substr(i1_end));
 				r2c->Plus_ID = string(mate_pair.second->Plus_ID);
 				r2c->QualityCode = string(mate_pair.second->QualityCode).substr(
 						0, i1_start).append(
-						mate_pair.second->QualityCode.substr(i1_end,
-								mate_pair.second->QualityCode.length()
-										- i1_end));
+						mate_pair.second->QualityCode.substr(i1_end));
 				//m2_hdr = f"{m2_hdr[:-1]}+{i1_bc}\n"
 				//m2_seq = f"{m2_seq[:i1_start]}{m2_seq[i1_end:]}"
 				//m2_qcs = f"{m2_qcs[:i1_start]}{m2_qcs[i1_end:]}"
-				if (counted_corrections_per_index != NULL)
-					count_correction(counted_corrections_per_index->count_i7, i1_bc, _i1_corrected);
+				if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
+					corrected_i1 = true;
 				i1_bc = _i1_corrected;
 			}
 		}
 	}
+
 	mate_pair_out.first = r1c;
 	mate_pair_out.second = r2c;
-	string barcodes_key = i7_bc.append("\n").append(i5_bc).append("\n").append(
+	string barcodes_key = string("").append(i7_bc).append("\n").append(i5_bc).append("\n").append(
 			i1_bc);
+
+#pragma omp critical
+	{
+		if (counted_corrections_per_index != NULL)
+			counted_corrections_per_index->count_correction(i7_bc,i5_bc,i1_bc,corrected_i7, corrected_i5, corrected_i1);
+	}
+
 	return barcodes_key;
 }
 
-inline
 void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 		vector<Barcode*> &barcodes, string read1, string read2, int i1_start,
 		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file) {
@@ -170,9 +161,9 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	parser.peek_into_fastq_files(read1, read2, has_i7, has_i5, has_i1,
 			i7->length, i5->length, i1_start, i1_end);
 
-	correction_counter* counted_corrections_per_index = NULL;
+	Correction_Counter* counted_corrections_per_index = NULL;
 	if(barcode_corrections_file.compare("") != 0){
-		counted_corrections_per_index = new correction_counter();
+		counted_corrections_per_index = new Correction_Counter(i7_wanted,i5_wanted,i1_wanted);
 	}
 
 	//read_counter = Counter()
@@ -206,8 +197,9 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 		unordered_map<std::pair<ZipFastqWriter*, ZipFastqWriter*>*,
 				vector<std::pair<fq_read*, fq_read*>>> map_pairs;
 		if (pe_reads != NULL && pe_reads->size() > 0) {
+			int max_reads = (int)pe_reads->size();
 #pragma omp parallel for num_threads(nproc_processing) shared(pe_reads, i7_wanted, i5_wanted, i1_wanted,map_i7, map_i5, map_i1, file_handler, map_pairs, counted_corrections_per_index)
-			for (int i = 0; i < (int)pe_reads->size(); i++){
+			for (int i = 0; i < max_reads; i++){
 				std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
 				std::pair<fq_read*, fq_read*> processed_mates;
 				string s_barcodes = process_mate_pair(mate_pair, i7_wanted, i5_wanted,
@@ -268,11 +260,11 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 		}
 	}
 
-	Writer w;
 	if(barcode_corrections_file.compare("") != 0){
-		w.write_barcode_summary(counted_corrections_per_index, barcode_corrections_file);
+		counted_corrections_per_index->write_correction(barcode_corrections_file, *barcode_sample_map);
 		delete counted_corrections_per_index;
 	}
+	Writer w;
 	w.write_summary(read_counter, output_dir);
 
 	delete file_handler;

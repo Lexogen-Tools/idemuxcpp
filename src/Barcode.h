@@ -89,6 +89,7 @@ public:
   void post_init(bool reverse_complement);
   void check_length();
   void load_correction_map(string relative_exepath);
+  void create_one_to_one_map();
 
   string Name;
   unordered_map<string,string> *correction_map;

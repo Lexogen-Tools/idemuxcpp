@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include "ZipFastqReader.h"
+#include "FastqReader.h"
 
 using namespace std;
 
@@ -14,8 +14,8 @@ public:
 	std::vector<std::pair<fq_read*, fq_read*>>* next_reads2(size_t max_size, int reading_threads = 2);
 	virtual ~PairedReader();
 private:
-	ZipFastqReader Reader1;
-	ZipFastqReader Reader2;
+	IFastqReader *Reader1;
+	IFastqReader *Reader2;
 };
 
 #endif /* PAIREDREADER_H_ */

@@ -24,7 +24,7 @@ BuildRequires:  gcc g++
 %if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
 BuildRequires: boost-devel >= 1.55 zlib-devel >= 1.2.8
 %else
-BuildRequires: zlib1g-dev >= 1.2.8 libboost-dev >= 1.55 libboost-filesystem-dev >= 1.55 libboost-system-dev >= 1.55
+BuildRequires: zlib1g-dev >= 1.2.8 libboost-dev >= 1.55 libboost-filesystem-dev >= 1.55 libboost-system-dev >= 1.55 libboost-iostreams-dev >= 1.55
 %endif
 
 %description
@@ -41,7 +41,7 @@ Demultiplex RNA-seq reads from fastq.gz files into separate files according to t
 %if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
 Requires: libstdc++ zlib >= 1.2.8 boost >= 1.55
 %else
-Requires: libstdc++ zlib1g-dev >= 1.2.8 libboost-filesystem-dev >= 1.55 libboost-system-dev >= 1.55
+Requires: libstdc++ zlib1g-dev >= 1.2.8 libboost-filesystem-dev >= 1.55 libboost-system-dev >= 1.55 libboost-iostreams-dev >= 1.55
 %endif
 
 %prep

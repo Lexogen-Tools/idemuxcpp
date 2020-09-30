@@ -1,7 +1,7 @@
 
 m4_define([idemuxCPP_version_major], [0])
 m4_define([idemuxCPP_version_minor], [1])
-m4_define([idemuxCPP_version_patch], [2])
+m4_define([idemuxCPP_version_patch], [3])
 
 my_url="my_url"
 AC_PREREQ([2.59])
@@ -111,6 +111,10 @@ fi
 AC_LIB_HAVE_LINKFLAGS([boost_filesystem], [boost_system], [#include <boost/filesystem/path.hpp>] , [], [Could not link the boost_filesystem library!])
 if test "$HAVE_LIBBOOST_FILESYSTEM" != "yes"; then
 AC_MSG_FAILURE([ERROR: please install the boost_filesystem library!])
+fi
+AC_LIB_HAVE_LINKFLAGS([boost_iostreams], [], [] , [], [Could not link the boost_iostreams library!])
+if test "$HAVE_LIBBOOST_IOSTREAMS" != "yes"; then
+AC_MSG_FAILURE([ERROR: please install the boost_iostreams library!])
 fi
 
 AC_ARG_ENABLE([tests],

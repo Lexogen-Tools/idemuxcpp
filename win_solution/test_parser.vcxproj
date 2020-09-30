@@ -13,20 +13,24 @@
     <ClCompile Include="..\src\PairedReader.cpp" />
     <ClCompile Include="..\src\Parser.cpp" />
     <ClCompile Include="..\src\Writer.cpp" />
-    <ClCompile Include="..\src\ZipFastqReader.cpp" />
+    <ClCompile Include="..\src\FastqReader.cpp" />
+    <ClCompile Include="..\src\BoostZipReader.cpp" />
     <ClCompile Include="..\src\ZipFastqWriter.cpp" />
+    <ClCompile Include="..\src\Correction_Counter.cpp" />
   </ItemGroup>
   <ItemGroup>
-     <ClCompile Include="..\src\Barcode.h" />
-    <ClCompile Include="..\src\config.h" />
-    <ClCompile Include="..\src\Demux.h" />
-    <ClCompile Include="..\src\FileHandler.h" />
-    <ClCompile Include="..\src\helper.h" />
-    <ClCompile Include="..\src\PairedReader.h" />
-    <ClCompile Include="..\src\Parser.h" />
-    <ClCompile Include="..\src\Writer.h" />
-    <ClCompile Include="..\src\ZipFastqReader.h" />
-    <ClCompile Include="..\src\ZipFastqWriter.h" />
+    <ClInclude Include="..\src\Barcode.h" />
+    <ClInclude Include="..\src\config.h" />
+    <ClInclude Include="..\src\Demux.h" />
+    <ClInclude Include="..\src\FileHandler.h" />
+    <ClInclude Include="..\src\helper.h" />
+    <ClInclude Include="..\src\PairedReader.h" />
+    <ClInclude Include="..\src\Parser.h" />
+    <ClInclude Include="..\src\Writer.h" />
+    <ClInclude Include="..\src\FastqReader.h" />
+    <ClInclude Include="..\src\BoostZipReader.h" />
+    <ClInclude Include="..\src\ZipFastqWriter.h" />
+    <ClInclude Include="..\src\Correction_Counter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC943}</ProjectGuid>

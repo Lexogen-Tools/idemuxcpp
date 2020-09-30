@@ -54,10 +54,10 @@ flag
 off
 
 option  "i1-start" i
-"Start position of the i1 index (0-based) on read 2.\n"
+"Start position of the i1 index (1-based) on read 2.\n"
 int
 optional
-default="10"
+default="11"
 
 option  "queue-size" q
 "Queue size for reads that will be processed in one block.\n"
@@ -81,6 +81,10 @@ option  "processing-threads" p
 int
 optional
 
+option "demux-only" d
+"Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file."
+flag
+off
 
 option  "verbose" v
 "Verbose.\n"

@@ -1,7 +1,8 @@
 #include <string>
+#include <iostream>
 #include <zlib.h>
 #include <stdexcept>
-#include "ZipFastqReader.h"
+#include "FastqReader.h"
 #include "ZipFastqWriter.h"
 
 ZipFastqWriter::ZipFastqWriter(string outfile) : OutputFile(outfile) {
@@ -17,14 +18,7 @@ int ZipFastqWriter::write(const char* data, size_t len) {
 }
 
 void ZipFastqWriter::write_read(fq_read* r) {
-		string read =  string(r->Seq_ID);
-		read.append("\n");
-		read.append(r->Sequence);
-		read.append("\n");
-		read.append(r->Plus_ID);
-		read.append("\n");
-		read.append(r->QualityCode);
-		read.append("\n");
+		string read = r->to_string();
 		auto res = this->write(read.c_str(), read.length());
 		if(res==0) throw std::runtime_error("Error: could not write read from list to file!");
 }

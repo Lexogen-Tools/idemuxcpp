@@ -36,46 +36,58 @@
     <ClCompile Include="..\src\Writer.cpp"
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\ZipFastqReader.cpp"
+    <ClCompile Include="..\src\FastqReader.cpp"
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\BoostZipReader.cpp"
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\src\ZipFastqWriter.cpp"
       <Filter>Source Files</Filter>
     </ClCompile>
+	<ClCompile Include="..\src\Correction_Counter.cpp"
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\Barcode.h"
+    <ClInclude Include="..\src\Barcode.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\config.h"
+    </ClInclude>
+    <ClInclude Include="..\src\config.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Demux.h"
+    </ClInclude>
+    <ClInclude Include="..\src\Demux.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\FileHandler.h"
+    </ClInclude>
+    <ClInclude Include="..\src\FileHandler.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\helper.h"
+    </ClInclude>
+    <ClInclude Include="..\src\helper.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\idemuxCPP_cmdl.h"
+    </ClInclude>
+    <ClInclude Include="..\src\idemuxCPP_cmdl.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\PairedReader.h"
+    </ClInclude>
+    <ClInclude Include="..\src\PairedReader.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Parser.h"
+    </ClInclude>
+    <ClInclude Include="..\src\Parser.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\Writer.h"
+    </ClInclude>
+    <ClInclude Include="..\src\Writer.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ZipFastqReader.h"
+    </ClInclude>
+    <ClInclude Include="..\src\FastqReader.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\ZipFastqWriter.h"
+    </ClInclude>
+    <ClInclude Include="..\src\BoostZipReader.h"
       <Filter>Header Files</Filter>
-    </ClCompile>
+    </ClInclude>
+    <ClInclude Include="..\src\ZipFastqWriter.h"
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Correction_Counter.h"
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

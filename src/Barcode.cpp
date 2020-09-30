@@ -13,71 +13,79 @@
 
 using namespace std;
 
-Barcode::Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement) : length(0),Name(barcode_type),
-		correction_map(NULL), allowed_lengths({6, 8, 10, 12}),
-    lengths_96_barcodes({8, 10, 12}),
-    lengths_384_barcodes({10, 12}) {
+Barcode::Barcode(string barcode_type,
+		unordered_map<string, std::vector<string>> &ix_barcodes,
+		bool reverse_complement) :
+		length(0), Name(barcode_type), correction_map(NULL), allowed_lengths( {
+				6, 8, 10, 12 }), lengths_96_barcodes( { 8, 10, 12 }), lengths_384_barcodes(
+				{ 10, 12 }) {
 
-	for(auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
-		this->_sample_map[it->first] = it->second.size() > 0 ? it->second[0] : "";
+	for (auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
+		this->_sample_map[it->first] =
+				it->second.size() > 0 ? it->second[0] : "";
 	post_init(reverse_complement);
 }
 
-unordered_set<int>* Barcode::get_set_sizes(){
-  unordered_set<int>* set_sizes = new unordered_set<int>();
-  auto it = allowed_lengths.find(length);
-  if (it != allowed_lengths.end()){
-      auto it_96 = lengths_96_barcodes.find(length);
-      if(it_96 != lengths_96_barcodes.end())
-          set_sizes->insert(96);
-      auto it_384 = lengths_384_barcodes.find(length);
-      if(it_384 != lengths_384_barcodes.end())
-          set_sizes->insert(384);
-  }
-  return set_sizes;
+unordered_set<int>* Barcode::get_set_sizes() {
+	unordered_set<int> *set_sizes = new unordered_set<int>();
+	auto it = allowed_lengths.find(length);
+	if (it != allowed_lengths.end()) {
+		auto it_96 = lengths_96_barcodes.find(length);
+		if (it_96 != lengths_96_barcodes.end())
+			set_sizes->insert(96);
+		auto it_384 = lengths_384_barcodes.find(length);
+		if (it_384 != lengths_384_barcodes.end())
+			set_sizes->insert(384);
+	}
+	return set_sizes;
 }
 
-
-void Barcode::post_init(bool reverse_complement){
-    // if the barcode is reverse complement add _rc to the name
-    // we need this later to load the correction maps
-    if (reverse_complement)
-        this->Name += "_rc";
-    this->check_length();
+void Barcode::post_init(bool reverse_complement) {
+	// if the barcode is reverse complement add _rc to the name
+	// we need this later to load the correction maps
+	if (reverse_complement)
+		this->Name += "_rc";
+	this->check_length();
 }
 
-void Barcode::check_length(){
+void Barcode::check_length() {
 // barcodes for each type need to be of the same length. This is as the
 // sequences of 8 nt long barcodes are contained within 10 nt long barcodes,
 // and the ones of 10 in 12. if we dont enforce the same length per barcode there
 // might be a possibility we cant tell with certainty to which sample a
 // barcoded read belongs.
 	unordered_set<int> observed_lengths;
-	for(auto it = this->_sample_map.begin(); it != this->_sample_map.end(); it++){
+	for (auto it = this->_sample_map.begin(); it != this->_sample_map.end();
+			it++) {
 		string barcode = it->first;
 		string sample_name = it->second;
-		if (barcode.compare("") != 0){
-			auto itl = this->allowed_lengths.find((int)barcode.length());
-			if(itl != this->allowed_lengths.end()){
+		if (barcode.compare("") != 0) {
+			auto itl = this->allowed_lengths.find((int) barcode.length());
+			if (itl != this->allowed_lengths.end()) {
 				observed_lengths.insert(barcode.length());
-				if(observed_lengths.size() > 1){
-					string message = string_format("%s barcodes with a different length "\
-                                 "have been observed for %s. Barcodes"\
-                                 " need to have the same length for all "\
-                                 "samples.\nObserved barcode length:"\
-                                 " %ld \nPrevious observed length:"\
-                                 " %ld",sample_name.c_str(),sample_name.c_str(),barcode.length(), this->length);
+				if (observed_lengths.size() > 1) {
+					string message = string_format(
+							"%s barcodes with a different length "
+									"have been observed for %s. Barcodes"
+									" need to have the same length for all "
+									"samples.\nObserved barcode length:"
+									" %ld \nPrevious observed length:"
+									" %ld", sample_name.c_str(),
+							sample_name.c_str(), barcode.length(),
+							this->length);
 					throw(std::runtime_error(message));
 				}
-				this->length = (int)barcode.length();
-			}
-			else{
+				this->length = (int) barcode.length();
+			} else {
 				string tmplengths = "";
-				for(auto ita = this->allowed_lengths.begin(); ita != this->allowed_lengths.end(); ita++)
+				for (auto ita = this->allowed_lengths.begin();
+						ita != this->allowed_lengths.end(); ita++)
 					tmplengths += to_string(*ita) + ", ";
-				string message = string_format("%s barcodes are %ld nt long.\n"\
-                        "%s barcodes are only allowed to be"\
-                        " %s nt long.", this->Name.c_str(), barcode.length(), this->Name.c_str(), tmplengths.substr(0,tmplengths.length()-1).c_str());
+				string message = string_format("%s barcodes are %ld nt long.\n"
+						"%s barcodes are only allowed to be"
+						" %s nt long.", this->Name.c_str(), barcode.length(),
+						this->Name.c_str(),
+						tmplengths.substr(0, tmplengths.length() - 1).c_str());
 				throw(std::runtime_error(message));
 			}
 
@@ -123,22 +131,25 @@ void Barcode::load_correction_map(string relative_exepath) {
 
 	// try package path
 	string package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
-			+ PATH_SEP + "misc" + PATH_SEP + "barcodes" + PATH_SEP
-			+ this->Name;
+			+ PATH_SEP + "misc" + PATH_SEP + "barcodes" + PATH_SEP + this->Name;
 	if (!Parser::PathExists(package_str)) {
 		// try install path
 		package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
 				+ PATH_SEP + "share" + PATH_SEP + PACKAGE_NAME + PATH_SEP
 				+ "barcodes" + PATH_SEP + this->Name;
 		if (!Parser::PathExists(package_str)) {
-			throw(runtime_error(
-					string_format("Error: the path %s is not available!\n",
-							package_str.c_str())));
+			// try /usr/share install path (/usr/share/idemuxcpp/barcodes/)
+			package_str = PATH_SEP + string("usr")
+					+ PATH_SEP + string("share") + PATH_SEP + PACKAGE_NAME + PATH_SEP
+					+ string("barcodes") + PATH_SEP + this->Name;
+			if (!Parser::PathExists(package_str)) {
+				throw(runtime_error(
+						string_format("Error: the path %s is not available!\n",
+								package_str.c_str())));
+			}
 		}
 	}
 	std::cout << package_str << std::endl;
-
-	//free(cwd);
 
 	for (auto it = sizes.begin(); it != sizes.end(); it++) {
 		set_size = (*it);
@@ -164,21 +175,10 @@ void Barcode::load_correction_map(string relative_exepath) {
 			printf(
 					"Correct set found. Used set is %d barcodes with %d nt length.\n",
 					set_size, this->length);
-			//this->correction_map.clear();
-			//for (auto it = corr_map->begin(); it != corr_map->end(); it++)
-			//	this->correction_map[it->first] = it->second;
 			this->correction_map = corr_map;
-			//delete corr_map;
 			return;
 		}
 		delete corr_map;
-		/*
-		 if _barcodes_given <= _barcode_set:
-		 log.info(f"Correct set found. Used set is {set_size} barcodes with "
-		 f"{this->length} nt length.")
-		 barcode.correction_map = corr_map
-		 return barcode;
-		 */
 	}
 	if (this->length != 6) {
 		printf(
@@ -187,7 +187,7 @@ void Barcode::load_correction_map(string relative_exepath) {
 						"valid Lexogen barodes?\n", this->Name.c_str());
 	}
 	unordered_set<string> *_bc_list = this->used_codes();
-	this->correction_map = new unordered_map<string, string>(); //.clear();
+	this->correction_map = new unordered_map<string, string>();
 	for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
 		this->correction_map->insert( { *it, *it });
 	}
@@ -205,9 +205,26 @@ void Barcode::load_correction_map(string relative_exepath) {
 	 */
 }
 
+void Barcode::create_one_to_one_map() {
+	if (this->length > 0) {
+		unordered_set<string> *_bc_list = this->used_codes();
+		this->correction_map = new unordered_map<string, string>(); //.clear();
+		for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
+			this->correction_map->insert( { *it, *it });
+		}
+		delete _bc_list;
+
+	} else {
+		// When there are no barcodes specified, there is nothing to correct.
+		fprintf(stdout, "No barcodes have been specified for %s.\n",
+				this->Name.c_str());
+		this->correction_map = new unordered_map<string, string>(); //.clear();
+		this->correction_map->insert( { "", "" });
+	}
+}
 
 Barcode::~Barcode() {
- 	if(this->correction_map)
- 		delete this->correction_map;
+	if (this->correction_map)
+		delete this->correction_map;
 }
 

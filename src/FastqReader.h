@@ -1,10 +1,15 @@
-#ifndef ZIPFASTQREADER_H_
-#define ZIPFASTQREADER_H_
+/*
+ * FastqReader.h
+ *
+ *  Created on: Oct 29, 2020
+ *      Author: gentzian
+ */
+
+#ifndef SRC_FASTQREADER_H_
+#define SRC_FASTQREADER_H_
 
 #include <string>
-#include <zlib.h>
-#include <iostream>
-
+#include <fstream>
 
 using namespace std;
 
@@ -30,20 +35,20 @@ struct fq_read{
 	};
 };
 
-class ZipFastqReader {
+class IFastqReader{
 public:
-	ZipFastqReader(string filename);
-	fq_read* next_read();
-	void close();
-	virtual ~ZipFastqReader();
-private:
-	gzFile GZ_filehandle;
-	size_t BUFLEN;
-	char* buf;
-	char* offset;
-	char* cur;
-	char* end;
-	int read_line_index;
+	virtual fq_read* next_read() = 0;
+//virtual ~IFastqReader();
 };
 
-#endif /* ZIPFASTQREADER_H_ */
+class FastqReader : public IFastqReader{
+public:
+	FastqReader(string filename);
+	fq_read* next_read();
+	void close();
+	virtual ~FastqReader();
+private:
+	std::ifstream FastqFileHandle;
+};
+
+#endif /* SRC_FASTQREADER_H_ */

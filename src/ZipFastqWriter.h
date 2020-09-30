@@ -2,7 +2,8 @@
 #define ZIPFASTQWRITER_H_
 
 #include <string>
-#include "ZipFastqReader.h"
+#include <zlib.h>
+#include "FastqReader.h"
 
 using namespace std;
 

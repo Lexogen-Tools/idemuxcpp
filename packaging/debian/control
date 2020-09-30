@@ -3,14 +3,14 @@ Maintainer: Lexogen <gregor.entzian@lexogen.com>
 Section: science
 Priority: optional
 Standards-Version: 3.9.8
-Build-Depends: debhelper (>= 9.0), autotools-dev, gengetopt, help2man, zlib1g-dev, libboost-dev (>= 1.55), libboost-filesystem-dev (>= 1.55), libboost-system-dev (>= 1.55)
+Build-Depends: debhelper (>= 9.0), autotools-dev, gengetopt, help2man, zlib1g-dev, libboost-dev (>= 1.55), libboost-filesystem-dev (>= 1.55), libboost-system-dev (>= 1.55) libboost-iostreams-dev (>= 1.55)
 
 Package: idemuxcpp
 Provides: idemuxcpp
 Conflicts: idemuxcpp
 Section: science
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, zlib1g-dev (>= 1.2.8), libboost-dev (>= 1.55), libboost-filesystem-dev (>= 1.55), libboost-system-dev (>= 1.55)
+Depends: ${shlibs:Depends}, ${misc:Depends}, zlib1g-dev (>= 1.2.8), libboost-dev (>= 1.55), libboost-filesystem-dev (>= 1.55), libboost-system-dev (>= 1.55), libboost-iostreams-dev (>= 1.55)
 Description: Demultiplex RNA-seq reads from fastq.gz files into separate files according to their indices.
  Idemux can demultiplex based on i7, i5, and i1 inline barcodes. While this tool
  can generally be used to demultiplex any barcodes (as long as they are 
