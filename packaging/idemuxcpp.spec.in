@@ -19,12 +19,22 @@ BuildRoot:      %(mktemp -ud %{_tmppath}/%{name}-%{version}-%{release}-XXXXXX)
 BuildRequires:  autoconf
 BuildRequires:  automake
 
-BuildRequires:  gcc g++
+BuildRequires:  gcc help2man
+
+%if 0%{?suse_version}
+BuildRequires: gcc-c++
+%else
+BuildRequires: g++
+%endif
 
 %if 0%{?fedora} || 0%{?suse_version} || 0%{?scientificlinux_version}
 BuildRequires: boost-devel >= 1.55 zlib-devel >= 1.2.8
 %else
 BuildRequires: zlib1g-dev >= 1.2.8 libboost-dev >= 1.55 libboost-filesystem-dev >= 1.55 libboost-system-dev >= 1.55 libboost-iostreams-dev >= 1.55
+%endif
+
+%if 0%{?suse_version}
+BuildRequires: libboost_filesystem1_74_0 libboost_system1_74_0
 %endif
 
 %description
