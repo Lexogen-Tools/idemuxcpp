@@ -2,7 +2,7 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Run in DEBUG mode with additional assertions and debug output */
-/* #undef DEBUG */
+#define DEBUG /**/
 
 /* define if the Boost library is available */
 #define HAVE_BOOST /**/
@@ -56,7 +56,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Run in normal mode with minimal assertions */
-#define NDEBUG /**/
+/* #undef NDEBUG */
 
 /* Name of package */
 #define PACKAGE "idemuxcpp"

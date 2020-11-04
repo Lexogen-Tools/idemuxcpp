@@ -59,6 +59,12 @@ int
 optional
 default="11"
 
+option "i1-read" -
+"Read in which the i1 index should be corrected (1 or 2).\n"
+int
+optional
+default="2"
+
 option  "queue-size" q
 "Queue size for reads that will be processed in one block.\n"
 int

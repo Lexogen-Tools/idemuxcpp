@@ -24,21 +24,31 @@
 using namespace std;
 
 
+struct i1_info {
+	// read 1 or read 2
+	int read_index;
+	// start index (1-based)
+	int start_index;
+	// i1 barcode is within [start_index, end_index].
+	int end_index;
+};
+
 class Parser {
 public:
 	Parser();
 	std::vector<std::vector<std::string>> readCSV(std::istream &in);
 	unordered_map<string, string>* parse_sample_sheet(string sample_sheet,
-			bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath, bool demux_only);
+			bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+			string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start);
 	string reverse_complement(string sequence);
 	bool has_valid_barcode_combinations(Barcode &i7, Barcode &i5, Barcode &i1);
 	void fastq_lines_to_reads(string fastq_lines);
 	void peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 			bool has_i5, bool has_i1, int i7_length, int i5_length,
-			int i1_start, int i1_end);
+			unordered_map<string, i1_info> &i7_i5_i1_info_map);
 	void check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair, bool has_i7,
 			bool has_i5, bool has_i1, int i7_length, int i5_length,
-			int i1_start, int i1_end);
+			unordered_map<string, i1_info> &i7_i5_i1_info_map);
 	void check_mate2_length(fq_read *mate2, int i1_start, int i1_end);
 	void check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 			bool has_i7, bool has_i5, int i7_length, int i5_length);

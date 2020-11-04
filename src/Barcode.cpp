@@ -63,6 +63,7 @@ void Barcode::check_length() {
 			auto itl = this->allowed_lengths.find((int) barcode.length());
 			if (itl != this->allowed_lengths.end()) {
 				observed_lengths.insert(barcode.length());
+
 				if (observed_lengths.size() > 1) {
 					string message = string_format(
 							"%s barcodes with a different length "
@@ -75,6 +76,7 @@ void Barcode::check_length() {
 							this->length);
 					throw(std::runtime_error(message));
 				}
+
 				this->length = (int) barcode.length();
 			} else {
 				string tmplengths = "";

@@ -43,6 +43,7 @@ const char *idemuxCPP_args_info_help[] = {
   "  -b, --barcode-corrections=STRING\n                                Outputs a csv file that contains the number of\n                                  corrected barcodes",
   "  -5, --i5-rc                   Set this flag if the i5 barcode has been\n                                  sequenced as reverse complement and the\n                                  barcodes you provided should be reverse\n                                  complemented.\n                                    (default=off)",
   "  -i, --i1-start=INT            Start position of the i1 index (1-based) on\n                                  read 2.\n                                    (default=`11')",
+  "      --i1-read=INT             Read in which the i1 index should be corrected\n                                  (1 or 2).\n                                    (default=`2')",
   "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block.\n                                    (default=`4000000')",
   "  -r, --reading-threads=INT     Number of threads used for reading gz files.\n                                  Either 1 or 2 (one thread per input file is\n                                  used).\n                                    (default=`2')",
   "  -w, --writing-threads=INT     Number of threads used for writing gz files.\n                                  Default is the number of processor cores.\n",
@@ -85,6 +86,7 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->barcode_corrections_given = 0 ;
   args_info->i5_rc_given = 0 ;
   args_info->i1_start_given = 0 ;
+  args_info->i1_read_given = 0 ;
   args_info->queue_size_given = 0 ;
   args_info->reading_threads_given = 0 ;
   args_info->writing_threads_given = 0 ;
@@ -110,6 +112,8 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->i5_rc_flag = 0;
   args_info->i1_start_arg = 11;
   args_info->i1_start_orig = NULL;
+  args_info->i1_read_arg = 2;
+  args_info->i1_read_orig = NULL;
   args_info->queue_size_arg = 4000000;
   args_info->queue_size_orig = NULL;
   args_info->reading_threads_arg = 2;
@@ -135,12 +139,13 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->barcode_corrections_help = idemuxCPP_args_info_help[7] ;
   args_info->i5_rc_help = idemuxCPP_args_info_help[8] ;
   args_info->i1_start_help = idemuxCPP_args_info_help[9] ;
-  args_info->queue_size_help = idemuxCPP_args_info_help[10] ;
-  args_info->reading_threads_help = idemuxCPP_args_info_help[11] ;
-  args_info->writing_threads_help = idemuxCPP_args_info_help[12] ;
-  args_info->processing_threads_help = idemuxCPP_args_info_help[13] ;
-  args_info->demux_only_help = idemuxCPP_args_info_help[14] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[15] ;
+  args_info->i1_read_help = idemuxCPP_args_info_help[10] ;
+  args_info->queue_size_help = idemuxCPP_args_info_help[11] ;
+  args_info->reading_threads_help = idemuxCPP_args_info_help[12] ;
+  args_info->writing_threads_help = idemuxCPP_args_info_help[13] ;
+  args_info->processing_threads_help = idemuxCPP_args_info_help[14] ;
+  args_info->demux_only_help = idemuxCPP_args_info_help[15] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[16] ;
   
 }
 
@@ -235,6 +240,7 @@ idemuxCPP_cmdline_parser_release (struct idemuxCPP_args_info *args_info)
   free_string_field (&(args_info->barcode_corrections_arg));
   free_string_field (&(args_info->barcode_corrections_orig));
   free_string_field (&(args_info->i1_start_orig));
+  free_string_field (&(args_info->i1_read_orig));
   free_string_field (&(args_info->queue_size_orig));
   free_string_field (&(args_info->reading_threads_orig));
   free_string_field (&(args_info->writing_threads_orig));
@@ -287,6 +293,8 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "i5-rc", 0, 0 );
   if (args_info->i1_start_given)
     write_into_file(outfile, "i1-start", args_info->i1_start_orig, 0);
+  if (args_info->i1_read_given)
+    write_into_file(outfile, "i1-read", args_info->i1_read_orig, 0);
   if (args_info->queue_size_given)
     write_into_file(outfile, "queue-size", args_info->queue_size_orig, 0);
   if (args_info->reading_threads_given)
@@ -1193,6 +1201,7 @@ idemuxCPP_cmdline_parser_internal (
         { "barcode-corrections",	1, NULL, 'b' },
         { "i5-rc",	0, NULL, '5' },
         { "i1-start",	1, NULL, 'i' },
+        { "i1-read",	1, NULL, 0 },
         { "queue-size",	1, NULL, 'q' },
         { "reading-threads",	1, NULL, 'r' },
         { "writing-threads",	1, NULL, 'w' },
@@ -1391,6 +1400,23 @@ idemuxCPP_cmdline_parser_internal (
           break;
 
         case 0:	/* Long option with no short option */
+          /* Read in which the i1 index should be corrected (1 or 2).
+.  */
+          if (strcmp (long_options[option_index].name, "i1-read") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->i1_read_arg), 
+                 &(args_info->i1_read_orig), &(args_info->i1_read_given),
+                &(local_args_info.i1_read_given), optarg, 0, "2", ARG_INT,
+                check_ambiguity, override, 0, 0,
+                "i1-read", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          
+          break;
         case '?':	/* Invalid option.  */
           /* `getopt_long' already printed an error message.  */
           goto failure;

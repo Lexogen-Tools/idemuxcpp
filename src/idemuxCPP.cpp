@@ -26,7 +26,8 @@ int main(int argc, char **argv) {
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
 	bool i5_rc = false;
-	int i1_start = 10; // zero based index
+	int default_i1_read = 2; //read in which the i1 index should be corrected (1 or 2).
+	int default_i1_start = 10; // zero based index
 	size_t queue_size;
 	int reading_threads;
 	int writing_threads = -1;
@@ -75,22 +76,30 @@ int main(int argc, char **argv) {
 	demux_only = args_info.demux_only_flag;
 
 	i5_rc = args_info.i5_rc_flag;
-    //use a zero based starting position internally
+
 	if (args_info.i1_start_arg < 1){
 		fprintf(stderr, "Error: please enter a starting position >=1!\n");
 		exit(EXIT_FAILURE);
 	}
-	i1_start = args_info.i1_start_arg -1;
+	//use a zero based starting position internally
+	default_i1_start = args_info.i1_start_arg -1;
+
+	if (args_info.i1_read_arg != 1 && args_info.i1_read_arg != 2){
+		fprintf(stderr, "Error: the i1_read parameter must be 1 or 2!\n");
+		exit(EXIT_FAILURE);
+	}
+	default_i1_read = args_info.i1_read_arg;
 	//verbose = args_info.verbose_flag;
 
 	Parser p;
 	vector<Barcode*> barcodes;
+	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, relative_exepath, demux_only);
+			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, demux_only, default_i1_read, default_i1_start);
 
 	// do things.
 	demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
-			i1_start, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
+			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
 
 	delete barcode_sample_map;
 	for (size_t i = 0; i < barcodes.size(); i++)

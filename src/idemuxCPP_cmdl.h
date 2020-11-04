@@ -76,6 +76,12 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *i1_start_help; /**< @brief Start position of the i1 index (1-based) on read 2.
  help description.  */
+  int i1_read_arg;	/**< @brief Read in which the i1 index should be corrected (1 or 2).
+ (default='2').  */
+  char * i1_read_orig;	/**< @brief Read in which the i1 index should be corrected (1 or 2).
+ original value given at command line.  */
+  const char *i1_read_help; /**< @brief Read in which the i1 index should be corrected (1 or 2).
+ help description.  */
   int queue_size_arg;	/**< @brief Queue size for reads that will be processed in one block.
  (default='4000000').  */
   char * queue_size_orig;	/**< @brief Queue size for reads that will be processed in one block.
@@ -116,6 +122,7 @@ struct idemuxCPP_args_info
   unsigned int barcode_corrections_given ;	/**< @brief Whether barcode-corrections was given.  */
   unsigned int i5_rc_given ;	/**< @brief Whether i5-rc was given.  */
   unsigned int i1_start_given ;	/**< @brief Whether i1-start was given.  */
+  unsigned int i1_read_given ;	/**< @brief Whether i1-read was given.  */
   unsigned int queue_size_given ;	/**< @brief Whether queue-size was given.  */
   unsigned int reading_threads_given ;	/**< @brief Whether reading-threads was given.  */
   unsigned int writing_threads_given ;	/**< @brief Whether writing-threads was given.  */

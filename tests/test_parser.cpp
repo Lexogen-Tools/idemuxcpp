@@ -10,6 +10,7 @@
 #include "../src/Barcode.h"
 #include "../src/helper.h"
 #include "../src/PairedReader.h"
+#include "../src/BoostZipReader.h"
 #include <stdexcept>
 
 // compile with:  g++ -std=c++11 test_parser.cpp ../src/helper.h ../src/Barcode.h ../src/Barcode.cpp ../src/Parser.h ../src/Parser.cpp ../src/PairedReader.h ../src/PairedReader.cpp ../src/ZipFastqReader.h ../src/ZipFastqReader.cpp -lboost_system -lboost_filesystem -lpthread -lz -ldl
@@ -127,37 +128,39 @@ boost::filesystem::path tmp_path(CSVS_TO_FAIL);
 vector<string> csv_files_to_fail = iterate_csv_files(tmp_path.parent_path());
 
 BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_fail ) {
-	Parser pe;
-	vector<Barcode*> barcodes;
 	boost::filesystem::path p(Exe_path);
 	for (auto it = csv_files_to_fail.begin(); it != csv_files_to_fail.end();
 			it++) {
 		string csv_file = *it;
 		//std::cout << csv_file << std::endl;
+		Parser pe;
+		vector<Barcode*> barcodes;
+		unordered_map<string, i1_info> i7_i5_i1_info_map;
 		unordered_map<string, string> *rows = NULL;
 		BOOST_CHECK_THROW(
-				rows = pe.parse_sample_sheet(csv_file, false, barcodes,
-						p.string(),false), std::exception);
+				rows = pe.parse_sample_sheet(csv_file, false, barcodes, i7_i5_i1_info_map,
+						p.string(),false, 2, I1_START), std::exception);
 		if (rows)
 			delete rows;
+		for (auto it = barcodes.begin(); it != barcodes.end(); it++)
+			delete *it;
 	}
-	for (auto it = barcodes.begin(); it != barcodes.end(); it++)
-		delete *it;
 }
 
 boost::filesystem::path tmp_path2(CSVS_TO_PASS);
 vector<string> csv_files_to_pass = iterate_csv_files(tmp_path2.parent_path());
 
 BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_pass ) {
-	Parser pe;
-	vector<Barcode*> barcodes;
 	boost::filesystem::path p(Exe_path);
 	for (auto it = csv_files_to_pass.begin(); it != csv_files_to_pass.end();
 			it++) {
 		string csv_file = *it;
 		//std::cout << csv_file << std::endl;
+		Parser pe;
+		vector<Barcode*> barcodes;
+		unordered_map<string, i1_info> i7_i5_i1_info_map;
 		BOOST_CHECK_NO_THROW(
-				pe.parse_sample_sheet(csv_file, false, barcodes, p.string(),false));
+				pe.parse_sample_sheet(csv_file, false, barcodes, i7_i5_i1_info_map, p.string(),false, 2, I1_START));
 	}
 }
 
@@ -201,20 +204,47 @@ BOOST_AUTO_TEST_CASE( test_reverse_complement_fail ) {
 BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_pass ) {
 	Parser p;
 	for (auto it = FQ_TO_PASS.begin(); it != FQ_TO_PASS.end(); it++) {
+
+		// set i1 start end for all i7,i5 combinations in read 1.
+		unordered_map<string, i1_info> i7_i5_i1_info_map;
+		i1_info i1_i = {2, it->i1_start, it->i1_end};
+		FastqReader* r = new FastqReader(it->fq_gz_1);
+		fq_read *read = r->next_read();
+		while(read){
+			pair<string,string> i7_i5 = p.parse_indices(read->Seq_ID);
+			string i7_i5_bc = i7_i5.first + "\n" + i7_i5.second;
+			i7_i5_i1_info_map[i7_i5_bc] = i1_i;
+			read = r->next_read();
+		}
+		delete r;
+
 		BOOST_CHECK_NO_THROW(
 				p.peek_into_fastq_files(it->fq_gz_1, it->fq_gz_2, it->has_i7,
 						it->has_i5, it->has_i1, it->i7_length, it->i5_length,
-						it->i1_start, it->i1_end));
+						i7_i5_i1_info_map));
 	}
 }
 
 BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_fail ) {
 	Parser p;
 	for (auto it = FQ_TO_FAIL.begin(); it != FQ_TO_FAIL.end(); it++) {
+		// set i1 start end for all i7,i5 combinations in read 1.
+		unordered_map<string, i1_info> i7_i5_i1_info_map;
+		i1_info i1_i = {2, it->i1_start, it->i1_end};
+		BoostZipReader* r = new BoostZipReader(it->fq_gz_1);
+		fq_read *read = r->next_read();
+		while(read){
+			pair<string,string> i7_i5 = p.parse_indices(read->Seq_ID);
+			string i7_i5_bc = i7_i5.first + "\n" + i7_i5.second;
+			i7_i5_i1_info_map[i7_i5_bc] = i1_i;
+			read = r->next_read();
+		}
+		delete r;
+
 		BOOST_CHECK_THROW(
 				p.peek_into_fastq_files(it->fq_gz_1, it->fq_gz_2, it->has_i7,
 						it->has_i5, it->has_i1, it->i7_length, it->i5_length,
-						it->i1_start, it->i1_end), std::exception);
+						i7_i5_i1_info_map), std::exception);
 	}
 }
 

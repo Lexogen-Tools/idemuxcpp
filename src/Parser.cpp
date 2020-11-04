@@ -165,7 +165,8 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
  ValueError: Will initiate sys.exit(1)
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
-		bool i5_rc, vector<Barcode*> &barcodes_out, string relative_exepath, bool demux_only) {
+		bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+		string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start) {
 	// we use these to keep track which lengths are beeing used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
@@ -180,8 +181,17 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	// we use this for checking for duplicated sample names
 	unordered_map<string, size_t> sample_count;
 	// expected file header
-	//TODO: use a set, such that the columns dont have to be in this order.
-	vector<string> sample_sheet_header = { "sample_name", "i7", "i5", "i1" };
+	/*
+	 * Column explanation:
+	 *  - sample_name - string - the id name
+	 *  - i7, i5, i5 - string - the code sequence
+	 *  - i1_read - integer - determines if it occurs in read 1 or read 2.
+	 *  - i1_start - integer - at which position it occurs in the string.
+	 */
+	vector<string> header_list = { "sample_name", "i7", "i5", "i1", "i1_read", "i1_start"};
+	vector<string> minimal_header_list = { "sample_name", "i7", "i5", "i1" };
+	unordered_set<string> sample_sheet_header;
+	sample_sheet_header.insert(header_list.begin(), header_list.end());
 	//char open_mode = 'r';
 
 	ifstream in_file_sample_sheet(sample_sheet.c_str());
@@ -198,47 +208,83 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		throw(std::runtime_error(message));
 	}
 	//check header:
+	unordered_map<string, size_t> map_column_index;
 	string s1, s2;
 	//std::cout << "sizeof " << sample_sheet_header.size() << std::endl;
-	for (size_t i = 0; i < sample_sheet_header.size(); i++) {
+	for (size_t i = 0; i < csv_lines[0].size(); i++) {
 		s1 = csv_lines[0][i];
-		s2 = sample_sheet_header[i];
-		if (s1.compare(s2) != 0) {
+		auto ith = sample_sheet_header.find(s1);
+		//s2 = sample_sheet_header[i];
+		if (ith != sample_sheet_header.end()) {
+			map_column_index[*ith] = i;
+		}
+	}
+	for (int i = 0; i < minimal_header_list.size(); i++){
+		auto ith = map_column_index.find(minimal_header_list[i]);
+		if (ith == map_column_index.end()){
+			string expected_header = "";
+			for (auto ithp = minimal_header_list.begin(); ithp != minimal_header_list.end(); ithp++)
+				expected_header += "," + *ithp;
+			expected_header = expected_header.substr(1);
+			string observed_header = "";
+			for (auto ithp = map_column_index.begin(); ithp != map_column_index.end(); ithp++)
+				observed_header += "," + ithp->first;
+			observed_header = observed_header.substr(1);
 			string message = string_format(
-					"Incorrect sample sheet header. Expected header: %s\n"
-							"Observed header: %s", s1.c_str(), s2.c_str());
+								"Incorrect sample sheet header. Expected minimal header: %s\n"
+										"Observed header: %s", expected_header.c_str(), observed_header.c_str());
 			throw(std::runtime_error(message));
 		}
 	}
+
+	//if "i1_read", "i1_start" is given, the i7,i5 combinations must be unique. Otherwise the key is i7,i5,i1.
+
 	// check file
+	size_t idx_sample_name = map_column_index["sample_name"];
+	size_t idx_i7 = map_column_index["i7"];
+	size_t idx_i5 = map_column_index["i5"];
+	size_t idx_i1 = map_column_index["i1"];
+
+	int idx_i1_read = -1;
+	int idx_i1_start = -1;
+	auto it_r = map_column_index.find("i1_read");
+	if(it_r != map_column_index.end())
+		idx_i1_read = it_r->second;
+	auto it_s = map_column_index.find("idx_i1_start");
+	if(it_s != map_column_index.end())
+		idx_i1_start = it_s->second;
+
 	for (size_t i = 1; i < csv_lines.size(); i++) {
 		std::vector<std::string> row = csv_lines[i];
-		if (row.size() < 4){
+		if (row.size() != map_column_index.size()){
 			delete barcode_sample_map;
-			throw(runtime_error("Error: less than 4 fields in csv file!\n"));
+			string message = string_format("Error: The header defines %ld columns, "
+					"but the row contains %ld fields in the .csv file!\n",
+					map_column_index.size(), row.size());
+			throw(runtime_error(message));
 		}
 		lines_read += 1;
-		string sample_name = row[0];
+		string sample_name = row[idx_sample_name];
 
 		// we use this to keep track of duplicate sample names
 		sample_count[sample_name] += 1;
-		string tmp_i7 = row[1];
+		string tmp_i7 = row[idx_i7];
 		string i7_bc = tmp_i7; // has i7.
 		if (tmp_i7.compare("") == 0) {
 			i7_bc = "";
 		}
 
 		// i5 can be sequenced as reverse complement, translate if needed
-		string tmp_i5 = row[2];
+		string tmp_i5 = row[idx_i5];
 		if (i5_rc) {
-			tmp_i5 = reverse_complement(row[2]);
+			tmp_i5 = reverse_complement(tmp_i5);
 		}
 		string i5_bc = tmp_i5;
 		if (tmp_i5.compare("") == 0) {
 			i5_bc = "";
 		}
 
-		string tmp_i1 = row[3];
+		string tmp_i1 = row[idx_i1];
 		string i1_bc = tmp_i1; // has i1.
 		if (tmp_i1.compare("") == 0) {
 			i1_bc = "";
@@ -262,6 +308,48 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 					same_barcode.c_str());
 			delete barcode_sample_map;
 			throw(runtime_error(message));
+		}
+
+		// Add i1 read index and start position, depending on i7,i5 combination
+		{
+			i1_info i1_read_info = {default_i1_read, default_i1_start, int(default_i1_start + i1_bc.length())};
+			if (idx_i1_read >= 0){
+				i1_read_info.read_index = strtol(row[idx_i1_read].c_str(),NULL,10);
+				if(i1_read_info.read_index != 1 && i1_read_info.read_index != 2){
+					throw(runtime_error("Error: the sample sheet contains an i1 read index which is neither 1 nor 2!"));
+				}
+			}
+			if (idx_i1_start >= 0){
+				i1_read_info.start_index = strtol(row[idx_i1_start].c_str(),NULL,10);
+				if(i1_read_info.start_index < 1){
+					throw(runtime_error("Error: the sample sheet contains an i1 read start which is smaller than 1!"));
+				}
+				// make i1 start 0-based for internal use.
+				i1_read_info.start_index--;
+				i1_read_info.end_index = int(i1_read_info.start_index + i1_bc.length());
+			}
+			string barcodes_i7_i5 = i7_bc + '\n' + i5_bc;
+			auto it_i1_options = i7_i5_i1_info_map.find(barcodes_i7_i5);
+			if (it_i1_options != i7_i5_i1_info_map.end()){
+				bool valid_duplicate = true;
+				string message = "Error: the i7,i5 combination occurs twice with different i1 read/start informations!";
+				if (it_i1_options->second.read_index != i1_read_info.read_index){
+					valid_duplicate = false;
+					message += string_format("\nWrong i1 read indices %ld and %ld for barcodes %s!",
+							it_i1_options->second.read_index, i1_read_info.read_index, barcodes_i7_i5.c_str());
+				}
+				if (it_i1_options->second.start_index != i1_read_info.start_index){
+					valid_duplicate = false;
+					message += string_format("\nWrong i1 read starts %ld and %ld for barcodes %s!",
+							it_i1_options->second.start_index, i1_read_info.start_index, barcodes_i7_i5.c_str());
+				}
+				if (!valid_duplicate){
+					throw(runtime_error(message));
+				}
+			}
+			else{
+				i7_i5_i1_info_map[barcodes_i7_i5] = i1_read_info;
+			}
 		}
 
 		barcode_sample_map->insert( { barcodes, sample_name });
@@ -291,7 +379,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	// test if the supplied barcode combinations are valid
 	bool is_valid = has_valid_barcode_combinations(*i7, *i5, *i1);
 	if (!is_valid)
-            throw(runtime_error("Error: Invalid barcode combinations"));
+		throw(runtime_error("Error: Invalid barcode combinations"));
 	// sample names have to be unique as they determine the outfile name. Otherwise
 	// we get problems when we try to write reads belonging to different barcode
 	// combinations to one file.
@@ -484,8 +572,7 @@ bool Parser::has_valid_barcode_combinations(Barcode &i7, Barcode &i5,
  booleans.
  */
 void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
-		bool has_i5, bool has_i1, int i7_length, int i5_length, int i1_start,
-		int i1_end) {
+		bool has_i5, bool has_i1, int i7_length, int i5_length, unordered_map<string, i1_info> &i7_i5_i1_info_map) {
 	fprintf(stdout,
 			"Peeking into fastq files to check for barcode formatting errors\n");
 
@@ -507,7 +594,7 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 		 mate_pair.second = &pe_reads[i+1];
 		 */
 		check_mate_pair(mate_pair, has_i7, has_i5, has_i1, i7_length, i5_length,
-				i1_start, i1_end);
+				i7_i5_i1_info_map);
 		counter += 1;
 		if (counter == lines_to_check)
 			break;
@@ -523,12 +610,22 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 
 void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 		bool has_i7, bool has_i5, bool has_i1, int i7_length, int i5_length,
-		int i1_start, int i1_end) {
+		unordered_map<string, i1_info> &i7_i5_i1_info_map) {
 
-	fq_read *mate2 = mate_pair.second;
 	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length);
-	if (has_i1)
-		check_mate2_length(mate2, i1_start, i1_end);
+	if (has_i1){
+		pair<string,string> bcs_mate1 = Parser::parse_indices(mate_pair.first->Seq_ID);
+		string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
+		auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
+		if (it_i1_info != i7_i5_i1_info_map.end()){
+			int i1_start = it_i1_info->second.start_index;
+			int i1_end = it_i1_info->second.end_index;
+			if (it_i1_info->second.read_index == 1)
+				check_mate2_length(mate_pair.first, i1_start, i1_end);
+			if (it_i1_info->second.read_index == 2)
+				check_mate2_length(mate_pair.second, i1_start, i1_end);
+		}
+	}
 }
 
 void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
@@ -569,13 +666,11 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 	string header_mate_2(m_2->Seq_ID);
 
 	// get the barcodes from the fastq header
-	std::pair<string, string> bcs_mate1;
-	std::pair<string, string> bcs_mate2;
-	bcs_mate1 = Parser::parse_indices(header_mate_1);
-	bcs_mate2 = Parser::parse_indices(header_mate_2);
+	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1);
+	std::pair<string, string> bcs_mate2 = Parser::parse_indices(header_mate_2);
 
 	if ((bcs_mate1.first.compare(bcs_mate2.first) != 0)
-			&& (bcs_mate1.second.compare(bcs_mate2.second) != 0)) {
+			|| (bcs_mate1.second.compare(bcs_mate2.second) != 0)) {
 		string message = string_format(
 				"Mate1 and mate2 contain different barcode information. Please "
 						"make sure the reads in your fastq files are paired.\n"
