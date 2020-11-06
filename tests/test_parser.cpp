@@ -53,7 +53,7 @@ vector<pair<string, string>> FOR_RC_PASS = { { "AAAACATCGTTN", "NAACGATGTTTT" },
 vector<string> FOR_RC_FAIL = { "AAAACATCGTTNXXXXX", to_string(10) };
 
 string FQ_RES = Exe_dir + PATH_SEP + RESOURCE + PATH_SEP + string("fastq");
-int INDEX_LENGTH = 12;
+vector<int> INDEX_LENGTH = {12};
 int I1_START = 10;
 
 struct fq_test_data {
@@ -63,8 +63,8 @@ struct fq_test_data {
 	bool has_i7;
 	bool has_i5;
 	bool has_i1;
-	int i7_length;
-	int i5_length;
+	vector<int> i7_length;
+	vector<int> i5_length;
 	int i1_start;
 	int i1_end;
 };
@@ -72,39 +72,39 @@ struct fq_test_data {
 vector<fq_test_data> FQ_TO_PASS = { { "i7(12)nt, i5(12)nt, i1(12)nt", FQ_RES
 		+ PATH_SEP + string("i7_i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 		+ string("i7_i5_i1_read_2.fastq.gz"), true, true, true, INDEX_LENGTH,
-		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, {
+		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"i7(12)nt, i5(0nt), i1(12)nt", FQ_RES + PATH_SEP
 				+ string("i7_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 				+ string("i7_i1_read_2.fastq.gz"), true, false, true,
-		INDEX_LENGTH, 0, I1_START, I1_START + INDEX_LENGTH }, {
+		INDEX_LENGTH, vector<int>({0}), I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"i7(0)nt, i5(12nt), i1(12)nt", FQ_RES + PATH_SEP
 				+ string("i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
-				+ string("i5_i1_read_2.fastq.gz"), false, true, true, 0,
-		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, {
+				+ string("i5_i1_read_2.fastq.gz"), false, true, true, vector<int>({0}),
+		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"i7(10)nt, i5(12nt), i1(12)nt", FQ_RES + PATH_SEP
 				+ string("i7-2_i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 				+ string("i7-2_i5_i1_read_2.fastq.gz"), true, true, true,
-		INDEX_LENGTH - 2, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, };
+				vector<int>({INDEX_LENGTH[0] - 2}), INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, };
 
 vector<fq_test_data> FQ_TO_FAIL = { { "too long i7", FQ_RES + PATH_SEP
 		+ string("i7+2_i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 		+ string("i7_i5_i1_read_2.fastq.gz"), true, true, true, INDEX_LENGTH,
-		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, { "too long i5",
+		INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, { "too long i5",
 		FQ_RES + PATH_SEP + string("i7_i5+2_i1_read_1.fastq.gz"), FQ_RES
 				+ PATH_SEP + string("i7_i5+2_i1_read_2.fastq.gz"), true, true,
-		true, INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, {
+		true, INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"too short i1 sequence", FQ_RES + PATH_SEP
 				+ string("i7_i5_noi1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 				+ string("i7_i5_noi1_read_2.fastq.gz"), true, true, true,
-		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, {
+		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"different barcode headers", FQ_RES + PATH_SEP
 				+ string("i7+2_i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 				+ string("i7_i5_i1_read_2.fastq.gz"), true, true, true,
-		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH }, {
+		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] }, {
 		"too short i7", FQ_RES + PATH_SEP
 				+ string("i7-2_i5_i1_read_1.fastq.gz"), FQ_RES + PATH_SEP
 				+ string("i7-2_i5_i1_read_2.fastq.gz"), true, true, true,
-		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH } };
+		INDEX_LENGTH, INDEX_LENGTH, I1_START, I1_START + INDEX_LENGTH[0] } };
 
 vector<string> iterate_csv_files(boost::filesystem::path p) {
 	vector<string> csv_files;
@@ -171,11 +171,9 @@ BOOST_AUTO_TEST_CASE( test_load_correction_maps ) {
 		Barcode *tmp_bc = *it;
 		boost::filesystem::path p(Exe_path);
 		tmp_bc->load_correction_map(p.string());
-		if (!tmp_bc->correction_map) {
-			throw(std::runtime_error("ERROR: could not load correction map!\n"));
-		}
-		for (auto itk = tmp_bc->correction_map->begin();
-				itk != tmp_bc->correction_map->end(); itk++) {
+
+		for (auto itk = tmp_bc->Correction_map.begin();
+				itk != tmp_bc->Correction_map.end(); itk++) {
 			BOOST_CHECK(itk->first.compare(itk->second) == 0);
 		}
 

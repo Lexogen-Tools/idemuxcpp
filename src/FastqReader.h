@@ -38,7 +38,7 @@ struct fq_read{
 class IFastqReader{
 public:
 	virtual fq_read* next_read() = 0;
-//virtual ~IFastqReader();
+	virtual ~IFastqReader(){};
 };
 
 class FastqReader : public IFastqReader{

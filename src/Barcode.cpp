@@ -16,7 +16,7 @@ using namespace std;
 Barcode::Barcode(string barcode_type,
 		unordered_map<string, std::vector<string>> &ix_barcodes,
 		bool reverse_complement) :
-		length(0), Name(barcode_type), correction_map(NULL), allowed_lengths( {
+		Name(barcode_type), allowed_lengths( {
 				6, 8, 10, 12 }), lengths_96_barcodes( { 8, 10, 12 }), lengths_384_barcodes(
 				{ 10, 12 }) {
 
@@ -28,14 +28,18 @@ Barcode::Barcode(string barcode_type,
 
 unordered_set<int>* Barcode::get_set_sizes() {
 	unordered_set<int> *set_sizes = new unordered_set<int>();
-	auto it = allowed_lengths.find(length);
-	if (it != allowed_lengths.end()) {
-		auto it_96 = lengths_96_barcodes.find(length);
-		if (it_96 != lengths_96_barcodes.end())
-			set_sizes->insert(96);
-		auto it_384 = lengths_384_barcodes.find(length);
-		if (it_384 != lengths_384_barcodes.end())
-			set_sizes->insert(384);
+	int length;
+	for(int i = 0; i < this->Lengths.size(); i++){
+		length = this->Lengths[i];
+		auto it = allowed_lengths.find(length);
+		if (it != allowed_lengths.end()) {
+			auto it_96 = lengths_96_barcodes.find(length);
+			if (it_96 != lengths_96_barcodes.end())
+				set_sizes->insert(96);
+			auto it_384 = lengths_384_barcodes.find(length);
+			if (it_384 != lengths_384_barcodes.end())
+				set_sizes->insert(384);
+		}
 	}
 	return set_sizes;
 }
@@ -63,7 +67,7 @@ void Barcode::check_length() {
 			auto itl = this->allowed_lengths.find((int) barcode.length());
 			if (itl != this->allowed_lengths.end()) {
 				observed_lengths.insert(barcode.length());
-
+				/*
 				if (observed_lengths.size() > 1) {
 					string message = string_format(
 							"%s barcodes with a different length "
@@ -76,8 +80,7 @@ void Barcode::check_length() {
 							this->length);
 					throw(std::runtime_error(message));
 				}
-
-				this->length = (int) barcode.length();
+				*/
 			} else {
 				string tmplengths = "";
 				for (auto ita = this->allowed_lengths.begin();
@@ -93,6 +96,7 @@ void Barcode::check_length() {
 
 		}
 	}
+	this->Lengths.assign(observed_lengths.begin(), observed_lengths.end());
 }
 
 /**
@@ -110,11 +114,11 @@ void Barcode::load_correction_map(string relative_exepath) {
 			this->Name.c_str());
 
 	// When there are no barcodes specified, there is nothing to correct.
-	if (this->length == 0) {
+	if (this->Lengths.size() == 0) {
 		fprintf(stdout, "No barcodes have been specified for %s.\n",
 				this->Name.c_str());
-		this->correction_map = new unordered_map<string, string>(); //.clear();
-		this->correction_map->insert( { "", "" });
+		this->Correction_map.clear();
+		//this->Correction_map.insert( { "", "" });
 		return;
 		//barcode.correction_map = NULL; //unordered_map<string,string> {"None": "None"};
 		//return NULL;
@@ -153,47 +157,90 @@ void Barcode::load_correction_map(string relative_exepath) {
 	}
 	std::cout << package_str << std::endl;
 
-	for (auto it = sizes.begin(); it != sizes.end(); it++) {
-		set_size = (*it);
-		string file_str = "base_mapping_b" + to_string(set_size) + "_l"
-				+ to_string(this->length) + ".tsv";
 
-		unordered_map<string, string> *corr_map = Parser::get_map_from_resource(
-				package_str, file_str);
-		//_barcode_set = set(corr_map.values());
-		unordered_set<string> *_barcodes_given = this->get_used_codes(
-				drop_none);
-		bool is_contained = true;
-		for (auto it_test = _barcodes_given->begin();
-				it_test != _barcodes_given->end(); it_test++) {
-			auto it_contained = corr_map->find(*it_test);
-			if (it_contained == corr_map->end()) {
-				is_contained = false;
-				break;
-			}
-		}
-		delete _barcodes_given;
-		if (is_contained) {
-			printf(
-					"Correct set found. Used set is %d barcodes with %d nt length.\n",
-					set_size, this->length);
-			this->correction_map = corr_map;
-			return;
-		}
-		delete corr_map;
+	// sort codes according to length.
+	unordered_set<string> *barcodes_given = this->get_used_codes(drop_none);
+	string code;
+	unordered_map<size_t,vector<string>> legth_and_codes;
+	for(auto it = barcodes_given->begin(); it != barcodes_given->end(); it++){
+		code = *it;
+		legth_and_codes[code.length()].push_back(code);
 	}
-	if (this->length != 6) {
+
+	// load all barcodes for all set sizes and barcode lengths (that were defined in the sample sheet).
+	this->Correction_map.clear();
+	int n_loaded_maps = 0;
+	int length;
+	for(auto itl = this->Lengths.begin(); itl != this->Lengths.end(); itl++){
+		length = *itl;
+		if (length == 6){
+			//do one to one mapping (there is no mapping table for this.)
+			printf("Barcodes with length 6 found in dataset. These codes will be demultiplexed, but without error correction.\n");
+			for (auto it_code_6 = legth_and_codes[length].begin(); it_code_6 != legth_and_codes[length].end(); it_code_6++) {
+				this->Correction_map.insert({ *it_code_6, *it_code_6 });
+			}
+			continue;
+		}
+
+		for (int i = 0; i < sizes.size(); i++) {
+			set_size = sizes[i];
+			string file_str = "base_mapping_b" + to_string(set_size) + "_l"
+					+ to_string(length) + ".tsv";
+			unordered_map<string, string> *corr_map = Parser::get_map_from_resource(
+					package_str, file_str);
+			//test if all codes are contained in the map for a certain length.
+			int n_codes_contained = 0;
+			for (auto it_test = legth_and_codes[length].begin();
+					it_test != legth_and_codes[length].end(); it_test++) {
+				auto it_contained = corr_map->find(*it_test);
+				if (it_contained == corr_map->end()) {
+					break;
+				}
+				n_codes_contained++;
+			}
+
+			if (n_codes_contained == legth_and_codes[length].size()) {
+				printf(
+						"Correct set found (%d matching codes). Used set is %d barcodes with %d nt length.\n",
+						n_codes_contained, set_size, length);
+				for(auto it_codes = corr_map->begin(); it_codes != corr_map->end(); it_codes++){
+					auto it_found_code = this->Correction_map.find(it_codes->first);
+					if (it_found_code == this->Correction_map.end()){
+						this->Correction_map[it_codes->first] = it_codes->second;
+					}
+					else if (it_found_code->second != it_codes->second){
+						delete corr_map;
+						string message = "Error: the sample sheet contains barcodes, which cannot be uniquely mapped to your correction tables!\n"
+								"The barcode %s is mapped to %s int the current correction table and to %s in the previous correction table!";
+						message = string_format(message,it_codes->first.c_str(), it_codes->second.c_str(), it_found_code->second.c_str());
+						throw(runtime_error(message));
+					}
+				}
+				n_loaded_maps++;
+				delete corr_map;
+				//all codes for this length are contained in the set for the given size --> break.
+				break;
+				//return;
+			}
+			delete corr_map;
+		}
+	}
+	if (this->Correction_map.size() > 0 && n_loaded_maps == this->Lengths.size())
+		return;
+
+
+	if (std::find(this->Lengths.begin(), this->Lengths.end(),6) == this->Lengths.end() || this->Lengths.size() > 1) {
 		printf(
 				"Warning: No fitting Lexogen barcode set found for %s. No "
 						"error correction will take place for this barcode. Are you using "
 						"valid Lexogen barodes?\n", this->Name.c_str());
 	}
-	unordered_set<string> *_bc_list = this->used_codes();
-	this->correction_map = new unordered_map<string, string>();
-	for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
-		this->correction_map->insert( { *it, *it });
+
+	this->Correction_map.clear();
+	for (auto it = barcodes_given->begin(); it != barcodes_given->end(); it++) {
+		this->Correction_map.insert( { *it, *it });
 	}
-	delete _bc_list;
+	delete barcodes_given;
 
 	/*
 	 if barcode.length != 6:
@@ -208,11 +255,11 @@ void Barcode::load_correction_map(string relative_exepath) {
 }
 
 void Barcode::create_one_to_one_map() {
-	if (this->length > 0) {
+	if (this->Lengths.size() > 0) {
 		unordered_set<string> *_bc_list = this->used_codes();
-		this->correction_map = new unordered_map<string, string>(); //.clear();
+		this->Correction_map.clear();
 		for (auto it = _bc_list->begin(); it != _bc_list->end(); it++) {
-			this->correction_map->insert( { *it, *it });
+			this->Correction_map.insert( { *it, *it });
 		}
 		delete _bc_list;
 
@@ -220,13 +267,13 @@ void Barcode::create_one_to_one_map() {
 		// When there are no barcodes specified, there is nothing to correct.
 		fprintf(stdout, "No barcodes have been specified for %s.\n",
 				this->Name.c_str());
-		this->correction_map = new unordered_map<string, string>(); //.clear();
-		this->correction_map->insert( { "", "" });
+		this->Correction_map.clear();
+		this->Correction_map.insert( { "", "" });
 	}
 }
 
 Barcode::~Barcode() {
-	if (this->correction_map)
-		delete this->correction_map;
+	//if (this->Correction_map)
+	//	delete this->Correction_map;
 }
 

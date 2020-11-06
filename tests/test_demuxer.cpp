@@ -32,6 +32,27 @@ vector<string>* demux_i7_i5_i1() {
 	return paths;
 }
 
+vector<string>* demux_i7() {
+	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
+			+ string("end_to_end");
+	string read_1 = res + PATH_SEP + string("test_12_10_6_r1.fastq.gz");
+	string read_2 = res + PATH_SEP + string("test_12_10_6_r2.fastq.gz");
+	string csv = res + PATH_SEP + string("i7_different_lengths.csv");
+	vector<string> *paths = new vector<string>( { read_1, read_2, csv });
+	return paths;
+}
+
+vector<string>* demux_i7_i1_different_lengths(){
+	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
+			+ string("end_to_end");
+	string read_1 = res + PATH_SEP + string("test_12_10_6_r1.fastq.gz");
+	string read_2 = res + PATH_SEP + string("test_12_10_6_r2.fastq.gz");
+	string csv = res + PATH_SEP + string("i7_i1_different_lengths.csv");
+	vector<string> *paths = new vector<string>( { read_1, read_2, csv });
+	return paths;
+}
+
+
 vector<string>* demux_i7_i1() {
 	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
 			+ string("end_to_end");
@@ -86,9 +107,9 @@ void demux_loop(string read1, string read2, vector<Barcode*> &barcodes,
 	unordered_set<string> *i7_wanted = i7->used_codes();
 	unordered_set<string> *i5_wanted = i5->used_codes();
 	unordered_set<string> *i1_wanted = i1->used_codes();
-	unordered_map<string, string> *map_i7 = i7->correction_map;
-	unordered_map<string, string> *map_i5 = i5->correction_map;
-	unordered_map<string, string> *map_i1 = i1->correction_map;
+	unordered_map<string, string> *map_i7 = &i7->Correction_map;
+	unordered_map<string, string> *map_i5 = &i5->Correction_map;
+	unordered_map<string, string> *map_i1 = &i1->Correction_map;
 	PairedReader pr(read1, read2);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads;
 	bool reads_available = true;
@@ -387,6 +408,63 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	delete tsv_lines;
 	utils::rmdir(tmp_path);
 }
+
+void test_demux_reads(vector<string> *paths_r1_r2_csv){
+	int expected_reads = 1;
+	string read1, read2, csv;
+	read1 = paths_r1_r2_csv->at(0);
+	read2 = paths_r1_r2_csv->at(1);
+	csv = paths_r1_r2_csv->at(2);
+	Parser pe;
+	vector<Barcode*> barcodes;
+	unordered_map<string, i1_info> i7_i5_i1_info_map;
+	std::cout << csv << std::endl;
+	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
+	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
+			csv, false, barcodes, i7_i5_i1_info_map, p.string(), false, 2, I1_START);
+
+	int chunk_size = 1000;
+	int reading_threads = 2;
+	int writing_threads = 1;
+	int processing_threads = 1;
+
+	string tmp_path = p.parent_path().string() + PATH_SEP + string("test_output");
+	if(!utils::folder_exists(tmp_path))
+		utils::mkdir(tmp_path);
+	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
+			tmp_path, pe, chunk_size, reading_threads, writing_threads,
+			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
+
+	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
+	//ifstream stats_file_stream(stats_file.c_str());
+	std::unordered_map<string, string> *tsv_lines =
+			Parser::get_map_from_resource(tmp_path, "demultipexing_stats.tsv");
+	string read_count;
+	for (auto it = tsv_lines->begin(); it != tsv_lines->end(); it++) {
+		// test all sample lines (without header line).
+		if (it->first.rfind("sample_", 0) == 0 && it->first.compare("sample_name") != 0) {
+			read_count = it->second;
+			stringstream ss(read_count);
+			int n_reads;
+			ss >> n_reads; //strtol(row[1].c_str(), &rest, 10);
+			fprintf(stderr,"reads %d 1 %s\n", n_reads, it->first.c_str());
+			BOOST_CHECK(n_reads == expected_reads);
+		}
+	}
+	delete tsv_lines;
+	utils::rmdir(tmp_path);
+}
+
+BOOST_AUTO_TEST_CASE(test_demux_paired_end_i7) {
+	vector<string> *paths = demux_i7();
+	test_demux_reads(paths);
+}
+
+BOOST_AUTO_TEST_CASE(test_demux_paired_end_i7_i1) {
+	vector<string> *paths = demux_i7_i1_different_lengths();
+	test_demux_reads(paths);
+}
+
 
 bool is_equal_read(fq_read &r1, fq_read r2) {
 	bool is_equal = r1.Seq_ID.compare(r2.Seq_ID) == 0;

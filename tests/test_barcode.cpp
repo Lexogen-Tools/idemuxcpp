@@ -35,6 +35,13 @@ unordered_map<string, std::vector<string>>* different_lengths(){
     return vals;
 }
 
+unordered_map<string, std::vector<string>>* different_invalid_lengths(){
+	unordered_map<string, std::vector<string>>* vals = new unordered_map<string,  std::vector<string>>();
+	vals->insert({string(10,'A'), {"test0"}});
+	vals->insert({string(666,'C'), {"test1"}});
+    return vals;
+}
+
 unordered_map<string, std::vector<string>>* correct_length(){
 	unordered_map<string, std::vector<string>>* vals = new unordered_map<string, std::vector<string>>();
 	vals->insert({string(12,'A'), {"test0"}});
@@ -49,12 +56,22 @@ BOOST_AUTO_TEST_CASE( test_invalid_lengths )
 	delete l;
 }
 
+//this will be allowed
 BOOST_AUTO_TEST_CASE( test_different_lengths )
 {
 	unordered_map<string,  std::vector<string>>* l = different_lengths();
-	BOOST_CHECK_THROW( Barcode b("different lengths", *l,false), std::runtime_error);
+	BOOST_CHECK_NO_THROW( Barcode b("different lengths", *l,false));
 	delete l;
 }
+
+//this will be allowed
+BOOST_AUTO_TEST_CASE( test_different_invalid_lengths )
+{
+	unordered_map<string,  std::vector<string>>* l = different_invalid_lengths();
+	BOOST_CHECK_THROW( Barcode b("different invalid lengths", *l,false), std::runtime_error);
+	delete l;
+}
+
 
 BOOST_AUTO_TEST_CASE( test_barcode_rc )
 {
@@ -85,7 +102,7 @@ BOOST_AUTO_TEST_CASE( test_is_empty )
 	unordered_map<string,  std::vector<string>>* l = none_values();
 	Barcode bc("i5", *l);
 	BOOST_CHECK(bc.empty() == true);
-	BOOST_CHECK(bc.length == 0);
+	BOOST_CHECK(bc.Lengths.size() == 0);
 	delete l;
 }
 
@@ -93,7 +110,7 @@ BOOST_AUTO_TEST_CASE( test_length_getter )
 {
 	unordered_map<string,  std::vector<string>>* l = correct_length();
 	Barcode bc("i5", *l);
-	BOOST_CHECK(bc.length == 12);
+	BOOST_CHECK(bc.Lengths[0] == 12);
 	delete l;
 }
 

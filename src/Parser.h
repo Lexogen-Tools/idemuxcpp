@@ -44,14 +44,14 @@ public:
 	bool has_valid_barcode_combinations(Barcode &i7, Barcode &i5, Barcode &i1);
 	void fastq_lines_to_reads(string fastq_lines);
 	void peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
-			bool has_i5, bool has_i1, int i7_length, int i5_length,
+			bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
 			unordered_map<string, i1_info> &i7_i5_i1_info_map);
 	void check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair, bool has_i7,
-			bool has_i5, bool has_i1, int i7_length, int i5_length,
+			bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
 			unordered_map<string, i1_info> &i7_i5_i1_info_map);
 	void check_mate2_length(fq_read *mate2, int i1_start, int i1_end);
 	void check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
-			bool has_i7, bool has_i5, int i7_length, int i5_length);
+			bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length);
 
 	static std::pair<string, string> parse_indices(string input) {
 		size_t index_colon = input.find_last_of(':');
@@ -93,6 +93,7 @@ public:
 		int return_idx; //for windows files
 		string v1, v2;
 		if (dataFile.fail()) {
+			delete mapping;
 			string message = string_format(
 					"Error: failed to open the correction map file! Please copy it "
 							"to the following location: %s\n", filepath.c_str());
@@ -119,6 +120,8 @@ public:
 	}
 
 	virtual ~Parser();
+private:
+	string list_to_string(vector<int> list);
 };
 
 #endif /* PARSER_H_ */

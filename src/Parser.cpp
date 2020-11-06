@@ -250,7 +250,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	auto it_r = map_column_index.find("i1_read");
 	if(it_r != map_column_index.end())
 		idx_i1_read = it_r->second;
-	auto it_s = map_column_index.find("idx_i1_start");
+	auto it_s = map_column_index.find("i1_start");
 	if(it_s != map_column_index.end())
 		idx_i1_start = it_s->second;
 
@@ -572,7 +572,7 @@ bool Parser::has_valid_barcode_combinations(Barcode &i7, Barcode &i5,
  booleans.
  */
 void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
-		bool has_i5, bool has_i1, int i7_length, int i5_length, unordered_map<string, i1_info> &i7_i5_i1_info_map) {
+		bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length, unordered_map<string, i1_info> &i7_i5_i1_info_map) {
 	fprintf(stdout,
 			"Peeking into fastq files to check for barcode formatting errors\n");
 
@@ -609,7 +609,7 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 }
 
 void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
-		bool has_i7, bool has_i5, bool has_i1, int i7_length, int i5_length,
+		bool has_i7, bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
 		unordered_map<string, i1_info> &i7_i5_i1_info_map) {
 
 	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length);
@@ -643,6 +643,14 @@ void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
 
 }
 
+string Parser::list_to_string(vector<int> list){
+	string res = "{";
+	for(int i = 0; i < list.size(); i++)
+		res += to_string(list[i]) + ",";
+	res = res.substr(0,res.length()-1) + "}";
+	return res;
+}
+
 /**
  * Function to check if the barcodes (i7,i5) specified in the sample sheet are
  as well in the fastq header.
@@ -657,7 +665,7 @@ void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
  booleans.
  */
 void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
-		bool has_i7, bool has_i5, int i7_length, int i5_length) {
+		bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length) {
 
 	fq_read *m_1 = mate_pair.first;
 	fq_read *m_2 = mate_pair.second;
@@ -725,36 +733,36 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 
 	// when there are 2 barcodes in the fastq header the orientation is i7,i5
 	if (has_i7 && has_i5)
-		if ((int)bcs_mate1.first.length() != i7_length
-				|| (int)bcs_mate1.second.length() != i5_length) {
+		if (std::find(i7_length.begin(), i7_length.end(), (int)bcs_mate1.first.length()) == i7_length.end()
+				|| std::find(i5_length.begin(), i5_length.end(), (int)bcs_mate1.second.length()) == i5_length.end()) {
 			string message = string_format(
 					"i7 and i5 have a different length than specified in the "
 							"sample_sheet. "
 							"Observed length(i7,i5): %ld"
 							",%ld}\n "
-							"Expected length(i7,i5): %d,%d",
+							"Expected length(i7,i5): %s,%s",
 					bcs_mate1.first.length(), bcs_mate1.second.length(),
-					i7_length, i5_length);
+					list_to_string(i7_length), list_to_string(i5_length));
 			throw(runtime_error(message));
 		}
 	if (has_i7 && !has_i5)
-		if ((int)bcs_mate1.first.length() != i7_length) {
+		if (std::find(i7_length.begin(), i7_length.end(), (int)bcs_mate1.first.length()) == i7_length.end()) {
 			string message = string_format(
 					"i7 has a different length than specified in the "
 							"sample_sheet. "
 							"Observed length(i7): %ld\n"
 							"Expected length(i7): %d\n",
-					bcs_mate1.first.length(), i7_length);
+					bcs_mate1.first.length(), list_to_string(i7_length));
 			throw(runtime_error(message));
 		}
 	if (!has_i7 && has_i5)
-		if ((int)bcs_mate1.first.length() != i5_length) {
+		if (std::find(i5_length.begin(), i5_length.end(), (int)bcs_mate1.first.length()) == i5_length.end()) {
 			string message = string_format(
 					"i5 has a different length than specified in the "
 							"sample_sheet. "
 							"Observed length(i5): %ld\n"
-							"Expected length(i5): %d\n",
-					bcs_mate1.first.length(), i5_length);
+							"Expected length(i5): %s\n",
+					bcs_mate1.first.length(), list_to_string(i5_length));
 			throw(runtime_error(message));
 		}
 

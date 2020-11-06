@@ -21,7 +21,7 @@
 #include "ZipFastqWriter.h"
 #include "Writer.h"
 #include "Correction_Counter.h"
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP //HAVE_OPENMP
 #include "omp.h"
 #endif
 
@@ -29,6 +29,20 @@ using namespace std;
 
 typedef std::chrono::high_resolution_clock Clock;
 
+
+string extract_i1(fq_read* r, size_t i1_start, size_t i1_end){
+	return r->Sequence.substr(i1_start, i1_end - i1_start);
+}
+/**
+ * remove the i1 interval from the sequence and the quality code and append it to the index.
+ */
+void cut_out_i1(fq_read* r, size_t i1_start, size_t i1_end){
+	string i1_bc = r->Sequence.substr(i1_start, i1_end - i1_start);
+	r->Seq_ID = string(r->Seq_ID).append("+").append(i1_bc);
+	r->Sequence = string(r->Sequence).substr(0,i1_start).append(r->Sequence.substr(i1_end));
+	//r->Plus_ID = string(r->Plus_ID);
+	r->QualityCode = string(r->QualityCode).substr(0, i1_start).append(r->QualityCode.substr(i1_end));
+}
 
 /**
  * process mate pair
@@ -85,40 +99,29 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 		auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
 		if (it_i1_info != i7_i5_i1_info_map.end())
 		{
-			int i1_start = it_i1_info->second.start_index;
-			int i1_end = it_i1_info->second.end_index;
-			i1_bc = mate_pair.second->Sequence.substr(i1_start, i1_end - i1_start);
+			size_t i1_start = it_i1_info->second.start_index;
+			size_t i1_end = it_i1_info->second.end_index;
 
-			//i1_bc = mate_pair[1][1][i1_start:i1_end]
+			if(it_i1_info->second.read_index == 1)
+				i1_bc = extract_i1(r1c, i1_start, i1_end);
+			else
+				i1_bc = extract_i1(r2c, i1_start, i1_end);
+			printf("read %d bc %s\n",it_i1_info->second.read_index, i1_bc.c_str());
 			auto iti1c = map_i1->find(i1_bc);
 			if (iti1c != map_i1->end()) {
 				string _i1_corrected = iti1c->second;
-
 				//if _i1_corrected in i1_wanted:
 				auto it1 = i1_wanted->find(_i1_corrected);
 				if (it1 != i1_wanted->end()) {
+					if(it_i1_info->second.read_index == 1){
+						cut_out_i1(r1c, i1_start, i1_end);
+						r2c->Seq_ID.append("+").append(i1_bc);
+					}
+					else{
+						cut_out_i1(r2c, i1_start, i1_end);
+						r1c->Seq_ID.append("+").append(i1_bc);
+					}
 
-					r1c->Seq_ID =
-							string(mate_pair.first->Seq_ID).append("+").append(
-									i1_bc);
-					//m1_hdr = f"{m1_hdr[:-1]}+{i1_bc}\n"
-					r1c->Sequence = string(mate_pair.first->Sequence);
-					r1c->Plus_ID = string(mate_pair.first->Plus_ID);
-					r1c->QualityCode = string(mate_pair.first->QualityCode);
-
-					r2c->Seq_ID =
-							string(mate_pair.second->Seq_ID).append("+").append(
-									i1_bc);
-					r2c->Sequence = string(mate_pair.second->Sequence).substr(0,
-							i1_start).append(
-							mate_pair.second->Sequence.substr(i1_end));
-					r2c->Plus_ID = string(mate_pair.second->Plus_ID);
-					r2c->QualityCode = string(mate_pair.second->QualityCode).substr(
-							0, i1_start).append(
-							mate_pair.second->QualityCode.substr(i1_end));
-					//m2_hdr = f"{m2_hdr[:-1]}+{i1_bc}\n"
-					//m2_seq = f"{m2_seq[:i1_start]}{m2_seq[i1_end:]}"
-					//m2_qcs = f"{m2_qcs[:i1_start]}{m2_qcs[i1_end:]}"
 					if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
 						corrected_i1 = true;
 					i1_bc = _i1_corrected;
@@ -154,9 +157,9 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	unordered_set<string> *i7_wanted = i7->used_codes();
 	unordered_set<string> *i5_wanted = i5->used_codes();
 	unordered_set<string> *i1_wanted = i1->used_codes();
-	unordered_map<string, string> *map_i7 = i7->correction_map;
-	unordered_map<string, string> *map_i5 = i5->correction_map;
-	unordered_map<string, string> *map_i1 = i1->correction_map;
+	unordered_map<string, string> *map_i7 = &i7->Correction_map;
+	unordered_map<string, string> *map_i5 = &i5->Correction_map;
+	unordered_map<string, string> *map_i1 = &i1->Correction_map;
 
 	// if None is in *_wanted no barcode has been specified
 	bool has_i7 = !i7->empty();
@@ -165,7 +168,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 
 	// before doing any processing check if the fastq file is okay.
 	parser.peek_into_fastq_files(read1, read2, has_i7, has_i5, has_i1,
-			i7->length, i5->length, i7_i5_i1_info_map);
+			i7->Lengths, i5->Lengths, i7_i5_i1_info_map);
 
 	Correction_Counter* counted_corrections_per_index = NULL;
 	if(barcode_corrections_file.compare("") != 0){
@@ -183,7 +186,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads;
 	bool reads_available = true;
 	std::unordered_map<std::string, size_t> read_counter;
-#ifdef HAVE_OPENMP
+#ifdef _OPENMP
 	int nproc_writing = omp_get_num_procs();
 	if (writing_threads > 0)
 		nproc_writing = writing_threads;
