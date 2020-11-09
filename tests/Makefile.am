@@ -25,6 +25,8 @@ test_demuxer_SOURCES = test_demuxer.cpp \
                        ../src/Writer.cpp \
                        ../src/FileHandler.h \
                        ../src/FileHandler.cpp \
+                       ../src/FileHandlerSE.h \
+                       ../src/FileHandlerSE.cpp \
                        ../src/Correction_Counter.h \
                        ../src/Correction_Counter.cpp
 

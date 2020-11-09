@@ -1,10 +1,10 @@
 
-#include "BoostZipReader.h"
-
 #include <iostream>
 #include <fstream>
 #include <boost/iostreams/filtering_stream.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include "FastqReader.h"
+#include "BoostZipReader.h"
 
 using namespace std;
 

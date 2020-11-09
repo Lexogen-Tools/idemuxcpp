@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
 	bool i5_rc = false;
+	bool single_end_mode = false;
 	int default_i1_read = 2; //read in which the i1 index should be corrected (1 or 2).
 	int default_i1_start = 10; // zero based index
 	size_t queue_size;
@@ -51,8 +52,9 @@ int main(int argc, char **argv) {
 	if (args_info.r2_given) {
 		read2_file = args_info.r2_arg;
 	} else {
-		fprintf(stderr, "Error: please enter a read2.fastq.gz file!\n");
-		exit(EXIT_FAILURE);
+		single_end_mode = true;
+		default_i1_read = 1;
+		fprintf(stderr, "Warning: no read2.fastq.gz file given! Single end demultiplexing will be used.\n");
 	}
 	if (args_info.out_given) {
 		outputdirectory = args_info.out_arg;
@@ -95,11 +97,16 @@ int main(int argc, char **argv) {
 	vector<Barcode*> barcodes;
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, demux_only, default_i1_read, default_i1_start);
+			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	// do things.
-	demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
+	if(single_end_mode)
+		demux_single_end(barcode_sample_map, barcodes, read1_file,
+					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
+	else
+		demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
 			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
+
 
 	delete barcode_sample_map;
 	for (size_t i = 0; i < barcodes.size(); i++)

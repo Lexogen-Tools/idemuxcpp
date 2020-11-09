@@ -39,17 +39,17 @@ struct idemuxCPP_args_info
 {
   const char *help_help; /**< @brief Print help and exit help description.  */
   const char *version_help; /**< @brief Print version and exit help description.  */
-  char * r1_arg;	/**< @brief Fastq.gz read file 1.
+  char * r1_arg;	/**< @brief Fastq.gz read file 1 (or .fastq file).
  (default='').  */
-  char * r1_orig;	/**< @brief Fastq.gz read file 1.
+  char * r1_orig;	/**< @brief Fastq.gz read file 1 (or .fastq file).
  original value given at command line.  */
-  const char *r1_help; /**< @brief Fastq.gz read file 1.
+  const char *r1_help; /**< @brief Fastq.gz read file 1 (or .fastq file).
  help description.  */
-  char * r2_arg;	/**< @brief Fastq.gz read file 2.
+  char * r2_arg;	/**< @brief Fastq.gz read file 2 (required only in paired end mode).
  (default='').  */
-  char * r2_orig;	/**< @brief Fastq.gz read file 2.
+  char * r2_orig;	/**< @brief Fastq.gz read file 2 (required only in paired end mode).
  original value given at command line.  */
-  const char *r2_help; /**< @brief Fastq.gz read file 2.
+  const char *r2_help; /**< @brief Fastq.gz read file 2 (required only in paired end mode).
  help description.  */
   char * out_arg;	/**< @brief Where to write the output files.
  (default='./').  */
@@ -57,19 +57,17 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *out_help; /**< @brief Where to write the output files.
  help description.  */
-  char * sample_sheet_arg;	/**< @brief Outputs a csv file containing sample names, i7, i5 and i1 barcodes.
+  char * sample_sheet_arg;	/**< @brief Input a csv file describing sample names and barcode combinations (i7, i5 and i1 barcodes).
  (default='sample-sheet.csv').  */
-  char * sample_sheet_orig;	/**< @brief Outputs a csv file containing sample names, i7, i5 and i1 barcodes.
+  char * sample_sheet_orig;	/**< @brief Input a csv file describing sample names and barcode combinations (i7, i5 and i1 barcodes).
  original value given at command line.  */
-  const char *sample_sheet_help; /**< @brief Outputs a csv file containing sample names, i7, i5 and i1 barcodes.
+  const char *sample_sheet_help; /**< @brief Input a csv file describing sample names and barcode combinations (i7, i5 and i1 barcodes).
  help description.  */
   char * barcode_corrections_arg;	/**< @brief Outputs a csv file that contains the number of corrected barcodes.  */
   char * barcode_corrections_orig;	/**< @brief Outputs a csv file that contains the number of corrected barcodes original value given at command line.  */
   const char *barcode_corrections_help; /**< @brief Outputs a csv file that contains the number of corrected barcodes help description.  */
-  int i5_rc_flag;	/**< @brief Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
- (default=off).  */
-  const char *i5_rc_help; /**< @brief Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
- help description.  */
+  int i5_rc_flag;	/**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. (default=off).  */
+  const char *i5_rc_help; /**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. help description.  */
   int i1_start_arg;	/**< @brief Start position of the i1 index (1-based) on read 2.
  (default='11').  */
   char * i1_start_orig;	/**< @brief Start position of the i1 index (1-based) on read 2.

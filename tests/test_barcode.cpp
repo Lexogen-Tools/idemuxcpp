@@ -48,15 +48,15 @@ unordered_map<string, std::vector<string>>* correct_length(){
     return vals;
 }
 
-
+//No error, since demux only mode will be used (without error correction).
 BOOST_AUTO_TEST_CASE( test_invalid_lengths )
 {
 	unordered_map<string,  std::vector<string>>* l = invalid_lengths();
-	BOOST_CHECK_THROW( Barcode b("invalid length", *l,false), std::runtime_error);
+	BOOST_CHECK_NO_THROW( Barcode b("invalid length", *l,false));
 	delete l;
 }
 
-//this will be allowed
+//No error, since demux only mode will be used (without error correction).
 BOOST_AUTO_TEST_CASE( test_different_lengths )
 {
 	unordered_map<string,  std::vector<string>>* l = different_lengths();
@@ -64,11 +64,11 @@ BOOST_AUTO_TEST_CASE( test_different_lengths )
 	delete l;
 }
 
-//this will be allowed
+//No error, since demux only mode will be used (without error correction).
 BOOST_AUTO_TEST_CASE( test_different_invalid_lengths )
 {
 	unordered_map<string,  std::vector<string>>* l = different_invalid_lengths();
-	BOOST_CHECK_THROW( Barcode b("different invalid lengths", *l,false), std::runtime_error);
+	BOOST_CHECK_NO_THROW( Barcode b("different invalid lengths", *l,false));
 	delete l;
 }
 

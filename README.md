@@ -50,8 +50,9 @@ dependencies:
 * compiler supporting C++11 standard and OpenMP
 * [boost C++ library](http://www.boost.org/) version >= 1.55.0 (install the development versions of the following libraries (or install all e.g. in Ubuntu via package `libboost-all-dev`)
 
-  * libboost_filesystem
-  * libboost_system
+  * libboost-filesystem
+  * libboost-system
+  * libboost-iostreams
   * libboost-test (only required if you want to compile unit tests)
 * [zlib](https://zlib.net/) (e.g. zlib1g-dev in Ubuntu)
 * [gengetopt](https://www.gnu.org/software/gengetopt/gengetopt.html)
@@ -153,18 +154,57 @@ Once you have installed the tool you can run it by typing ``idemuxCPP`` in the t
 
 idemuxCPP accepts the following arguments:
 ```
-    required arguments:
-      --r1 READ1                   path to gzipped read 1 fastq file
-      --r2 READ2                   path to gzipped read 2 fastq file
-      --sample-sheet CSV           csv file describing sample names, and barcode combinations
-      --out OUTPUT_DIR             where to write the output files
+  -h, --help                    Print help and exit
+  -V, --version                 Print version and exit
 
-    optional arguments:
-      --i5-rc                      when the i5 barcode has been sequenced as reverse complement.
-                                   make sure to always use non-reverse complement sequences in the sample sheet
-      --i1_start POS               start position of the i1 index (1-based) on read 2 (default: 11)
-      -v, --version                show program's version number and exit
-      -h, --help                   show help message and exit
+Required arguments:
+  -1, --r1=STRING               Fastq.gz read file 1 (or .fastq file).
+                                    (default='')
+  -2, --r2=STRING               Fastq.gz read file 2 (required only in paired
+                                  end mode).
+                                    (default='')
+  -o, --out=STRING              Where to write the output files.
+                                    (default='./')
+  -s, --sample-sheet=STRING     Input a csv file describing sample names and
+                                  barcode combinations (i7, i5 and i1
+                                  barcodes).
+                                    (default='sample-sheet.csv')
+
+Optional arguments:
+  -b, --barcode-corrections=STRING
+                                Outputs a csv file that contains the number of
+                                  corrected barcodes
+  -5, --i5-rc                   Should be set when the i5 barcode has been
+                                  sequenced as reversecomplement. Make sure to
+                                  enter non-reverse complementsequences in the
+                                  barcode file.  (default=off)
+  -i, --i1-start=INT            Start position of the i1 index (1-based) on
+                                  read 2.
+                                    (default='11')
+      --i1-read=INT             Read in which the i1 index should be corrected
+                                  (1 or 2).
+                                    (default='2')
+  -q, --queue-size=INT          Queue size for reads that will be processed in
+                                  one block.
+                                    (default='4000000')
+  -r, --reading-threads=INT     Number of threads used for reading gz files.
+                                  Either 1 or 2 (one thread per input file is
+                                  used).
+                                    (default='2')
+  -w, --writing-threads=INT     Number of threads used for writing gz files.
+                                  Default is the number of processor cores.
+
+  -p, --processing-threads=INT  Number of threads used for processing the error
+                                  correction. Default is the number of
+                                  processor cores.
+
+  -d, --demux-only              Do a one on one mapping for the barcodes
+                                  specified in the sample sheet. No error
+                                  correction will be done. Barcodes that do not
+                                  match are written to the undetermined reads
+                                  file.  (default=off)
+  -v, --verbose                 Verbose.
+                                    (default=off)
 ```
 
 Example commands:
@@ -278,6 +318,31 @@ and your os.
     sample_name,i7,i5,i1
     sample_0,,,AAAACATGCGTT
     sample_1,,,AAAATCCCAGTT
+
+    # mixed indexing (if not ambiguous) (full i7 and sparse i5, i1)
+    sample_name,i7,i5,i1
+    sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
+    sample_1,AAAATCCCAGTT,,AAAATCCCAGTT
+    sample_2,GAAAATTTACGC,GCCCCTTTCAGA,GAAAATTTACGC
+    sample_3,AAACTAACTGTC,,AAACTAACTGTC
+
+    # mixed indexing (if not ambiguous) (no i7, sparse i5 & i1)
+    sample_name,i7,i5,i1
+    sample_0,,CCCCACTGAGTT,
+    sample_1,,,AAAATCCCAGTT
+
+    # mixed indexing (if not ambiguous) (sparse i7, full i5 & i1)
+    sample_name,i7,i5,i1
+    sample_0,,CCCCACTGAGTT,AAAACATGCGTT
+    sample_1,AAAATCCCAGTT,CCCCTAAACGTT,AAAATCCCAGTT
+    sample_2,,GCCCCTTTCAGA,GAAAATTTACGC
+    sample_3,AAACTAACTGTC,CCCATCCATGTA,AAACTAACTGTC
+
+    # additional parameter columns for i1_read and i1_start index (1-based).
+    sample_name,i7,i5,i1,i1_read,i1_start
+    sample_0,AANACATGCGTT,,TTTTAG,2,1
+    sample_1,AANACATGCG,,AAAACATG,2,11
+    sample_2,AANACA,,CACCCC,1,5
 ```
 
 *This is not allowed:*
@@ -296,25 +361,6 @@ and your os.
     sample_name,i7,i5,i1
     sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
     sample_0,AAAATCCCAGTT,CCCCTAAACGTT,AAAATCCCAGTT
-
-    # mixed, potentially ambiguous indexing (full i7 and sparse i5, i1)
-    sample_name,i7,i5,i1
-    sample_0,AAAACATGCGTT,CCCCACTGAGTT,AAAACATGCGTT
-    sample_1,AAAATCCCAGTT,,AAAATCCCAGTT
-    sample_2,GAAAATTTACGC,GCCCCTTTCAGA,GAAAATTTACGC
-    sample_3,AAACTAACTGTC,,AAACTAACTGTC
-
-    # mixed, potentially ambiguous indexing indexing (no i7, sparse i5 & i1)
-    sample_name,i7,i5,i1
-    sample_0,,CCCCACTGAGTT,
-    sample_1,,,AAAATCCCAGTT
-
-    # mixed, potentially ambiguous indexing indexing (sparse i7, full i5 & i1)
-    sample_name,i7,i5,i1
-    sample_0,,CCCCACTGAGTT,AAAACATGCGTT
-    sample_1,AAAATCCCAGTT,CCCCTAAACGTT,AAAATCCCAGTT
-    sample_2,,GCCCCTTTCAGA,GAAAATTTACGC
-    sample_3,AAACTAACTGTC,CCCATCCATGTA,AAACTAACTGTC
 
     # missing comma separator
     sample_name,i7,i5,i1

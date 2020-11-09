@@ -52,6 +52,15 @@ vector<string>* demux_i7_i1_different_lengths(){
 	return paths;
 }
 
+vector<string>* demux_i7_i1_different_lengths_se(){
+	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
+			+ string("end_to_end");
+	string read_1 = res + PATH_SEP + string("test_12_10_6_r1.fastq.gz");
+	string read_2 = res + PATH_SEP + string("test_12_10_6_r2.fastq.gz");
+	string csv = res + PATH_SEP + string("i7_i1_different_lengths_se.csv");
+	vector<string> *paths = new vector<string>( { read_1, read_2, csv });
+	return paths;
+}
 
 vector<string>* demux_i7_i1() {
 	string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
@@ -462,6 +471,11 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end_i7) {
 
 BOOST_AUTO_TEST_CASE(test_demux_paired_end_i7_i1) {
 	vector<string> *paths = demux_i7_i1_different_lengths();
+	test_demux_reads(paths);
+}
+
+BOOST_AUTO_TEST_CASE(test_demux_single_end_i7_i1) {
+	vector<string> *paths = demux_i7_i1_different_lengths_se();
 	test_demux_reads(paths);
 }
 

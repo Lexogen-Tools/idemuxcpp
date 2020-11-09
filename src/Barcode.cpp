@@ -65,35 +65,20 @@ void Barcode::check_length() {
 		string sample_name = it->second;
 		if (barcode.compare("") != 0) {
 			auto itl = this->allowed_lengths.find((int) barcode.length());
-			if (itl != this->allowed_lengths.end()) {
-				observed_lengths.insert(barcode.length());
-				/*
-				if (observed_lengths.size() > 1) {
-					string message = string_format(
-							"%s barcodes with a different length "
-									"have been observed for %s. Barcodes"
-									" need to have the same length for all "
-									"samples.\nObserved barcode length:"
-									" %ld \nPrevious observed length:"
-									" %ld", sample_name.c_str(),
-							sample_name.c_str(), barcode.length(),
-							this->length);
-					throw(std::runtime_error(message));
-				}
-				*/
-			} else {
+			if (itl == this->allowed_lengths.end()) {
 				string tmplengths = "";
 				for (auto ita = this->allowed_lengths.begin();
 						ita != this->allowed_lengths.end(); ita++)
 					tmplengths += to_string(*ita) + ", ";
 				string message = string_format("%s barcodes are %ld nt long.\n"
 						"%s barcodes are only allowed to be"
-						" %s nt long.", this->Name.c_str(), barcode.length(),
+						" %s nt long. No error correction will be used.", this->Name.c_str(), barcode.length(),
 						this->Name.c_str(),
 						tmplengths.substr(0, tmplengths.length() - 1).c_str());
-				throw(std::runtime_error(message));
+				//throw(std::runtime_error(message));
+				printf("Warning: %s\n", message.c_str());
 			}
-
+			observed_lengths.insert(barcode.length());
 		}
 	}
 	this->Lengths.assign(observed_lengths.begin(), observed_lengths.end());
@@ -161,25 +146,29 @@ void Barcode::load_correction_map(string relative_exepath) {
 	// sort codes according to length.
 	unordered_set<string> *barcodes_given = this->get_used_codes(drop_none);
 	string code;
-	unordered_map<size_t,vector<string>> legth_and_codes;
+	unordered_map<size_t,vector<string>> length_and_codes;
 	for(auto it = barcodes_given->begin(); it != barcodes_given->end(); it++){
 		code = *it;
-		legth_and_codes[code.length()].push_back(code);
+		length_and_codes[code.length()].push_back(code);
 	}
 
 	// load all barcodes for all set sizes and barcode lengths (that were defined in the sample sheet).
 	this->Correction_map.clear();
 	int n_loaded_maps = 0;
 	int length;
+	bool contains_allowed_length = false;
 	for(auto itl = this->Lengths.begin(); itl != this->Lengths.end(); itl++){
 		length = *itl;
-		if (length == 6){
+		if (this->allowed_lengths.find(length) == this->allowed_lengths.end() || length == 6){
 			//do one to one mapping (there is no mapping table for this.)
-			printf("Barcodes with length 6 found in dataset. These codes will be demultiplexed, but without error correction.\n");
-			for (auto it_code_6 = legth_and_codes[length].begin(); it_code_6 != legth_and_codes[length].end(); it_code_6++) {
+			printf("Barcodes with length %d found in dataset. These codes will be demultiplexed, but without error correction.\n", length);
+			for (auto it_code_6 = length_and_codes[length].begin(); it_code_6 != length_and_codes[length].end(); it_code_6++) {
 				this->Correction_map.insert({ *it_code_6, *it_code_6 });
 			}
 			continue;
+		}
+		else{
+			contains_allowed_length = true;
 		}
 
 		for (int i = 0; i < sizes.size(); i++) {
@@ -190,8 +179,8 @@ void Barcode::load_correction_map(string relative_exepath) {
 					package_str, file_str);
 			//test if all codes are contained in the map for a certain length.
 			int n_codes_contained = 0;
-			for (auto it_test = legth_and_codes[length].begin();
-					it_test != legth_and_codes[length].end(); it_test++) {
+			for (auto it_test = length_and_codes[length].begin();
+					it_test != length_and_codes[length].end(); it_test++) {
 				auto it_contained = corr_map->find(*it_test);
 				if (it_contained == corr_map->end()) {
 					break;
@@ -199,7 +188,7 @@ void Barcode::load_correction_map(string relative_exepath) {
 				n_codes_contained++;
 			}
 
-			if (n_codes_contained == legth_and_codes[length].size()) {
+			if (n_codes_contained == length_and_codes[length].size()) {
 				printf(
 						"Correct set found (%d matching codes). Used set is %d barcodes with %d nt length.\n",
 						n_codes_contained, set_size, length);
@@ -229,7 +218,7 @@ void Barcode::load_correction_map(string relative_exepath) {
 		return;
 
 
-	if (std::find(this->Lengths.begin(), this->Lengths.end(),6) == this->Lengths.end() || this->Lengths.size() > 1) {
+	if (!contains_allowed_length) {
 		printf(
 				"Warning: No fitting Lexogen barcode set found for %s. No "
 						"error correction will take place for this barcode. Are you using "

@@ -35,13 +35,14 @@ const char *idemuxCPP_args_info_description = "A tool to demultiplex fastq files
 const char *idemuxCPP_args_info_help[] = {
   "  -h, --help                    Print help and exit",
   "  -V, --version                 Print version and exit",
-  "\nGeneral Options:",
-  "  -1, --r1=STRING               Fastq.gz read file 1.\n                                    (default=`')",
-  "  -2, --r2=STRING               Fastq.gz read file 2.\n                                    (default=`')",
+  "\nRequired arguments:",
+  "  -1, --r1=STRING               Fastq.gz read file 1 (or .fastq file).\n                                    (default=`')",
+  "  -2, --r2=STRING               Fastq.gz read file 2 (required only in paired\n                                  end mode).\n                                    (default=`')",
   "  -o, --out=STRING              Where to write the output files.\n                                    (default=`./')",
-  "  -s, --sample-sheet=STRING     Outputs a csv file containing sample names, i7,\n                                  i5 and i1 barcodes.\n                                    (default=`sample-sheet.csv')",
+  "  -s, --sample-sheet=STRING     Input a csv file describing sample names and\n                                  barcode combinations (i7, i5 and i1\n                                  barcodes).\n                                    (default=`sample-sheet.csv')",
+  "\nOptional arguments:",
   "  -b, --barcode-corrections=STRING\n                                Outputs a csv file that contains the number of\n                                  corrected barcodes",
-  "  -5, --i5-rc                   Set this flag if the i5 barcode has been\n                                  sequenced as reverse complement and the\n                                  barcodes you provided should be reverse\n                                  complemented.\n                                    (default=off)",
+  "  -5, --i5-rc                   Should be set when the i5 barcode has been\n                                  sequenced as reversecomplement. Make sure to\n                                  enter non-reverse complementsequences in the\n                                  barcode file.  (default=off)",
   "  -i, --i1-start=INT            Start position of the i1 index (1-based) on\n                                  read 2.\n                                    (default=`11')",
   "      --i1-read=INT             Read in which the i1 index should be corrected\n                                  (1 or 2).\n                                    (default=`2')",
   "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block.\n                                    (default=`4000000')",
@@ -136,16 +137,16 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->r2_help = idemuxCPP_args_info_help[4] ;
   args_info->out_help = idemuxCPP_args_info_help[5] ;
   args_info->sample_sheet_help = idemuxCPP_args_info_help[6] ;
-  args_info->barcode_corrections_help = idemuxCPP_args_info_help[7] ;
-  args_info->i5_rc_help = idemuxCPP_args_info_help[8] ;
-  args_info->i1_start_help = idemuxCPP_args_info_help[9] ;
-  args_info->i1_read_help = idemuxCPP_args_info_help[10] ;
-  args_info->queue_size_help = idemuxCPP_args_info_help[11] ;
-  args_info->reading_threads_help = idemuxCPP_args_info_help[12] ;
-  args_info->writing_threads_help = idemuxCPP_args_info_help[13] ;
-  args_info->processing_threads_help = idemuxCPP_args_info_help[14] ;
-  args_info->demux_only_help = idemuxCPP_args_info_help[15] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[16] ;
+  args_info->barcode_corrections_help = idemuxCPP_args_info_help[8] ;
+  args_info->i5_rc_help = idemuxCPP_args_info_help[9] ;
+  args_info->i1_start_help = idemuxCPP_args_info_help[10] ;
+  args_info->i1_read_help = idemuxCPP_args_info_help[11] ;
+  args_info->queue_size_help = idemuxCPP_args_info_help[12] ;
+  args_info->reading_threads_help = idemuxCPP_args_info_help[13] ;
+  args_info->writing_threads_help = idemuxCPP_args_info_help[14] ;
+  args_info->processing_threads_help = idemuxCPP_args_info_help[15] ;
+  args_info->demux_only_help = idemuxCPP_args_info_help[16] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[17] ;
   
 }
 
@@ -429,9 +430,15 @@ idemuxCPP_cmdline_parser_required2 (struct idemuxCPP_args_info *args_info, const
       error_occurred = 1;
     }
   
-  if (! args_info->r2_given)
+  if (! args_info->out_given)
     {
-      fprintf (stderr, "%s: '--r2' ('-2') option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      fprintf (stderr, "%s: '--out' ('-o') option required%s\n", prog_name, (additional_error ? additional_error : ""));
+      error_occurred = 1;
+    }
+  
+  if (! args_info->sample_sheet_given)
+    {
+      fprintf (stderr, "%s: '--sample-sheet' ('-s') option required%s\n", prog_name, (additional_error ? additional_error : ""));
       error_occurred = 1;
     }
   
@@ -1237,7 +1244,7 @@ idemuxCPP_cmdline_parser_internal (
           idemuxCPP_cmdline_parser_free (&local_args_info);
           exit (EXIT_SUCCESS);
 
-        case '1':	/* Fastq.gz read file 1.
+        case '1':	/* Fastq.gz read file 1 (or .fastq file).
 .  */
         
         
@@ -1250,7 +1257,7 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case '2':	/* Fastq.gz read file 2.
+        case '2':	/* Fastq.gz read file 2 (required only in paired end mode).
 .  */
         
         
@@ -1276,7 +1283,7 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case 's':	/* Outputs a csv file containing sample names, i7, i5 and i1 barcodes.
+        case 's':	/* Input a csv file describing sample names and barcode combinations (i7, i5 and i1 barcodes).
 .  */
         
         
@@ -1301,8 +1308,7 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case '5':	/* Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.
-.  */
+        case '5':	/* Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file..  */
         
         
           if (update_arg((void *)&(args_info->i5_rc_flag), 0, &(args_info->i5_rc_given),

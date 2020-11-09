@@ -17,31 +17,33 @@ description   "A tool to demultiplex fastq files based on Lexogen i7,i5,i1  barc
 
 
 # Options
-section "General Options"
+section "Required arguments"
 
 option  "r1" 1
-"Fastq.gz read file 1.\n"
+"Fastq.gz read file 1 (or .fastq file).\n"
 string
 required
 default=""
 
 option  "r2" 2
-"Fastq.gz read file 2.\n"
+"Fastq.gz read file 2 (required only in paired end mode).\n"
 string
-required
+optional
 default=""
 
 option  "out" o
 "Where to write the output files.\n"
 string
-optional
+required
 default="./"
 
 option  "sample-sheet" s
-"Outputs a csv file containing sample names, i7, i5 and i1 barcodes.\n"
+"Input a csv file describing sample names and barcode combinations (i7, i5 and i1 barcodes).\n"
 string
-optional
+required
 default="sample-sheet.csv"
+
+section "Optional arguments"
 
 option "barcode-corrections" b
 "Outputs a csv file that contains the number of corrected barcodes"
@@ -49,7 +51,9 @@ string
 optional
 
 option  "i5-rc" 5
-"Set this flag if the i5 barcode has been sequenced as reverse complement and the barcodes you provided should be reverse complemented.\n"
+"Should be set when the i5 barcode has been sequenced as reverse\
+complement. Make sure to enter non-reverse complement\
+sequences in the barcode file."
 flag
 off
 

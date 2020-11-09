@@ -5,6 +5,8 @@
 #include "Parser.h"
 #include "Barcode.h"
 #include "PairedReader.h"
+#include "FastqReader.h"
+#include "BoostZipReader.h"
 #include "helper.h"
 
 #include <istream>
@@ -166,7 +168,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
-		string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start) {
+		string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode) {
 	// we use these to keep track which lengths are beeing used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
@@ -317,6 +319,9 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 				i1_read_info.read_index = strtol(row[idx_i1_read].c_str(),NULL,10);
 				if(i1_read_info.read_index != 1 && i1_read_info.read_index != 2){
 					throw(runtime_error("Error: the sample sheet contains an i1 read index which is neither 1 nor 2!"));
+				}
+				if (i1_read_info.read_index != 1 && single_end_mode){
+					throw(runtime_error("Error: no read 2 file given, but sample sheet contains an i1 read index in a read index other than 1!"));
 				}
 			}
 			if (idx_i1_start >= 0){
@@ -608,6 +613,58 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 	std::cout << "Input file formatting seems fine." << std::endl;
 }
 
+/**
+ * single end file check
+ */
+void Parser::peek_into_fastq_file(string fq_gz_1, bool has_i7,
+				bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
+				unordered_map<string, i1_info> &i7_i5_i1_info_map){
+	fprintf(stdout,
+			"Peeking into fastq file to check for barcode formatting errors\n");
+
+	int lines_to_check = 1000;
+	int counter = 0;
+	fprintf(stdout, "Checking fastq input files...\n");
+	IFastqReader *reader;
+	if (fq_gz_1.length() > 3){
+		string suffix = fq_gz_1.substr(fq_gz_1.length()-3);
+		if (suffix.compare(".gz") == 0){
+			// use zip reader
+			reader = new BoostZipReader(fq_gz_1);
+
+		}
+		else{
+			// use fastq reader
+			reader = new FastqReader(fq_gz_1);
+		}
+	}
+
+	for(int i = 0; i < lines_to_check; i++){
+		fq_read* r = reader->next_read();
+		if(r){
+			check_fastq_header(r, has_i7, has_i5, i7_length, i5_length);
+			if (has_i1){
+				pair<string,string> bcs_mate1 = Parser::parse_indices(r->Seq_ID);
+				string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
+				auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
+				if (it_i1_info != i7_i5_i1_info_map.end()){
+					int i1_start = it_i1_info->second.start_index;
+					int i1_end = it_i1_info->second.end_index;
+					if (it_i1_info->second.read_index == 1)
+						check_mate2_length(r, i1_start, i1_end);
+				}
+			}
+			delete r;
+		}
+		else{
+			delete r;
+			break;
+		}
+	}
+	delete reader;
+	std::cout << "Input file formatting seems fine." << std::endl;
+}
+
 void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 		bool has_i7, bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
 		unordered_map<string, i1_info> &i7_i5_i1_info_map) {
@@ -766,6 +823,78 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 			throw(runtime_error(message));
 		}
 
+}
+
+void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length) {
+	string header_mate_1(mate->Seq_ID);
+	// get the barcodes from the fastq header
+	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1);
+
+	int number_bc_m1 = (bcs_mate1.first == "" || bcs_mate1.second == "") ? 1 : 2;
+
+	int expected_number = 0;
+	if (has_i7)
+		expected_number += 1;
+	if (has_i5)
+		expected_number += 1;
+	// this is how a fastq header should look like
+	string example_header_1 =
+			"@NB502007:379:HM7H2BGXF:1:11101:24585:1069 1:N:0:TCAGGTAANNTT";
+	string example_header_2 = "@NB502007:379:HM7H2BGXF:1:11101:24585:1069 "
+			"1:N:0:TCAGGTAANNTT+NANGGNNCNNNN";
+
+	// check if the header conforms to what was specified in the sample sheet
+	if (number_bc_m1 != expected_number) { //not all(right_number_of_barcodes):
+		string example_header =
+				expected_number == 2 ? example_header_2 : example_header_1;
+		int number_bc_in_header = number_bc_m1;
+		string message =
+				string_format(
+						"The fastq file does not contain sufficient barcode information "
+								"in the header.\nExpected number of barcodes: %d\n"
+								"Observed number of barcodes: %d\n"
+								"Please check your input file. Your fastq header should look "
+								"similar to this example.\n"
+								"Example: %s\n"
+								"Observed header: %s", expected_number,
+								number_bc_in_header, example_header.c_str(), header_mate_1.c_str());
+		throw(runtime_error(message));
+	}
+
+	// when there are 2 barcodes in the fastq header the orientation is i7,i5
+	if (has_i7 && has_i5)
+		if (std::find(i7_length.begin(), i7_length.end(), (int)bcs_mate1.first.length()) == i7_length.end()
+				|| std::find(i5_length.begin(), i5_length.end(), (int)bcs_mate1.second.length()) == i5_length.end()) {
+			string message = string_format(
+					"i7 and i5 have a different length than specified in the "
+							"sample_sheet. "
+							"Observed length(i7,i5): %ld"
+							",%ld}\n "
+							"Expected length(i7,i5): %s,%s",
+					bcs_mate1.first.length(), bcs_mate1.second.length(),
+					list_to_string(i7_length), list_to_string(i5_length));
+			throw(runtime_error(message));
+		}
+	if (has_i7 && !has_i5)
+		if (std::find(i7_length.begin(), i7_length.end(), (int)bcs_mate1.first.length()) == i7_length.end()) {
+			string message = string_format(
+					"i7 has a different length than specified in the "
+							"sample_sheet. "
+							"Observed length(i7): %ld\n"
+							"Expected length(i7): %d\n",
+					bcs_mate1.first.length(), list_to_string(i7_length));
+			throw(runtime_error(message));
+		}
+	if (!has_i7 && has_i5)
+		if (std::find(i5_length.begin(), i5_length.end(), (int)bcs_mate1.first.length()) == i5_length.end()) {
+			string message = string_format(
+					"i5 has a different length than specified in the "
+							"sample_sheet. "
+							"Observed length(i5): %ld\n"
+							"Expected length(i5): %s\n",
+					bcs_mate1.first.length(), list_to_string(i5_length));
+			throw(runtime_error(message));
+		}
 }
 
 Parser::~Parser(){

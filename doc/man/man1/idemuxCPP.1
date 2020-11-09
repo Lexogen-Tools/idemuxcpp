@@ -19,14 +19,16 @@ Print help and exit
 .TP
 \fB\-V\fR, \fB\-\-version\fR
 Print version and exit
-.SS "General Options:"
+.SS "Required arguments:"
 .TP
 \fB\-1\fR, \fB\-\-r1\fR=\fI\,STRING\/\fR
-Fastq.gz read file 1.
+Fastq.gz read file 1 (or .fastq file).
 (default=`')
 .TP
 \fB\-2\fR, \fB\-\-r2\fR=\fI\,STRING\/\fR
-Fastq.gz read file 2.
+Fastq.gz read file 2 (required only in paired
+end mode).
+.IP
 (default=`')
 .TP
 \fB\-o\fR, \fB\-\-out\fR=\fI\,STRING\/\fR
@@ -34,10 +36,12 @@ Where to write the output files.
 (default=`./')
 .TP
 \fB\-s\fR, \fB\-\-sample\-sheet\fR=\fI\,STRING\/\fR
-Outputs a csv file containing sample names, i7,
-i5 and i1 barcodes.
+Input a csv file describing sample names and
+barcode combinations (i7, i5 and i1
+barcodes).
 .IP
 (default=`sample\-sheet.csv')
+.SS "Optional arguments:"
 .TP
 \fB\-b\fR, \fB\-\-barcode\-corrections\fR=\fI\,STRING\/\fR
 Outputs a csv file that contains the number of
@@ -45,12 +49,10 @@ Outputs a csv file that contains the number of
 corrected barcodes
 .TP
 \fB\-5\fR, \fB\-\-i5\-rc\fR
-Set this flag if the i5 barcode has been
-sequenced as reverse complement and the
-barcodes you provided should be reverse
-complemented.
-.IP
-(default=off)
+Should be set when the i5 barcode has been
+sequenced as reversecomplement. Make sure to
+enter non\-reverse complementsequences in the
+barcode file.  (default=off)
 .TP
 \fB\-i\fR, \fB\-\-i1\-start\fR=\fI\,INT\/\fR
 Start position of the i1 index (1\-based) on

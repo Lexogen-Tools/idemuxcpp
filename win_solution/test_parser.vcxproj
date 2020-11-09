@@ -10,6 +10,7 @@
     <ClCompile Include="..\tests\test_parser.cpp" />
     <ClCompile Include="..\src\Barcode.cpp" />
     <ClCompile Include="..\src\FileHandler.cpp" />
+    <ClCompile Include="..\src\FileHandlerSE.cpp" />
     <ClCompile Include="..\src\PairedReader.cpp" />
     <ClCompile Include="..\src\Parser.cpp" />
     <ClCompile Include="..\src\Writer.cpp" />
@@ -23,6 +24,7 @@
     <ClInclude Include="..\src\config.h" />
     <ClInclude Include="..\src\Demux.h" />
     <ClInclude Include="..\src\FileHandler.h" />
+    <ClInclude Include="..\src\FileHandlerSE.h" />
     <ClInclude Include="..\src\helper.h" />
     <ClInclude Include="..\src\PairedReader.h" />
     <ClInclude Include="..\src\Parser.h" />
