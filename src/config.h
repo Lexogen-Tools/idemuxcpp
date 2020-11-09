@@ -2,7 +2,7 @@
 /* src/config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Run in DEBUG mode with additional assertions and debug output */
-#define DEBUG /**/
+/* #undef DEBUG */
 
 /* define if the Boost library is available */
 #define HAVE_BOOST /**/
@@ -53,7 +53,7 @@
 #define HAVE_UNISTD_H 1
 
 /* Run in normal mode with minimal assertions */
-/* #undef NDEBUG */
+#define NDEBUG /**/
 
 /* Name of package */
 #define PACKAGE "idemuxcpp"
@@ -65,7 +65,7 @@
 #define PACKAGE_NAME "idemuxcpp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "idemuxcpp 0.1.3"
+#define PACKAGE_STRING "idemuxcpp 0.1.4"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "idemuxcpp"
@@ -74,13 +74,13 @@
 #define PACKAGE_URL "my_url "
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.1.3"
+#define PACKAGE_VERSION "0.1.4"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.1.3"
+#define VERSION "0.1.4"
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
