@@ -50,6 +50,11 @@ option "barcode-corrections" b
 string
 optional
 
+option "correction-map-prefix" m
+"Set the path where the correction maps are stored."
+string
+optional
+
 option  "i5-rc" 5
 "Should be set when the i5 barcode has been sequenced as reverse\
 complement. Make sure to enter non-reverse complement\

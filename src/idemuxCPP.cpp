@@ -25,6 +25,7 @@ int main(int argc, char **argv) {
 	string outputdirectory = "";
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
+	string correction_maps_path = "";
 	bool i5_rc = false;
 	bool single_end_mode = false;
 	int default_i1_read = 2; //read in which the i1 index should be corrected (1 or 2).
@@ -75,6 +76,9 @@ int main(int argc, char **argv) {
 	if (args_info.barcode_corrections_given){
 		barcode_corrections_file = string(args_info.barcode_corrections_arg);
 	}
+	if (args_info.correction_map_prefix_given){
+		correction_maps_path = string(args_info.correction_map_prefix_arg);
+	}
 	demux_only = args_info.demux_only_flag;
 
 	i5_rc = args_info.i5_rc_flag;
@@ -97,7 +101,7 @@ int main(int argc, char **argv) {
 	vector<Barcode*> barcodes;
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, demux_only, default_i1_read, default_i1_start, single_end_mode);
+			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	// do things.
 	if(single_end_mode)

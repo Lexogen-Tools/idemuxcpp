@@ -94,7 +94,7 @@ void Barcode::check_length() {
  Return:
  dict (dict): correction_map : <b'erroneous_barcode', b'corrected_barcode'>
  */
-void Barcode::load_correction_map(string relative_exepath) {
+void Barcode::load_correction_map(string relative_exepath, string correction_maps_path) {
 	fprintf(stdout, "Trying to find the appropriate barcode set for %s...\n",
 			this->Name.c_str());
 
@@ -118,29 +118,45 @@ void Barcode::load_correction_map(string relative_exepath) {
 	//size_t path_buffer = 10000;
 	//char *buffer = (char*)malloc(sizeof(char)*path_buffer);
 	//char * cwd = GETCWD(buffer, path_buffer);
-	int index = relative_exepath.find_last_of(PATH_SEP);
-
-	// try package path
-	string package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
-			+ PATH_SEP + "misc" + PATH_SEP + "barcodes" + PATH_SEP + this->Name;
-	if (!Parser::PathExists(package_str)) {
-		// try install path
-		package_str = relative_exepath.substr(0, index) + PATH_SEP + ".."
-				+ PATH_SEP + "share" + PATH_SEP + PACKAGE_NAME + PATH_SEP
-				+ "barcodes" + PATH_SEP + this->Name;
-		if (!Parser::PathExists(package_str)) {
-			// try /usr/share install path (/usr/share/idemuxcpp/barcodes/)
-			package_str = PATH_SEP + string("usr")
-					+ PATH_SEP + string("share") + PATH_SEP + PACKAGE_NAME + PATH_SEP
-					+ string("barcodes") + PATH_SEP + this->Name;
-			if (!Parser::PathExists(package_str)) {
-				throw(runtime_error(
-						string_format("Error: the path %s is not available!\n",
-								package_str.c_str())));
+	string barcode_path_prefix;
+	if(!correction_maps_path.empty()){
+		barcode_path_prefix = correction_maps_path + PATH_SEP + this->Name;
+		if (!Parser::PathExists(barcode_path_prefix)) {
+			throw(runtime_error(
+					string_format("Error: the path %s is not available!\n",
+							barcode_path_prefix.c_str())));
+		}
+	}
+	else{
+		int index = relative_exepath.find_last_of(PATH_SEP);
+		// try package path
+		barcode_path_prefix = relative_exepath.substr(0, index) + PATH_SEP + ".."
+				+ PATH_SEP + "misc" + PATH_SEP + "barcodes" + PATH_SEP + this->Name;
+		if (!Parser::PathExists(barcode_path_prefix)) {
+			// try install path
+			barcode_path_prefix = relative_exepath.substr(0, index) + PATH_SEP + ".."
+					+ PATH_SEP + "share" + PATH_SEP + PACKAGE_NAME + PATH_SEP
+					+ "barcodes" + PATH_SEP + this->Name;
+			if (!Parser::PathExists(barcode_path_prefix)) {
+				// try /usr/share install path (/usr/local/share/idemuxcpp/barcodes/)
+				barcode_path_prefix = string("") + PATH_SEP + "usr" + PATH_SEP + "local" + PATH_SEP
+						+ PATH_SEP + "share" + PATH_SEP + PACKAGE_NAME + PATH_SEP
+						+ "barcodes" + PATH_SEP + this->Name;
+				if (!Parser::PathExists(barcode_path_prefix)) {
+						// try /usr/share install path (/usr/share/idemuxcpp/barcodes/)
+						barcode_path_prefix = PATH_SEP + string("usr")
+										+ PATH_SEP + string("share") + PATH_SEP + PACKAGE_NAME + PATH_SEP
+										+ string("barcodes") + PATH_SEP + this->Name;
+						if (!Parser::PathExists(barcode_path_prefix)) {
+						throw(runtime_error(
+								string_format("Error: the path %s is not available!\n",
+										barcode_path_prefix.c_str())));
+					}
+				}
 			}
 		}
 	}
-	std::cout << package_str << std::endl;
+	std::cout << barcode_path_prefix << std::endl;
 
 
 	// sort codes according to length.
@@ -176,7 +192,7 @@ void Barcode::load_correction_map(string relative_exepath) {
 			string file_str = "base_mapping_b" + to_string(set_size) + "_l"
 					+ to_string(length) + ".tsv";
 			unordered_map<string, string> *corr_map = Parser::get_map_from_resource(
-					package_str, file_str);
+					barcode_path_prefix, file_str);
 			//test if all codes are contained in the map for a certain length.
 			int n_codes_contained = 0;
 			for (auto it_test = length_and_codes[length].begin();

@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_fail ) {
 		unordered_map<string, string> *rows = NULL;
 		BOOST_CHECK_THROW(
 				rows = pe.parse_sample_sheet(csv_file, false, barcodes, i7_i5_i1_info_map,
-						p.string(),false, 2, I1_START), std::exception);
+						p.string(), "", false, 2, I1_START), std::exception);
 		if (rows)
 			delete rows;
 		for (auto it = barcodes.begin(); it != barcodes.end(); it++)
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE( test_parse_sample_sheet_to_pass ) {
 		vector<Barcode*> barcodes;
 		unordered_map<string, i1_info> i7_i5_i1_info_map;
 		BOOST_CHECK_NO_THROW(
-				pe.parse_sample_sheet(csv_file, false, barcodes, i7_i5_i1_info_map, p.string(),false, 2, I1_START));
+				pe.parse_sample_sheet(csv_file, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START));
 	}
 }
 

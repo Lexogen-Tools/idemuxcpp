@@ -42,6 +42,7 @@ const char *idemuxCPP_args_info_help[] = {
   "  -s, --sample-sheet=STRING     Input a csv file describing sample names and\n                                  barcode combinations (i7, i5 and i1\n                                  barcodes).\n                                    (default=`sample-sheet.csv')",
   "\nOptional arguments:",
   "  -b, --barcode-corrections=STRING\n                                Outputs a csv file that contains the number of\n                                  corrected barcodes",
+  "  -m, --correction-map-prefix=STRING\n                                Set the path where the correction maps are\n                                  stored.",
   "  -5, --i5-rc                   Should be set when the i5 barcode has been\n                                  sequenced as reversecomplement. Make sure to\n                                  enter non-reverse complementsequences in the\n                                  barcode file.  (default=off)",
   "  -i, --i1-start=INT            Start position of the i1 index (1-based) on\n                                  read 2.\n                                    (default=`11')",
   "      --i1-read=INT             Read in which the i1 index should be corrected\n                                  (1 or 2).\n                                    (default=`2')",
@@ -85,6 +86,7 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->out_given = 0 ;
   args_info->sample_sheet_given = 0 ;
   args_info->barcode_corrections_given = 0 ;
+  args_info->correction_map_prefix_given = 0 ;
   args_info->i5_rc_given = 0 ;
   args_info->i1_start_given = 0 ;
   args_info->i1_read_given = 0 ;
@@ -110,6 +112,8 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->sample_sheet_orig = NULL;
   args_info->barcode_corrections_arg = NULL;
   args_info->barcode_corrections_orig = NULL;
+  args_info->correction_map_prefix_arg = NULL;
+  args_info->correction_map_prefix_orig = NULL;
   args_info->i5_rc_flag = 0;
   args_info->i1_start_arg = 11;
   args_info->i1_start_orig = NULL;
@@ -138,15 +142,16 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->out_help = idemuxCPP_args_info_help[5] ;
   args_info->sample_sheet_help = idemuxCPP_args_info_help[6] ;
   args_info->barcode_corrections_help = idemuxCPP_args_info_help[8] ;
-  args_info->i5_rc_help = idemuxCPP_args_info_help[9] ;
-  args_info->i1_start_help = idemuxCPP_args_info_help[10] ;
-  args_info->i1_read_help = idemuxCPP_args_info_help[11] ;
-  args_info->queue_size_help = idemuxCPP_args_info_help[12] ;
-  args_info->reading_threads_help = idemuxCPP_args_info_help[13] ;
-  args_info->writing_threads_help = idemuxCPP_args_info_help[14] ;
-  args_info->processing_threads_help = idemuxCPP_args_info_help[15] ;
-  args_info->demux_only_help = idemuxCPP_args_info_help[16] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[17] ;
+  args_info->correction_map_prefix_help = idemuxCPP_args_info_help[9] ;
+  args_info->i5_rc_help = idemuxCPP_args_info_help[10] ;
+  args_info->i1_start_help = idemuxCPP_args_info_help[11] ;
+  args_info->i1_read_help = idemuxCPP_args_info_help[12] ;
+  args_info->queue_size_help = idemuxCPP_args_info_help[13] ;
+  args_info->reading_threads_help = idemuxCPP_args_info_help[14] ;
+  args_info->writing_threads_help = idemuxCPP_args_info_help[15] ;
+  args_info->processing_threads_help = idemuxCPP_args_info_help[16] ;
+  args_info->demux_only_help = idemuxCPP_args_info_help[17] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[18] ;
   
 }
 
@@ -240,6 +245,8 @@ idemuxCPP_cmdline_parser_release (struct idemuxCPP_args_info *args_info)
   free_string_field (&(args_info->sample_sheet_orig));
   free_string_field (&(args_info->barcode_corrections_arg));
   free_string_field (&(args_info->barcode_corrections_orig));
+  free_string_field (&(args_info->correction_map_prefix_arg));
+  free_string_field (&(args_info->correction_map_prefix_orig));
   free_string_field (&(args_info->i1_start_orig));
   free_string_field (&(args_info->i1_read_orig));
   free_string_field (&(args_info->queue_size_orig));
@@ -290,6 +297,8 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "sample-sheet", args_info->sample_sheet_orig, 0);
   if (args_info->barcode_corrections_given)
     write_into_file(outfile, "barcode-corrections", args_info->barcode_corrections_orig, 0);
+  if (args_info->correction_map_prefix_given)
+    write_into_file(outfile, "correction-map-prefix", args_info->correction_map_prefix_orig, 0);
   if (args_info->i5_rc_given)
     write_into_file(outfile, "i5-rc", 0, 0 );
   if (args_info->i1_start_given)
@@ -1206,6 +1215,7 @@ idemuxCPP_cmdline_parser_internal (
         { "out",	1, NULL, 'o' },
         { "sample-sheet",	1, NULL, 's' },
         { "barcode-corrections",	1, NULL, 'b' },
+        { "correction-map-prefix",	1, NULL, 'm' },
         { "i5-rc",	0, NULL, '5' },
         { "i1-start",	1, NULL, 'i' },
         { "i1-read",	1, NULL, 0 },
@@ -1223,7 +1233,7 @@ idemuxCPP_cmdline_parser_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hV1:2:o:s:b:5i:q:r:w:p:dv", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hV1:2:o:s:b:m:5i:q:r:w:p:dv", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1304,6 +1314,18 @@ idemuxCPP_cmdline_parser_internal (
               &(local_args_info.barcode_corrections_given), optarg, 0, 0, ARG_STRING,
               check_ambiguity, override, 0, 0,
               "barcode-corrections", 'b',
+              additional_error))
+            goto failure;
+        
+          break;
+        case 'm':	/* Set the path where the correction maps are stored..  */
+        
+        
+          if (update_arg( (void *)&(args_info->correction_map_prefix_arg), 
+               &(args_info->correction_map_prefix_orig), &(args_info->correction_map_prefix_given),
+              &(local_args_info.correction_map_prefix_given), optarg, 0, 0, ARG_STRING,
+              check_ambiguity, override, 0, 0,
+              "correction-map-prefix", 'm',
               additional_error))
             goto failure;
         

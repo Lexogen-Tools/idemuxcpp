@@ -66,6 +66,9 @@ struct idemuxCPP_args_info
   char * barcode_corrections_arg;	/**< @brief Outputs a csv file that contains the number of corrected barcodes.  */
   char * barcode_corrections_orig;	/**< @brief Outputs a csv file that contains the number of corrected barcodes original value given at command line.  */
   const char *barcode_corrections_help; /**< @brief Outputs a csv file that contains the number of corrected barcodes help description.  */
+  char * correction_map_prefix_arg;	/**< @brief Set the path where the correction maps are stored..  */
+  char * correction_map_prefix_orig;	/**< @brief Set the path where the correction maps are stored. original value given at command line.  */
+  const char *correction_map_prefix_help; /**< @brief Set the path where the correction maps are stored. help description.  */
   int i5_rc_flag;	/**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. (default=off).  */
   const char *i5_rc_help; /**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. help description.  */
   int i1_start_arg;	/**< @brief Start position of the i1 index (1-based) on read 2.
@@ -118,6 +121,7 @@ struct idemuxCPP_args_info
   unsigned int out_given ;	/**< @brief Whether out was given.  */
   unsigned int sample_sheet_given ;	/**< @brief Whether sample-sheet was given.  */
   unsigned int barcode_corrections_given ;	/**< @brief Whether barcode-corrections was given.  */
+  unsigned int correction_map_prefix_given ;	/**< @brief Whether correction-map-prefix was given.  */
   unsigned int i5_rc_given ;	/**< @brief Whether i5-rc was given.  */
   unsigned int i1_start_given ;	/**< @brief Whether i1-start was given.  */
   unsigned int i1_read_given ;	/**< @brief Whether i1-read was given.  */

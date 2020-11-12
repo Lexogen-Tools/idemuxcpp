@@ -168,7 +168,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
-		string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode) {
+		string relative_exepath, string correction_maps_path, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode) {
 	// we use these to keep track which lengths are beeing used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
@@ -410,9 +410,9 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	// information should be okay and we can return required data from the sample sheet.
 	if(!demux_only){
 		// with correction
-		i7->load_correction_map(relative_exepath);
-		i5->load_correction_map(relative_exepath);
-		i1->load_correction_map(relative_exepath);
+		i7->load_correction_map(relative_exepath, correction_maps_path);
+		i5->load_correction_map(relative_exepath, correction_maps_path);
+		i1->load_correction_map(relative_exepath, correction_maps_path);
 	}
 	else{
 		//demux only

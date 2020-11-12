@@ -39,7 +39,7 @@ public:
 	std::vector<std::vector<std::string>> readCSV(std::istream &in);
 	unordered_map<string, string>* parse_sample_sheet(string sample_sheet,
 			bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
-			string relative_exepath, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode = false);
+			string relative_exepath, string correction_maps_path, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode = false);
 	string reverse_complement(string sequence);
 	bool has_valid_barcode_combinations(Barcode &i7, Barcode &i5, Barcode &i1);
 	void fastq_lines_to_reads(string fastq_lines);

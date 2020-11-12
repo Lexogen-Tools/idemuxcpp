@@ -88,7 +88,7 @@ public:
 
   void post_init(bool reverse_complement);
   void check_length();
-  void load_correction_map(string relative_exepath);
+  void load_correction_map(string relative_exepath, string correction_maps_path = "");
   void create_one_to_one_map();
 
   //barcode name is i7,i5,i1 (name of the resources directory).
