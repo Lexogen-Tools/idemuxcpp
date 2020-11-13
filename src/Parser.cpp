@@ -770,7 +770,7 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 		}
 	}
 
-	if (! right_number_of_barcodes) { //not all(right_number_of_barcodes):
+	if (!right_number_of_barcodes && expected_number > 0) { //not all(right_number_of_barcodes):
 		string example_header =
 				expected_number == 2 ? example_header_2 : example_header_1;
 		int number_bc_in_header = expected_number == 2 ? number_bc_m2 : number_bc_m1;
@@ -844,7 +844,7 @@ void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<
 			"1:N:0:TCAGGTAANNTT+NANGGNNCNNNN";
 
 	// check if the header conforms to what was specified in the sample sheet
-	if (number_bc_m1 != expected_number) { //not all(right_number_of_barcodes):
+	if (number_bc_m1 != expected_number && expected_number > 0) { //not all(right_number_of_barcodes):
 		string example_header =
 				expected_number == 2 ? example_header_2 : example_header_1;
 		int number_bc_in_header = number_bc_m1;

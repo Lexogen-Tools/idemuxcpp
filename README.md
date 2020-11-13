@@ -64,7 +64,7 @@ Simply download the pre-compiled windows binary from here [windows binary](win_s
 Extract the zip file. To execute the tool press `windows+r`, enter `cmd`, `cd C:\\location_of_the_extracted_zip_file\bin` and execute `.\\idemuxCPP`
 
 
-**From Source**
+**From Source (distribution tar)**
 
 To configure, compile and install execute the following commands on your command line:
 ```
@@ -72,6 +72,10 @@ To configure, compile and install execute the following commands on your command
     make
     make install
 ```
+
+**From Source (git)**
+The installation from source requires additional tools and libraries:
+* gnulib (autoconf, automake, etc.)
 
 **From Linux Package**
 <table><thead><tr>
