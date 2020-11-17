@@ -14,6 +14,7 @@
 #include "Parser.h"
 #include "Barcode.h"
 #include "Demux.h"
+#include "helper.h"
 
 using namespace std;
 
@@ -102,6 +103,12 @@ int main(int argc, char **argv) {
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
 			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
+
+	//we need to open files at least for all samples + some extra files.
+	size_t max_open_files = barcode_sample_map->size() + 100;
+	if(!utils::set_maximal_file_limit(max_open_files)){
+		throw(runtime_error("Please increase the maximum number of open files in your operating system settings, or try to run this tool with elevated privileges!"));
+	}
 
 	// do things.
 	if(single_end_mode)

@@ -799,7 +799,7 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 							",%ld}\n "
 							"Expected length(i7,i5): %s,%s",
 					bcs_mate1.first.length(), bcs_mate1.second.length(),
-					list_to_string(i7_length), list_to_string(i5_length));
+					list_to_string(i7_length).c_str() , list_to_string(i5_length).c_str());
 			throw(runtime_error(message));
 		}
 	if (has_i7 && !has_i5)
@@ -808,8 +808,8 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 					"i7 has a different length than specified in the "
 							"sample_sheet. "
 							"Observed length(i7): %ld\n"
-							"Expected length(i7): %d\n",
-					bcs_mate1.first.length(), list_to_string(i7_length));
+							"Expected length(i7): %s\n",
+					bcs_mate1.first.length(), list_to_string(i7_length).c_str());
 			throw(runtime_error(message));
 		}
 	if (!has_i7 && has_i5)
@@ -819,7 +819,7 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 							"sample_sheet. "
 							"Observed length(i5): %ld\n"
 							"Expected length(i5): %s\n",
-					bcs_mate1.first.length(), list_to_string(i5_length));
+					bcs_mate1.first.length(), list_to_string(i5_length).c_str());
 			throw(runtime_error(message));
 		}
 
@@ -872,7 +872,7 @@ void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<
 							",%ld}\n "
 							"Expected length(i7,i5): %s,%s",
 					bcs_mate1.first.length(), bcs_mate1.second.length(),
-					list_to_string(i7_length), list_to_string(i5_length));
+					list_to_string(i7_length).c_str(), list_to_string(i5_length).c_str());
 			throw(runtime_error(message));
 		}
 	if (has_i7 && !has_i5)
@@ -882,7 +882,7 @@ void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<
 							"sample_sheet. "
 							"Observed length(i7): %ld\n"
 							"Expected length(i7): %d\n",
-					bcs_mate1.first.length(), list_to_string(i7_length));
+					bcs_mate1.first.length(), list_to_string(i7_length).c_str());
 			throw(runtime_error(message));
 		}
 	if (!has_i7 && has_i5)
@@ -892,7 +892,7 @@ void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<
 							"sample_sheet. "
 							"Observed length(i5): %ld\n"
 							"Expected length(i5): %s\n",
-					bcs_mate1.first.length(), list_to_string(i5_length));
+					bcs_mate1.first.length(), list_to_string(i5_length).c_str());
 			throw(runtime_error(message));
 		}
 }

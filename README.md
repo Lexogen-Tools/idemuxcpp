@@ -77,6 +77,12 @@ To configure, compile and install execute the following commands on your command
 The installation from source requires additional tools and libraries:
 * gnulib (autoconf, automake, etc.)
 
+Generate the configure file with:
+```
+    autoreconf -i
+```
+Then proceed with `./configure` and `make` like in the previous [section](#from-source-(distribution-tar)).
+
 **From Linux Package**
 <table><thead><tr>
 <th> Debian </th>
@@ -103,6 +109,10 @@ The installation from source requires additional tools and libraries:
 </tr></tbody></table>
 
 
+on ubuntu you can install it for example with:
+```
+dpkg -i <idemuxcpp*.deb>
+```
 
 idemuxCPP will also soon be available via bioconda!
 

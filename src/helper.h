@@ -10,18 +10,29 @@
 //for determining the executable path (unit tests don't have argv[0])
 #include <boost/predef/os.h>
 #if (BOOST_OS_WINDOWS)
-#  include <stdlib.h>
+  #include <stdlib.h>
 #elif (BOOST_OS_SOLARIS)
-#  include <stdlib.h>
-#  include <limits.h>
+  #include <stdlib.h>
+  #include <limits.h>
 #elif (BOOST_OS_LINUX)
-#  include <unistd.h>
-#  include <limits.h>
+  #include <unistd.h>
+  #include <limits.h>
 #elif (BOOST_OS_MACOS)
-#  include <mach-o/dyld.h>
+  #include <mach-o/dyld.h>
 #elif (BOOST_OS_BSD_FREE)
-#  include <sys/types.h>
-#  include <sys/sysctl.h>
+  #include <sys/types.h>
+  #include <sys/sysctl.h>
+#endif
+
+
+
+// _setmaxstdio(2048); is in stdio.h on windows.
+#ifdef _WIN32
+  #include <stdio.h>
+  #include <stdlib.h>
+#else
+  #include <sys/time.h>
+  #include <sys/resource.h>
 #endif
 
 
@@ -106,6 +117,64 @@ static std::string getExecutablePath() {
 #endif
     return std::string(exePath);
 }
+
+/*
+ * return true if the given limit is smaller, than the sytem limit or if it has been increased.
+ * return false if the limit could not be requested or set.
+ */
+static
+bool set_maximal_file_limit(size_t new_max_limit){
+	//check if the number of barcodes (corresponds to the number of files) is higher than the maximum limit of open file handles, allowed by the system.
+#ifndef _WIN32
+	rlimit old_limit, new_limit;
+	int received_limit = getrlimit(RLIMIT_NOFILE, &old_limit);
+	if(received_limit == 0)
+	{
+		printf("Open files limit soft %ld, hard %ld, new %ld\n", old_limit.rlim_cur, old_limit.rlim_max, new_max_limit);
+		if((old_limit.rlim_cur < new_max_limit) || (old_limit.rlim_max < new_max_limit)){
+			size_t real_new_limit = min(new_max_limit,(size_t)RLIM_INFINITY);
+			new_limit.rlim_cur = real_new_limit;
+			new_limit.rlim_max = real_new_limit;
+			int set_limit = setrlimit(RLIMIT_NOFILE, &new_limit);
+			if(set_limit == 0){
+				fprintf(stdout, "Maximum open file limit has been increased to %ld\n", real_new_limit);
+				return true;
+			}
+			else{
+				fprintf(stderr, "Error: the maximum open file limit for the filesystem could not be set!\n");
+				return false;
+			}
+		}
+		else{
+			//increasing was not necessary
+			return true;
+		}
+	}
+	else{
+		fprintf(stderr, "Error: the maximum open file limit for the filesystem could not be retrieved!\n");
+		return false;
+	}
+#else
+	int current_limit = _getmaxstdio();
+	if(current_limit < new_max_limit){
+		printf("Open files limit %d, new %zu\n", current_limit, new_max_limit);
+		int set_limit = _setmaxstdio(new_max_limit);
+		if(!set_limit){
+			fprintf(stderr, "Error: the maximum file limit for the filesystem could not be set!\n");
+			return false;
+		}
+		fprintf(stdout, "Maximum open file limit has been increased to %zu\n", new_max_limit);
+		return true;
+	}
+	else{
+		//increasing was not necessary
+		return true;
+	}
+
+#endif
+	return false;
+}
 };
+
 
 #endif /* SRC_HELPER_H_ */
