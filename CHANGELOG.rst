@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.5 (2020-11-18)
+------------------
+* increase maximal open file limit if required
+* fix i1 only mode
+
 0.1.4 (2020-11-09)
 ------------------
 

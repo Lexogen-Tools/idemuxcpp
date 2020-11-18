@@ -1,3 +1,12 @@
+idemuxcpp (0.1.5-1) UNRELEASED; urgency=medium
+
+0.1.5 (2020-11-18)
+------------------
+  * increase maximal open file limit if required
+  * fix i1 only mode
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Wed, 18 Nov 2020 10:35:00 -0400
+
 idemuxcpp (0.1.4-1) UNRELEASED; urgency=medium
 
   * added single end mode.
