@@ -2,12 +2,13 @@
 #include <iostream>
 #include <unordered_set>
 #include <unordered_map>
-#include "Parser.h"
 #include "Barcode.h"
 #include "PairedReader.h"
 #include "FastqReader.h"
 #include "BoostZipReader.h"
 #include "helper.h"
+#include <regex>
+#include "Parser.h"
 
 #include <istream>
 #include <string>
@@ -65,6 +66,15 @@ std::vector<std::string> readCSVRow(const std::string &row) {
 			break;
 		}
 	}
+	for(int i = 0; i < fields.size(); i++){
+		string tmp_str = fields[i];
+		//remove newline signs
+		tmp_str.erase(std::remove(tmp_str.begin(), tmp_str.end(), '\n'), tmp_str.end());
+		tmp_str.erase(std::remove(tmp_str.begin(), tmp_str.end(), '\r'), tmp_str.end());
+		//remove spaces at the start and end of each value
+		tmp_str = std::regex_replace(tmp_str, std::regex("^ +| +$"), "$1");
+		fields[i] = tmp_str;
+	}
 	return fields;
 }
 
@@ -80,7 +90,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
 		if (in.bad() || in.fail()) {
 			break;
 		}
-		auto fields = readCSVRow(row);
+		std::vector<std::string> fields = readCSVRow(row);
 		table.push_back(fields);
 	}
 	return table;
@@ -212,15 +222,14 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	//check header:
 	unordered_map<string, size_t> map_column_index;
 	string s1, s2;
-	//std::cout << "sizeof " << sample_sheet_header.size() << std::endl;
 	for (size_t i = 0; i < csv_lines[0].size(); i++) {
 		s1 = csv_lines[0][i];
 		auto ith = sample_sheet_header.find(s1);
-		//s2 = sample_sheet_header[i];
 		if (ith != sample_sheet_header.end()) {
 			map_column_index[*ith] = i;
 		}
 	}
+
 	for (int i = 0; i < minimal_header_list.size(); i++){
 		auto ith = map_column_index.find(minimal_header_list[i]);
 		if (ith == map_column_index.end()){
