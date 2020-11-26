@@ -105,7 +105,11 @@ int main(int argc, char **argv) {
 			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	//we need to open files at least for all samples + some extra files.
-	size_t max_open_files = barcode_sample_map->size() + 100;
+	size_t max_open_files = barcode_sample_map->size();
+        if(args_info.r2_given)
+            max_open_files = barcode_sample_map->size() * 2;
+        max_open_files += 100;
+
 	if(!utils::set_maximal_file_limit(max_open_files)){
 		throw(runtime_error("Please increase the maximum number of open files in your operating system settings, or try to run this tool with elevated privileges!"));
 	}
