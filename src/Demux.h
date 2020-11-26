@@ -313,13 +313,13 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 				string s1 = "";
 				string s2 = "";
 				for (auto itread = val.begin(); itread != val.end(); itread++) {
-					s1 += itread->first->to_string();
-					s2 += itread->second->to_string();
+					s1 = itread->first->to_string();
+					s2 = itread->second->to_string();
+				        key->first->write(s1.c_str(), s1.length());
+				        key->second->write(s2.c_str(), s2.length());
 					delete itread->first;
 					delete itread->second;
 				}
-				key->first->write(s1.c_str(), s1.length());
-				key->second->write(s2.c_str(), s2.length());
 			}
 			// count the number of reads in an separate loop (maybe faster without locks)
 			for (int i = 0; i < (int)keys.size(); i++) {
@@ -502,7 +502,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 	}
 
 	if(barcode_corrections_file.compare("") != 0){
-		counted_corrections_per_index->write_correction(barcode_corrections_file, *barcode_sample_map);
+               counted_corrections_per_index->write_correction(barcode_corrections_file, *barcode_sample_map);
 		delete counted_corrections_per_index;
 	}
 	Writer w;

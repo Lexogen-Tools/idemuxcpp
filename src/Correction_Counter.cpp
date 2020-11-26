@@ -11,24 +11,27 @@ using namespace std;
 
 Correction_Counter::Correction_Counter(unordered_set<string>* i7codes, unordered_set<string>* i5codes, unordered_set<string>* i1codes) {
 	uint16_t i = 0;
-	for(auto it = i7codes->begin(); it != i7codes->end(); it++, i++){
+	for(auto it = i7codes->begin(); it != i7codes->end(); it++){
 		if((*it).compare("") != 0){
 			I7_codes.push_back(*it);
 			I7_indices[*it] = i;
+                        i++;
 		}
 	}
 	i = 0;
-	for(auto it = i5codes->begin(); it != i5codes->end(); it++, i++){
+	for(auto it = i5codes->begin(); it != i5codes->end(); it++){
 		if((*it).compare("") != 0){
 			I5_codes.push_back(*it);
 			I5_indices[*it] = i;
+                        i++;
 		}
 	}
 	i = 0;
-	for(auto it = i1codes->begin(); it != i1codes->end(); it++, i++){
+	for(auto it = i1codes->begin(); it != i1codes->end(); it++){
 		if((*it).compare("") != 0){
 			I1_codes.push_back(*it);
 			I1_indices[*it] = i;
+                        i++;
 		}
 	}
 };

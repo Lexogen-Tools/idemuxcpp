@@ -230,9 +230,10 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 			delete corr_map;
 		}
 	}
-	if (this->Correction_map.size() > 0 && n_loaded_maps == this->Lengths.size())
+	if (this->Correction_map.size() > 0 && n_loaded_maps == this->Lengths.size()){
+                delete barcodes_given;
 		return;
-
+        }
 
 	if (!contains_allowed_length) {
 		printf(
