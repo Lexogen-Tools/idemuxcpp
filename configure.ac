@@ -1,7 +1,7 @@
 
 m4_define([idemuxCPP_version_major], [0])
 m4_define([idemuxCPP_version_minor], [1])
-m4_define([idemuxCPP_version_patch], [5])
+m4_define([idemuxCPP_version_patch], [6])
 
 my_url="my_url"
 AC_PREREQ([2.59])

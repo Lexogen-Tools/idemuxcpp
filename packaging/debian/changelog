@@ -1,7 +1,13 @@
+idemuxcpp (0.1.6-1) UNRELEASED; urgency=medium
+
+  * fixed correction counter indices
+  * set limit for pe mode
+  * updated sample sheet reader for windows files
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Wed, 30 Nov 2020 08:29:00 -0400
+
 idemuxcpp (0.1.5-1) UNRELEASED; urgency=medium
 
-0.1.5 (2020-11-18)
-------------------
   * increase maximal open file limit if required
   * fix i1 only mode
 
