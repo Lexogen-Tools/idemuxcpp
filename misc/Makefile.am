@@ -22,11 +22,11 @@ pkgbarcodesi5data_DATA = \
  barcodes/i5/base_mapping_b384_l12.tsv
 
 pkgbarcodesi5rcdata_DATA = \
- barcodes/i5_rc/base_mapping_rc_b96_l10.tsv \
- barcodes/i5_rc/base_mapping_rc_b384_l12.tsv \
- barcodes/i5_rc/base_mapping_rc_b384_l10.tsv \
- barcodes/i5_rc/base_mapping_rc_b96_l8.tsv \
- barcodes/i5_rc/base_mapping_rc_b96_l12.tsv
+ barcodes/i5_rc/base_mapping_b96_l10.tsv \
+ barcodes/i5_rc/base_mapping_b384_l12.tsv \
+ barcodes/i5_rc/base_mapping_b384_l10.tsv \
+ barcodes/i5_rc/base_mapping_b96_l8.tsv \
+ barcodes/i5_rc/base_mapping_b96_l12.tsv
 
 pkgbarcodesi1data_DATA = \
  barcodes/i1/base_mapping_b384_l10.tsv \
