@@ -2,6 +2,10 @@
 History
 =======
 
+0.1.7 (2021-28-01)
+------------------
+* bug fix: renamed i5 rc files so they get loaded properly
+
 0.1.6 (2020-11-30)
 ------------------
 * fixed correction counter indices

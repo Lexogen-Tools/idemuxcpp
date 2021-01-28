@@ -1,3 +1,9 @@
+idemuxcpp (0.1.7-1) UNRELEASED; urgency=medium
+
+  * bug fix: renamed i5 rc files so they get loaded properly
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Thu, 28 Jan 2021 08:29:00 -0400
+
 idemuxcpp (0.1.6-1) UNRELEASED; urgency=medium
 
   * fixed correction counter indices
