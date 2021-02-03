@@ -1,3 +1,9 @@
+idemuxcpp (0.1.8-1) UNRELEASED; urgency=medium
+
+  * added comma in correction count csv  
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Wed, 03 Feb 2021 12:13:00 -0400
+
 idemuxcpp (0.1.7-1) UNRELEASED; urgency=medium
 
   * bug fix: renamed i5 rc files so they get loaded properly

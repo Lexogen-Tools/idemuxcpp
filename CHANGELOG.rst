@@ -2,6 +2,10 @@
 History
 =======
 
+0.1.8 (2021-03-02)
+------------------
+* added comma in correction count csv
+
 0.1.7 (2021-28-01)
 ------------------
 * bug fix: renamed i5 rc files so they get loaded properly
