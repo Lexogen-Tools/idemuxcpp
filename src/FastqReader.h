@@ -38,6 +38,7 @@ struct fq_read{
 class IFastqReader{
 public:
 	virtual fq_read* next_read() = 0;
+	virtual std::pair<fq_read*, fq_read*> next_read_pair(){ return std::pair<fq_read*, fq_read*>({NULL, NULL}); };
 	virtual ~IFastqReader(){};
 };
 

@@ -13,6 +13,7 @@
 #include <istream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 enum class CSVState {
 	UnquotedField, QuotedField, QuotedQuote
@@ -585,15 +586,15 @@ bool Parser::has_valid_barcode_combinations(Barcode &i7, Barcode &i5,
  ValueError: When the fastq header contains less barcodes than indicated by the
  booleans.
  */
-void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
-		bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length, unordered_map<string, i1_info> &i7_i5_i1_info_map) {
+void Parser::peek_into_fastq_files(PairedReader &get_pe_fastq, bool has_i7,
+		bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+                size_t max_length_i7, size_t max_length_i5) {
 	fprintf(stdout,
 			"Peeking into fastq files to check for barcode formatting errors\n");
 
 	int lines_to_check = 1000;
 	int counter = 0;
 	fprintf(stdout, "Checking fastq input files...\n");
-	PairedReader get_pe_fastq(fq_gz_1, fq_gz_2);
 	//vector<fq_read> *pe_reads = get_pe_fastq(fq_gz_1, fq_gz_2);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
 			get_pe_fastq.next_reads(lines_to_check);
@@ -608,9 +609,10 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 		 mate_pair.second = &pe_reads[i+1];
 		 */
 		check_mate_pair(mate_pair, has_i7, has_i5, has_i1, i7_length, i5_length,
-				i7_i5_i1_info_map);
+				i7_i5_i1_info_map,
+                                max_length_i7, max_length_i5);
 		counter += 1;
-		if (counter == lines_to_check)
+		if (counter >= lines_to_check)
 			break;
 	}
 	for (size_t i = 0; i < pe_reads->size(); i++) {
@@ -625,35 +627,22 @@ void Parser::peek_into_fastq_files(string fq_gz_1, string fq_gz_2, bool has_i7,
 /**
  * single end file check
  */
-void Parser::peek_into_fastq_file(string fq_gz_1, bool has_i7,
+void Parser::peek_into_fastq_file(IFastqReader *reader, bool has_i7,
 				bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
-				unordered_map<string, i1_info> &i7_i5_i1_info_map){
+				unordered_map<string, i1_info> &i7_i5_i1_info_map,
+                                size_t max_length_i7, size_t max_length_i5){
 	fprintf(stdout,
 			"Peeking into fastq file to check for barcode formatting errors\n");
 
 	int lines_to_check = 1000;
 	int counter = 0;
 	fprintf(stdout, "Checking fastq input files...\n");
-	IFastqReader *reader;
-	if (fq_gz_1.length() > 3){
-		string suffix = fq_gz_1.substr(fq_gz_1.length()-3);
-		if (suffix.compare(".gz") == 0){
-			// use zip reader
-			reader = new BoostZipReader(fq_gz_1);
-
-		}
-		else{
-			// use fastq reader
-			reader = new FastqReader(fq_gz_1);
-		}
-	}
-
 	for(int i = 0; i < lines_to_check; i++){
 		fq_read* r = reader->next_read();
 		if(r){
-			check_fastq_header(r, has_i7, has_i5, i7_length, i5_length);
+			check_fastq_header(r, has_i7, has_i5, i7_length, i5_length, max_length_i7, max_length_i5);
 			if (has_i1){
-				pair<string,string> bcs_mate1 = Parser::parse_indices(r->Seq_ID);
+				pair<string,string> bcs_mate1 = Parser::parse_indices(r->Seq_ID, max_length_i7, max_length_i5);
 				string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
 				auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
 				if (it_i1_info != i7_i5_i1_info_map.end()){
@@ -670,17 +659,17 @@ void Parser::peek_into_fastq_file(string fq_gz_1, bool has_i7,
 			break;
 		}
 	}
-	delete reader;
 	std::cout << "Input file formatting seems fine." << std::endl;
 }
 
 void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 		bool has_i7, bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
-		unordered_map<string, i1_info> &i7_i5_i1_info_map) {
+		unordered_map<string, i1_info> &i7_i5_i1_info_map,
+                size_t max_length_i7, size_t max_length_i5) {
 
-	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length);
+	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length, max_length_i7, max_length_i5);
 	if (has_i1){
-		pair<string,string> bcs_mate1 = Parser::parse_indices(mate_pair.first->Seq_ID);
+		pair<string,string> bcs_mate1 = Parser::parse_indices(mate_pair.first->Seq_ID, max_length_i7, max_length_i5);
 		string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
 		auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
 		if (it_i1_info != i7_i5_i1_info_map.end()){
@@ -731,7 +720,8 @@ string Parser::list_to_string(vector<int> list){
  booleans.
  */
 void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
-		bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length) {
+		bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length,
+                size_t max_length_i7, size_t max_length_i5) {
 
 	fq_read *m_1 = mate_pair.first;
 	fq_read *m_2 = mate_pair.second;
@@ -740,8 +730,8 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 	string header_mate_2(m_2->Seq_ID);
 
 	// get the barcodes from the fastq header
-	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1);
-	std::pair<string, string> bcs_mate2 = Parser::parse_indices(header_mate_2);
+	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1, max_length_i7, max_length_i5);
+	std::pair<string, string> bcs_mate2 = Parser::parse_indices(header_mate_2, max_length_i7, max_length_i5);
 
 	if ((bcs_mate1.first.compare(bcs_mate2.first) != 0)
 			|| (bcs_mate1.second.compare(bcs_mate2.second) != 0)) {
@@ -834,10 +824,12 @@ void Parser::check_fastq_headers(std::pair<fq_read*, fq_read*> mate_pair,
 
 }
 
-void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length) {
+void Parser::check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length,
+        size_t max_length_i7, size_t max_length_i5) {
 	string header_mate_1(mate->Seq_ID);
+
 	// get the barcodes from the fastq header
-	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1);
+	std::pair<string, string> bcs_mate1 = Parser::parse_indices(header_mate_1, max_length_i7, max_length_i5);
 
 	int number_bc_m1 = (bcs_mate1.first == "" || bcs_mate1.second == "") ? 1 : 2;
 

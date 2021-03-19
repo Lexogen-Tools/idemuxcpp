@@ -22,7 +22,6 @@ section "Required arguments"
 option  "r1" 1
 "Fastq.gz read file 1 (or .fastq file).\n"
 string
-required
 default=""
 
 option  "r2" 2
@@ -42,6 +41,19 @@ option  "sample-sheet" s
 string
 required
 default="sample-sheet.csv"
+
+
+section "Required arguments for bam input"
+option  "bam" -
+"Bam file with unaligned reads (in case of paired end data, set --paired).\n"
+string
+default=""
+
+option "paired" -
+"If the input is paired (interleaved reads in one bam file. (r1, r2, r1, r2,...))."
+flag
+off
+
 
 section "Optional arguments"
 
@@ -98,6 +110,16 @@ optional
 
 option "demux-only" d
 "Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file."
+flag
+off
+
+option "skip-check" -
+"Skip initial compatibility check of input files."
+flag
+off
+
+option "restrict-barcode-length" -
+"Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet."
 flag
 off
 

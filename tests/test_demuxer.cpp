@@ -394,9 +394,11 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	string tmp_path = p.parent_path().string() + PATH_SEP + string("test_output");
 	if(!utils::folder_exists(tmp_path))
 		utils::mkdir(tmp_path);
+	bool skip_check = false;
+	bool restrict_barcode_length = false;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
 			tmp_path, pe, chunk_size, reading_threads, writing_threads,
-			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
+			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -440,9 +442,11 @@ void test_demux_reads(vector<string> *paths_r1_r2_csv){
 	string tmp_path = p.parent_path().string() + PATH_SEP + string("test_output");
 	if(!utils::folder_exists(tmp_path))
 		utils::mkdir(tmp_path);
+	bool skip_check = false;
+	bool restrict_barcode_length = false;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
-			tmp_path, pe, chunk_size, reading_threads, writing_threads,
-			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
+		tmp_path, pe, chunk_size, reading_threads, writing_threads,
+		processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -539,9 +543,12 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 	int reading_threads = 2;
 	int writing_threads = 1;
 	int processing_threads = 1;
+
+	bool skip_check = false;
+	bool restrict_barcode_length = false;
 	demux_paired_end(barcode_sample_map, barcodes, tmp_path_r1, tmp_path_r2, i7_i5_i1_info_map,
 				tmp_path, pe, chunk_size, reading_threads, writing_threads,
-				processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"));
+				processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
 
 	string tmp_r1 = tmp_path + PATH_SEP + string("test_sample_R1.fastq.gz");
 	string tmp_r2 = tmp_path + PATH_SEP + string("test_sample_R2.fastq.gz");
@@ -560,9 +567,10 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 	exp_r_2.QualityCode = "6AAAA//E//";
 
 	PairedReader get_pe_fastq(tmp_r1, tmp_r2);
-	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
-			get_pe_fastq.next_reads(100);
-	BOOST_CHECK(pe_reads->size() == 1);
+	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads = get_pe_fastq.next_reads(100);
+        size_t n_r = pe_reads->size();
+        printf("nr %lu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());
+	BOOST_CHECK(n_r == 1);
 	for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {
 		BOOST_CHECK(is_equal_read(*it->first, exp_r_1) == true);
 		BOOST_CHECK(is_equal_read(*it->second, exp_r_2) == true);

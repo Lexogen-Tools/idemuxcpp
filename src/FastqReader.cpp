@@ -13,16 +13,18 @@
 using namespace std;
 
 FastqReader::FastqReader(string filename) {
-	FastqFileHandle.open(filename, std::ifstream::in);
+	this->FastqFileHandle.open(filename, std::ifstream::in);
+	bool test = this->FastqFileHandle.eof();
 }
 
 fq_read* FastqReader::next_read() {
 	std::string line;
 	fq_read *read = new fq_read();
 	short i = 0;
-	while (!FastqFileHandle.eof() && i < 4) {
-		std::getline(FastqFileHandle, line);
-		if (FastqFileHandle.bad() || FastqFileHandle.fail()) {
+	bool test = this->FastqFileHandle.eof();
+	while (!this->FastqFileHandle.eof() && i < 4) {
+		std::getline(this->FastqFileHandle, line);
+		if (this->FastqFileHandle.bad() || FastqFileHandle.fail()) {
 			//(runtime_error("Error: could not read from fastq file!"));
 			break;
 		}
@@ -52,7 +54,7 @@ fq_read* FastqReader::next_read() {
 }
 
 void FastqReader::close() {
-	FastqFileHandle.close();
+	this->FastqFileHandle.close();
 }
 
 FastqReader::~FastqReader() {

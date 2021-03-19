@@ -16,6 +16,7 @@
 #include "Demux.h"
 #include "helper.h"
 
+
 using namespace std;
 
 
@@ -36,6 +37,8 @@ int main(int argc, char **argv) {
 	int writing_threads = -1;
 	int processing_threads = -1;
 	bool demux_only = false;
+        bool skip_check = false;
+        bool restrict_barcode_length = false;
 	//bool verbose = false;
 	string relative_exepath = string(argv[0]);
 	std::cout << relative_exepath << std::endl;
@@ -45,18 +48,25 @@ int main(int argc, char **argv) {
 	if (idemuxCPP_cmdline_parser(argc, argv, &args_info) != 0)
 		exit(EXIT_FAILURE);
 
-	if (args_info.r1_given) {
-		read1_file = args_info.r1_arg;
-	} else {
-		fprintf(stderr, "Error: please enter a read1.fastq.gz file!\n");
-		exit(EXIT_FAILURE);
+	single_end_mode = !args_info.paired_flag;
+	if (args_info.bam_given){
+		read1_file = args_info.bam_arg;
 	}
-	if (args_info.r2_given) {
-		read2_file = args_info.r2_arg;
-	} else {
-		single_end_mode = true;
-		default_i1_read = 1;
-		fprintf(stderr, "Warning: no read2.fastq.gz file given! Single end demultiplexing will be used.\n");
+	else{
+		if (args_info.r1_given) {
+			read1_file = args_info.r1_arg;
+		} else {
+			fprintf(stderr, "Error: please enter a read1.fastq.gz file!\n");
+			exit(EXIT_FAILURE);
+		}
+		if (args_info.r2_given) {
+			read2_file = args_info.r2_arg;
+			single_end_mode = false;
+		} else {
+			single_end_mode = true;
+			default_i1_read = 1;
+			fprintf(stderr, "Warning: no read2.fastq.gz file given! Single end demultiplexing will be used.\n");
+		}
 	}
 	if (args_info.out_given) {
 		outputdirectory = args_info.out_arg;
@@ -82,6 +92,10 @@ int main(int argc, char **argv) {
 	}
 	demux_only = args_info.demux_only_flag;
 
+        skip_check =  args_info.skip_check_flag;
+
+        restrict_barcode_length = args_info.restrict_barcode_length_flag;
+
 	i5_rc = args_info.i5_rc_flag;
 
 	if (args_info.i1_start_arg < 1){
@@ -102,7 +116,7 @@ int main(int argc, char **argv) {
 	vector<Barcode*> barcodes;
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map,relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
+			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map, relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	//we need to open files at least for all samples + some extra files.
 	size_t max_open_files = barcode_sample_map->size();
@@ -115,13 +129,14 @@ int main(int argc, char **argv) {
 	}
 
 	// do things.
-	if(single_end_mode)
+	if(single_end_mode){
 		demux_single_end(barcode_sample_map, barcodes, read1_file,
-					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
-	else
+					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length);
+	}
+	else{
 		demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
-			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file);
-
+			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length);
+	}
 
 	delete barcode_sample_map;
 	for (size_t i = 0; i < barcodes.size(); i++)

@@ -13,6 +13,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #define HAVE_INTTYPES_H 1
 
+/* Define if you have the libbamtools library. */
+#define HAVE_LIBBAMTOOLS 1
+
 /* Define if you have the libboost_filesystem library. */
 #define HAVE_LIBBOOST_FILESYSTEM 1
 

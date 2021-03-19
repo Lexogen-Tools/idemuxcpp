@@ -100,6 +100,30 @@ if test "$HAVE_LIBZ" != "yes"; then
 AC_MSG_FAILURE([ERROR: please install the zlib library!])
 fi
 AC_LIB_LINKFLAGS([dl])
+
+# check for bamtools-dev
+AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
+      [  AC_MSG_NOTICE([Found file in path /usr/include/bamtools/api. Test linking with updated CXXFLAGS...])
+         CXXFLAGS="$CXXFLAGS -I/usr/include/bamtools/"
+      ], 
+      [ AC_MSG_NOTICE([Bamtools library not found in /usr/include/bamtools/api/BamReader.h! Let us hope it is in the include path])
+])
+AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <api/BamReader.h>], [], [Linking against bamtools library has failed!])
+if test "$HAVE_LIBBAMTOOLS" != "yes"; then
+AC_MSG_WARN([
+********************************************************************************
+   Please install the bamtools library!
+   (https://github.com/pezmaster31/bamtools)
+   If libbamtools-dev is already installed, you have to specify the path prefix 
+   with --with-libbamtools-prefix or install it into a standard location!
+ 
+   If you don't need bam files as input (fastq and fastq.gz should work), 
+   then you can ignore this message.
+********************************************************************************])
+fi
+
+AM_CONDITIONAL([HAVE_LIBBAMTOOLS], [test "$HAVE_LIBBAMTOOLS" != "no"])
+
 ###############################################################################
 # Boost unit tests check
 ###############################################################################

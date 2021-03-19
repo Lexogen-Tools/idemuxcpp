@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstdlib>
 #include <stdio.h>
-#include <cstring>
+#include <string>
 #include <algorithm>
 #include <unordered_map>
 #include <limits>
@@ -19,6 +19,9 @@
 #include "FileHandlerSE.h"
 #include "PairedReader.h"
 #include "FastqReader.h"
+#ifdef HAVE_LIBBAMTOOLS
+#include "BamReader.h"
+#endif
 #include "BoostZipReader.h"
 #include "ZipFastqWriter.h"
 #include "Writer.h"
@@ -59,9 +62,11 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 		unordered_map<string, string> *map_i5,
 		unordered_map<string, string> *map_i1, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		std::pair<fq_read*, fq_read*> &mate_pair_out,
-		Correction_Counter *counted_corrections_per_index) {
+		Correction_Counter *counted_corrections_per_index,
+                size_t max_length_i7 = SIZE_MAX,
+                size_t max_length_i5 = SIZE_MAX) {
 	string fastq_header(mate_pair.first->Seq_ID);
-	std::pair<string, string> barcodes = Parser::parse_indices(fastq_header);
+	std::pair<string, string> barcodes = Parser::parse_indices(fastq_header, max_length_i7, max_length_i5);
 	// if not barcodes:
 	string i7_bc = "";
 	string i5_bc = "";
@@ -152,9 +157,11 @@ string process_read(fq_read* read,
 		unordered_map<string, string> *map_i5,
 		unordered_map<string, string> *map_i1, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		fq_read &read_out,
-		Correction_Counter *counted_corrections_per_index) {
+		Correction_Counter *counted_corrections_per_index,
+                size_t max_length_i7,
+                size_t max_length_i5) {
 	string fastq_header(read->Seq_ID);
-	std::pair<string, string> barcodes = Parser::parse_indices(fastq_header);
+	std::pair<string, string> barcodes = Parser::parse_indices(fastq_header, max_length_i7, max_length_i5);
 	// if not barcodes:
 	string i7_bc = "";
 	string i5_bc = "";
@@ -223,9 +230,74 @@ string process_read(fq_read* read,
 	return barcodes_key;
 }
 
+size_t get_max_length(unordered_set<string> &barcodes){
+    size_t max = 0;
+    size_t bc_length = 0;
+    for(auto it = barcodes.begin(); it != barcodes.end(); it++){
+        bc_length = (*it).length();
+        if(bc_length > max) { max = bc_length; }
+    }
+    return max;
+}
+
+void string_to_lower(string &out_string){
+	transform(out_string.begin(), out_string.end(), out_string.begin(), ::tolower);
+}
+
+IFastqReader *init_reader_single_end(string reads_file){
+	IFastqReader *reader = NULL;
+	int last_index = reads_file.find_last_of('.');
+	if(last_index > 0){
+		string suffix = reads_file.substr(last_index);
+		string suffix_lower = suffix;
+		string_to_lower(suffix_lower);
+		if(suffix_lower.compare(".bam") == 0){
+#ifdef HAVE_LIBBAMTOOLS
+			reader = new BamReader(reads_file);
+# else
+			throw runtime_error("Error: bam files are not supported with this compilation!");
+#endif
+		}
+		else{
+			if (suffix_lower.compare(".gz") == 0){
+				reader = new BoostZipReader(reads_file);
+			}
+			else{
+				// use fastq reader
+				reader = new FastqReader(reads_file);
+			}
+		}
+	}
+	else{
+		throw runtime_error("Error: no valid input file ending!");
+	}
+	return reader;
+}
+
+PairedReader *init_reader_paired_end(string read1_file, string read2_file){
+	PairedReader *paired_reader = NULL;
+	int last_index = read1_file.find_last_of('.');
+	if(last_index > 0){
+		string suffix = read1_file.substr(last_index);
+		string suffix_lower = suffix;
+		string_to_lower(suffix_lower);
+		if(suffix_lower.compare(".bam") == 0){
+			paired_reader = new PairedReader(read1_file);
+		}
+		else{
+			paired_reader = new PairedReader(read1_file, read2_file);
+		}
+	}
+	else{
+		throw runtime_error("Error: no valid input file ending!");
+	}
+	return paired_reader;
+}
+
 void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
-		vector<Barcode*> &barcodes, string read1, string read2, unordered_map<string, i1_info> &i7_i5_i1_info_map,
-		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file) {
+		vector<Barcode*> &barcodes, string read1_file, string read2_file, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file, 
+                bool skip_check, bool restrict_barcode_length) {
 	// load the maps that will be used for error correction. As the tool does not allow
 	// different length we only need to load the used length
 	Barcode *i7, *i5, *i1;
@@ -245,10 +317,19 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	bool has_i5 = !i5->empty();
 	bool has_i1 = !i1->empty();
 
+	size_t max_length_i7 = SIZE_MAX;
+	size_t max_length_i5 = SIZE_MAX;
+	if (restrict_barcode_length){
+		max_length_i7 = get_max_length(*i7_wanted);
+		max_length_i5 = get_max_length(*i5_wanted);
+	}
 	// before doing any processing check if the fastq file is okay.
-	parser.peek_into_fastq_files(read1, read2, has_i7, has_i5, has_i1,
-			i7->Lengths, i5->Lengths, i7_i5_i1_info_map);
-
+	if (!skip_check){
+		PairedReader * pr = init_reader_paired_end(read1_file, read2_file);
+		parser.peek_into_fastq_files(*pr, has_i7, has_i5, has_i1,
+				i7->Lengths, i5->Lengths, i7_i5_i1_info_map, max_length_i7, max_length_i5);
+		delete pr;
+	}
 	Correction_Counter* counted_corrections_per_index = NULL;
 	if(barcode_corrections_file.compare("") != 0){
 		counted_corrections_per_index = new Correction_Counter(i7_wanted,i5_wanted,i1_wanted);
@@ -256,12 +337,12 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 
 	//read_counter = Counter()
 	std::cout << "Starting demultiplexing" << std::endl;
+	PairedReader * pr = init_reader_paired_end(read1_file, read2_file);
 	// first we need to open the output files the reads should get sorted into
 	FileHandler *file_handler = new FileHandler(*barcode_sample_map, output_dir,
 			(size_t) pow(2, 30));
 
 	// then we iterate over all the paired end reads
-	PairedReader pr(read1, read2);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads;
 	bool reads_available = true;
 	std::unordered_map<std::string, size_t> read_counter;
@@ -275,7 +356,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 #endif
 	while (reads_available) {
 		auto t1 = Clock::now();
-		pe_reads = pr.next_reads2(queue_size, reading_threads);
+		pe_reads = pr->next_reads2(queue_size, reading_threads);
 		auto t2 = Clock::now();
 
 		std::cout << "n_reads " << pe_reads->size() << std::endl;
@@ -292,7 +373,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 				std::pair<fq_read*, fq_read*> processed_mates;
 				string s_barcodes = process_mate_pair(mate_pair, i7_wanted, i5_wanted,
 						i1_wanted, map_i7, map_i5, map_i1, i7_i5_i1_info_map,
-						processed_mates, counted_corrections_per_index);
+						processed_mates, counted_corrections_per_index, max_length_i7, max_length_i5);
 				std::pair<ZipFastqWriter*, ZipFastqWriter*> *pair_writer = file_handler->get_file_handles(s_barcodes);
 #pragma omp critical
 				map_pairs[pair_writer].push_back(processed_mates);
@@ -355,16 +436,17 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	Writer w;
 	w.write_summary(read_counter, output_dir);
 
+	delete pr;
 	delete file_handler;
 	delete i7_wanted;
 	delete i5_wanted;
 	delete i1_wanted;
 }
 
-
 void demux_single_end(unordered_map<string, string> *barcode_sample_map,
-		vector<Barcode*> &barcodes, string read1, unordered_map<string, i1_info> &i7_i5_i1_info_map,
-		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file) {
+		vector<Barcode*> &barcodes, string reads_file, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file, 
+                bool skip_check, bool restrict_barcode_length) {
 	// load the maps that will be used for error correction. As the tool does not allow
 	// different length we only need to load the used length
 	Barcode *i7, *i5, *i1;
@@ -384,10 +466,20 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 	bool has_i5 = !i5->empty();
 	bool has_i1 = !i1->empty();
 
-	// before doing any processing check if the fastq file is okay.
-	parser.peek_into_fastq_file(read1, has_i7, has_i5, has_i1,
-			i7->Lengths, i5->Lengths, i7_i5_i1_info_map);
+        size_t max_length_i7 = SIZE_MAX;
+        size_t max_length_i5 = SIZE_MAX;
+        if (restrict_barcode_length){
+            max_length_i7 = get_max_length(*i7_wanted);
+            max_length_i5 = get_max_length(*i5_wanted);
+        }
 
+	// before doing any processing check if the fastq file is okay.
+        if (!skip_check){
+        	IFastqReader *reader = init_reader_single_end(reads_file);
+        	parser.peek_into_fastq_file(reader, has_i7, has_i5, has_i1,
+			    i7->Lengths, i5->Lengths, i7_i5_i1_info_map, max_length_i7, max_length_i5);
+        	delete reader;
+        }
 	Correction_Counter* counted_corrections_per_index = NULL;
 	if(barcode_corrections_file.compare("") != 0){
 		counted_corrections_per_index = new Correction_Counter(i7_wanted,i5_wanted,i1_wanted);
@@ -395,24 +487,11 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 
 	//read_counter = Counter()
 	std::cout << "Starting demultiplexing" << std::endl;
+	IFastqReader *reader = init_reader_single_end(reads_file);
 	// first we need to open the output files the reads should get sorted into
 	FileHandlerSE *file_handler = new FileHandlerSE(*barcode_sample_map, output_dir,
 			(size_t) pow(2, 30));
 
-
-	IFastqReader *reader;
-	if (read1.length() > 3){
-		string suffix = read1.substr(read1.length()-3);
-		if (suffix.compare(".gz") == 0){
-			// use zip reader
-			reader = new BoostZipReader(read1);
-
-		}
-		else{
-			// use fastq reader
-			reader = new FastqReader(read1);
-		}
-	}
 	// then we iterate over all the paired end reads
 	bool reads_available = true;
 	std::unordered_map<std::string, size_t> read_counter;
@@ -451,7 +530,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 				fq_read* processed_read = new fq_read();
 				string s_barcodes = process_read(r, i7_wanted, i5_wanted,
 						i1_wanted, map_i7, map_i5, map_i1, i7_i5_i1_info_map,
-						*processed_read, counted_corrections_per_index);
+						*processed_read, counted_corrections_per_index, max_length_i7, max_length_i5);
 				ZipFastqWriter *read_writer = file_handler->get_file_handles(s_barcodes);
 #pragma omp critical
 				map_reads[read_writer].push_back(processed_read);

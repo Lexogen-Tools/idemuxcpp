@@ -216,8 +216,10 @@ BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_pass ) {
 		}
 		delete r;
 
+                PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2);
+
 		BOOST_CHECK_NO_THROW(
-				p.peek_into_fastq_files(it->fq_gz_1, it->fq_gz_2, it->has_i7,
+		p.peek_into_fastq_files(paired_reader, it->has_i7,
 						it->has_i5, it->has_i1, it->i7_length, it->i5_length,
 						i7_i5_i1_info_map));
 	}
@@ -239,8 +241,10 @@ BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_fail ) {
 		}
 		delete r;
 
+                PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2);
+
 		BOOST_CHECK_THROW(
-				p.peek_into_fastq_files(it->fq_gz_1, it->fq_gz_2, it->has_i7,
+				p.peek_into_fastq_files(paired_reader, it->has_i7,
 						it->has_i5, it->has_i1, it->i7_length, it->i5_length,
 						i7_i5_i1_info_map), std::exception);
 	}
