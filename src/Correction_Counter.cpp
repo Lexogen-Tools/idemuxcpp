@@ -116,6 +116,7 @@ void Correction_Counter::write_correction(string filename, unordered_map<string,
 		string sample_name = "undetermined";
 		csvfile << sample_name << ",,,," << undetermined_counts.all << "," << undetermined_counts.i7 << "," << undetermined_counts.i5 << "," << undetermined_counts.i1 << std::endl;
 	}
+	csvfile.close();
 	fprintf(stdout, "Barcode combination corrections summary saved to %s\n",
 			filename.c_str());
 }

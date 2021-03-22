@@ -65,7 +65,7 @@ public:
 	void check_fastq_header(fq_read* mate, bool has_i7, bool has_i5, vector<int> &i7_length, vector<int> &i5_length,
                         size_t max_length_i7 = SIZE_MAX, size_t max_length_i5 = SIZE_MAX);
 
-	static std::pair<string, string> parse_indices(string input, size_t max_length_i7 = SIZE_MAX, size_t max_length_i5 = SIZE_MAX) {
+	static std::pair<string, string> parse_indices(const string &input, size_t max_length_i7 = SIZE_MAX, size_t max_length_i5 = SIZE_MAX) {
 		size_t index_colon = input.find_last_of(':');
 		size_t index_plus1 = input.find('+');
 		string code_i7 = "";
@@ -78,6 +78,23 @@ public:
 				code_i7,
 				code_i5);
 		return bcs_mate1;
+	}
+
+	static string replace_indices(const string &input, const string &i7, const string &i5) {
+		size_t index_colon = input.find_last_of(':');
+		string result = "";
+		if(index_colon >= 0){
+			result.append(input.substr(0, index_colon+1));
+			result.append(i7);
+			if(i7.length() > 0 and i5.length() > 0){
+				result.append("+");
+			}
+			result.append(i5);
+		}
+		else{
+			result = input;
+		}
+		return result;
 	}
 
 	static

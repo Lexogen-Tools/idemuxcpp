@@ -101,6 +101,15 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 	//if (it7 != i7_wanted->end() and it5 != i5_wanted->end()) {
 	fq_read *r1c = new fq_read(*mate_pair.first);
 	fq_read *r2c = new fq_read(*mate_pair.second);
+	/* correct i7 and i5 indices (write the original indices,
+	   that could have a different length after parsing because of
+	   the --restrict-barcode-length option)
+	*/
+	string new_seq_id = Parser::replace_indices(r1c->Seq_ID, tmp_i7_bc, tmp_i5_bc);
+	r1c->Seq_ID = new_seq_id;
+	new_seq_id = Parser::replace_indices(r2c->Seq_ID, tmp_i7_bc, tmp_i5_bc);
+	r2c->Seq_ID = new_seq_id;
+
 	if (i1_wanted->size() > 0) {
 		string i7_i5_bc = i7_bc + "\n" + i5_bc;
 		auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
@@ -192,6 +201,14 @@ string process_read(fq_read* read,
 	string i1_bc = "";
 
 	read_out = fq_read(*read);
+
+	/* correct i7 and i5 indices (write the original indices,
+	   that could have a different length after parsing because of
+	   the --restrict-barcode-length option)
+	*/
+	string new_seq_id = Parser::replace_indices(read->Seq_ID, tmp_i7_bc, tmp_i5_bc);
+	read_out.Seq_ID = new_seq_id;
+
 	if (i1_wanted->size() > 0) {
 		string i7_i5_bc = i7_bc + "\n" + i5_bc;
 		auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
@@ -254,7 +271,7 @@ IFastqReader *init_reader_single_end(string reads_file){
 		if(suffix_lower.compare(".bam") == 0){
 #ifdef HAVE_LIBBAMTOOLS
 			reader = new BamReader(reads_file);
-# else
+#else
 			throw runtime_error("Error: bam files are not supported with this compilation!");
 #endif
 		}

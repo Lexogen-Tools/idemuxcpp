@@ -1,5 +1,6 @@
 
 #include <thread>
+#include "config.h"
 #include "PairedReader.h"
 #include "FastqReader.h"
 #include "BoostZipReader.h"
