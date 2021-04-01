@@ -50,7 +50,7 @@ fq_read* BamReader::get_next_read_from_bam(string &out_i7, string &out_i5, int &
 	bool has_aln = this->FileHandle->GetNextAlignment(ba);
 	if(has_aln) {
                 fq_read* read = new fq_read();
-		read->Seq_ID = ba.Name;
+		read->Seq_ID = "@" + ba.Name;
 
 		if(ba.IsFirstMate()){
                         out_read_type = 1;
