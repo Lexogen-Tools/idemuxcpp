@@ -121,6 +121,9 @@ struct idemuxCPP_args_info
   const char *skip_check_help; /**< @brief Skip initial compatibility check of input files. help description.  */
   int restrict_barcode_length_flag;	/**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet. (default=off).  */
   const char *restrict_barcode_length_help; /**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet. help description.  */
+  double writer_buffer_gb_arg;	/**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. (default='1.0').  */
+  char * writer_buffer_gb_orig;	/**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. original value given at command line.  */
+  const char *writer_buffer_gb_help; /**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. help description.  */
   int verbose_flag;	/**< @brief Verbose.
  (default=off).  */
   const char *verbose_help; /**< @brief Verbose.
@@ -146,6 +149,7 @@ struct idemuxCPP_args_info
   unsigned int demux_only_given ;	/**< @brief Whether demux-only was given.  */
   unsigned int skip_check_given ;	/**< @brief Whether skip-check was given.  */
   unsigned int restrict_barcode_length_given ;	/**< @brief Whether restrict-barcode-length was given.  */
+  unsigned int writer_buffer_gb_given ;	/**< @brief Whether writer-buffer-gb was given.  */
   unsigned int verbose_given ;	/**< @brief Whether verbose was given.  */
 
 } ;

@@ -67,7 +67,7 @@ public:
 
 	static std::pair<string, string> parse_indices(const string &input, size_t max_length_i7 = SIZE_MAX, size_t max_length_i5 = SIZE_MAX) {
 		size_t index_colon = input.find_last_of(':');
-		size_t index_plus1 = input.find('+');
+		size_t index_plus1 = input.find_last_of('+');
 		string code_i7 = "";
 		string code_i5 = "";
 		if(index_colon!=std::string::npos)
@@ -83,7 +83,7 @@ public:
 	static string replace_indices(const string &input, const string &i7, const string &i5) {
 		size_t index_colon = input.find_last_of(':');
 		string result = "";
-		if(index_colon >= 0){
+		if(index_colon != std::string::npos){
 			result.append(input.substr(0, index_colon+1));
 			result.append(i7);
 			if(i7.length() > 0 and i5.length() > 0){

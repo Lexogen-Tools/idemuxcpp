@@ -56,6 +56,7 @@ const char *idemuxCPP_args_info_help[] = {
   "  -d, --demux-only              Do a one on one mapping for the barcodes\n                                  specified in the sample sheet. No error\n                                  correction will be done. Barcodes that do not\n                                  match are written to the undetermined reads\n                                  file.  (default=off)",
   "      --skip-check              Skip initial compatibility check of input\n                                  files.  (default=off)",
   "      --restrict-barcode-length Restrict the readout i7, i5 barcode length to\n                                  the maximum barcode length in the sample\n                                  sheet.  (default=off)",
+  "      --writer-buffer-gb=DOUBLE Restrict the buffer for all writing threads to\n                                  a maximum of value in giga bytes.\n                                  (default=`1.0')",
   "  -v, --verbose                 Verbose.\n                                    (default=off)",
     0
 };
@@ -64,6 +65,7 @@ typedef enum {ARG_NO
   , ARG_FLAG
   , ARG_STRING
   , ARG_INT
+  , ARG_DOUBLE
 } idemuxCPP_cmdline_parser_arg_type;
 
 static
@@ -104,6 +106,7 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->demux_only_given = 0 ;
   args_info->skip_check_given = 0 ;
   args_info->restrict_barcode_length_given = 0 ;
+  args_info->writer_buffer_gb_given = 0 ;
   args_info->verbose_given = 0 ;
 }
 
@@ -140,6 +143,8 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->demux_only_flag = 0;
   args_info->skip_check_flag = 0;
   args_info->restrict_barcode_length_flag = 0;
+  args_info->writer_buffer_gb_arg = 1.0;
+  args_info->writer_buffer_gb_orig = NULL;
   args_info->verbose_flag = 0;
   
 }
@@ -169,7 +174,8 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->demux_only_help = idemuxCPP_args_info_help[20] ;
   args_info->skip_check_help = idemuxCPP_args_info_help[21] ;
   args_info->restrict_barcode_length_help = idemuxCPP_args_info_help[22] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[23] ;
+  args_info->writer_buffer_gb_help = idemuxCPP_args_info_help[23] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[24] ;
   
 }
 
@@ -279,6 +285,7 @@ idemuxCPP_cmdline_parser_release (struct idemuxCPP_args_info *args_info)
   free_string_field (&(args_info->reading_threads_orig));
   free_string_field (&(args_info->writing_threads_orig));
   free_string_field (&(args_info->processing_threads_orig));
+  free_string_field (&(args_info->writer_buffer_gb_orig));
   
   
 
@@ -349,6 +356,8 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "skip-check", 0, 0 );
   if (args_info->restrict_barcode_length_given)
     write_into_file(outfile, "restrict-barcode-length", 0, 0 );
+  if (args_info->writer_buffer_gb_given)
+    write_into_file(outfile, "writer-buffer-gb", args_info->writer_buffer_gb_orig, 0);
   if (args_info->verbose_given)
     write_into_file(outfile, "verbose", 0, 0 );
   
@@ -1149,6 +1158,9 @@ int update_arg(void *field, char **orig_field,
   case ARG_INT:
     if (val) *((int *)field) = strtol (val, &stop_char, 0);
     break;
+  case ARG_DOUBLE:
+    if (val) *((double *)field) = strtod (val, &stop_char);
+    break;
   case ARG_STRING:
     if (val) {
       string_field = (char **)field;
@@ -1164,6 +1176,7 @@ int update_arg(void *field, char **orig_field,
   /* check numeric conversion */
   switch(arg_type) {
   case ARG_INT:
+  case ARG_DOUBLE:
     if (val && !(stop_char && *stop_char == '\0')) {
       fprintf(stderr, "%s: invalid numeric value: %s\n", package_name, val);
       return 1; /* failure */
@@ -1262,6 +1275,7 @@ idemuxCPP_cmdline_parser_internal (
         { "demux-only",	0, NULL, 'd' },
         { "skip-check",	0, NULL, 0 },
         { "restrict-barcode-length",	0, NULL, 0 },
+        { "writer-buffer-gb",	1, NULL, 0 },
         { "verbose",	0, NULL, 'v' },
         { 0,  0, 0, 0 }
       };
@@ -1528,6 +1542,20 @@ idemuxCPP_cmdline_parser_internal (
             if (update_arg((void *)&(args_info->restrict_barcode_length_flag), 0, &(args_info->restrict_barcode_length_given),
                 &(local_args_info.restrict_barcode_length_given), optarg, 0, 0, ARG_FLAG,
                 check_ambiguity, override, 1, 0, "restrict-barcode-length", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* Restrict the buffer for all writing threads to a maximum of value in giga bytes..  */
+          else if (strcmp (long_options[option_index].name, "writer-buffer-gb") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->writer_buffer_gb_arg), 
+                 &(args_info->writer_buffer_gb_orig), &(args_info->writer_buffer_gb_given),
+                &(local_args_info.writer_buffer_gb_given), optarg, 0, "1.0", ARG_DOUBLE,
+                check_ambiguity, override, 0, 0,
+                "writer-buffer-gb", '-',
                 additional_error))
               goto failure;
           

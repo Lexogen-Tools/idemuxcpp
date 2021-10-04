@@ -37,9 +37,11 @@ int main(int argc, char **argv) {
 	int writing_threads = -1;
 	int processing_threads = -1;
 	bool demux_only = false;
-        bool skip_check = false;
-        bool restrict_barcode_length = false;
-	//bool verbose = false;
+	bool skip_check = false;
+	bool restrict_barcode_length = false;
+	double size_writer_buffer_gb;
+	bool verbose = false;
+
 	string relative_exepath = string(argv[0]);
 	std::cout << relative_exepath << std::endl;
 
@@ -110,7 +112,8 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 	default_i1_read = args_info.i1_read_arg;
-	//verbose = args_info.verbose_flag;
+	size_writer_buffer_gb = args_info.writer_buffer_gb_arg;
+	verbose = args_info.verbose_flag;
 
 	Parser p;
 	vector<Barcode*> barcodes;
@@ -119,6 +122,7 @@ int main(int argc, char **argv) {
 			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map, relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	//we need to open files at least for all samples + some extra files.
+	/*
 	size_t max_open_files = barcode_sample_map->size();
         if(args_info.r2_given)
             max_open_files = barcode_sample_map->size() * 2;
@@ -127,15 +131,20 @@ int main(int argc, char **argv) {
 	if(!utils::set_maximal_file_limit(max_open_files)){
 		throw(runtime_error("Please increase the maximum number of open files in your operating system settings, or try to run this tool with elevated privileges!"));
 	}
+	*/
 
 	// do things.
 	if(single_end_mode){
 		demux_single_end(barcode_sample_map, barcodes, read1_file,
-					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length);
+					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads,
+					processing_threads,barcode_corrections_file, skip_check, restrict_barcode_length,
+					size_writer_buffer_gb, verbose);
 	}
 	else{
 		demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
-			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads, processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length);
+			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads,
+			processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length,
+			size_writer_buffer_gb, verbose);
 	}
 
 	delete barcode_sample_map;

@@ -311,10 +311,11 @@ PairedReader *init_reader_paired_end(string read1_file, string read2_file){
 	return paired_reader;
 }
 
+
 void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 		vector<Barcode*> &barcodes, string read1_file, string read2_file, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file, 
-                bool skip_check, bool restrict_barcode_length) {
+                bool skip_check, bool restrict_barcode_length, double size_writer_buffer_gb, bool verbose) {
 	// load the maps that will be used for error correction. As the tool does not allow
 	// different length we only need to load the used length
 	Barcode *i7, *i5, *i1;
@@ -356,8 +357,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 	std::cout << "Starting demultiplexing" << std::endl;
 	PairedReader * pr = init_reader_paired_end(read1_file, read2_file);
 	// first we need to open the output files the reads should get sorted into
-	FileHandler *file_handler = new FileHandler(*barcode_sample_map, output_dir,
-			(size_t) pow(2, 30));
+	FileHandler *file_handler = new FileHandler(*barcode_sample_map, output_dir, size_writer_buffer_gb);
 
 	// then we iterate over all the paired end reads
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads;
@@ -405,7 +405,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 
 			t1 = Clock::now();
 #pragma omp parallel for num_threads(nproc_writing) shared(read_counter, keys, map_pairs, file_handler)
-			for (int i = 0; i < (int)keys.size(); i++) {
+			for (int i = 0; i < int(keys.size()); i++) {
 				std::pair<ZipFastqWriter*, ZipFastqWriter*> *key = keys[i];
 				vector<std::pair<fq_read*, fq_read*>> val = map_pairs[key];
 				string s1 = "";
@@ -413,14 +413,16 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 				for (auto itread = val.begin(); itread != val.end(); itread++) {
 					s1 = itread->first->to_string();
 					s2 = itread->second->to_string();
-				        key->first->write(s1.c_str(), s1.length());
-				        key->second->write(s2.c_str(), s2.length());
+					key->first->write(s1.c_str(), s1.length());
+					key->second->write(s2.c_str(), s2.length());
 					delete itread->first;
 					delete itread->second;
 				}
+				key->first->flush();
+				key->second->flush();
 			}
 			// count the number of reads in an separate loop (maybe faster without locks)
-			for (int i = 0; i < (int)keys.size(); i++) {
+			for (int i = 0; i < int(keys.size()); i++) {
 				std::pair<ZipFastqWriter*, ZipFastqWriter*> *key = keys[i];
 				string sample_name = file_handler->get_sample_name(key);
 				vector<std::pair<fq_read*, fq_read*>> val = map_pairs[key];
@@ -463,7 +465,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 		vector<Barcode*> &barcodes, string reads_file, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		string output_dir, Parser &parser, size_t queue_size, int reading_threads, int writing_threads, int processing_threads, string barcode_corrections_file, 
-                bool skip_check, bool restrict_barcode_length) {
+                bool skip_check, bool restrict_barcode_length, double size_writer_buffer_gb, bool verbose) {
 	// load the maps that will be used for error correction. As the tool does not allow
 	// different length we only need to load the used length
 	Barcode *i7, *i5, *i1;
@@ -506,8 +508,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 	std::cout << "Starting demultiplexing" << std::endl;
 	IFastqReader *reader = init_reader_single_end(reads_file);
 	// first we need to open the output files the reads should get sorted into
-	FileHandlerSE *file_handler = new FileHandlerSE(*barcode_sample_map, output_dir,
-			(size_t) pow(2, 30));
+	FileHandlerSE *file_handler = new FileHandlerSE(*barcode_sample_map, output_dir,size_writer_buffer_gb);
 
 	// then we iterate over all the paired end reads
 	bool reads_available = true;
@@ -573,6 +574,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 					delete r;
 				}
 				key->write(s1.c_str(), s1.length());
+				key->flush();
 			}
 			// count the number of reads in an separate loop (maybe faster without locks)
 			for (int i = 0; i < (int)keys.size(); i++) {

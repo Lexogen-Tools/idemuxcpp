@@ -396,9 +396,11 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 		utils::mkdir(tmp_path);
 	bool skip_check = false;
 	bool restrict_barcode_length = false;
+	double size_writer_buffer_gb = 1;
+	bool verbose = true;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
 			tmp_path, pe, chunk_size, reading_threads, writing_threads,
-			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
+			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -444,9 +446,11 @@ void test_demux_reads(vector<string> *paths_r1_r2_csv){
 		utils::mkdir(tmp_path);
 	bool skip_check = false;
 	bool restrict_barcode_length = false;
+	double size_writer_buffer_gb = 1;
+	bool verbose = true;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
 		tmp_path, pe, chunk_size, reading_threads, writing_threads,
-		processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
+		processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -544,38 +548,43 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 	int writing_threads = 1;
 	int processing_threads = 1;
 
-	bool skip_check = false;
-	bool restrict_barcode_length = false;
-	demux_paired_end(barcode_sample_map, barcodes, tmp_path_r1, tmp_path_r2, i7_i5_i1_info_map,
-				tmp_path, pe, chunk_size, reading_threads, writing_threads,
-				processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length);
+	// test too small and large buffer.
+	for(int i = 0; i < 2; i++){
+		bool skip_check = false;
+		bool restrict_barcode_length = false;
+		double size_writer_buffer_gb = i;
+		bool verbose = true;
+		demux_paired_end(barcode_sample_map, barcodes, tmp_path_r1, tmp_path_r2, i7_i5_i1_info_map,
+					tmp_path, pe, chunk_size, reading_threads, writing_threads,
+					processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
 
-	string tmp_r1 = tmp_path + PATH_SEP + string("test_sample_R1.fastq.gz");
-	string tmp_r2 = tmp_path + PATH_SEP + string("test_sample_R2.fastq.gz");
-	BOOST_CHECK(boost::filesystem::exists(tmp_r1));
-	BOOST_CHECK(boost::filesystem::exists(tmp_r1));
+		string tmp_r1 = tmp_path + PATH_SEP + string("test_sample_R1.fastq.gz");
+		string tmp_r2 = tmp_path + PATH_SEP + string("test_sample_R2.fastq.gz");
+		BOOST_CHECK(boost::filesystem::exists(tmp_r1));
+		BOOST_CHECK(boost::filesystem::exists(tmp_r1));
 
-	fq_read exp_r_1, exp_r_2;
-	exp_r_1.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 1:N:0:TCGAGTCC+AATCAACC";
-	exp_r_1.Sequence = "CCTGCTTCCTCCAACCCGACATGTGTACCTCAGCTTTTTCCCTCACTTGCATCAATAAAGCTTCTG";
-	exp_r_1.Plus_ID = "+";
-	exp_r_1.QualityCode = "A/A6AEEEEEEEA/EEAEEEEEEEEEE<EEEEEEEAEEEEEEEEAEEEAEEEEAEE/EEEEEEEE/";
+		fq_read exp_r_1, exp_r_2;
+		exp_r_1.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 1:N:0:TCGAGTCC+AATCAACC";
+		exp_r_1.Sequence = "CCTGCTTCCTCCAACCCGACATGTGTACCTCAGCTTTTTCCCTCACTTGCATCAATAAAGCTTCTG";
+		exp_r_1.Plus_ID = "+";
+		exp_r_1.QualityCode = "A/A6AEEEEEEEA/EEAEEEEEEEEEE<EEEEEEEAEEEEEEEEAEEEAEEEEAEE/EEEEEEEE/";
 
-	exp_r_2.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 2:N:0:TCGAGTCC+AATCAACC";
-	exp_r_2.Sequence = "CTCTAGCTAT";
-	exp_r_2.Plus_ID = "+";
-	exp_r_2.QualityCode = "6AAAA//E//";
+		exp_r_2.Seq_ID = "@NB502007:425:HGLGJBGXG:1:11101:11059:2649 2:N:0:TCGAGTCC+AATCAACC";
+		exp_r_2.Sequence = "CTCTAGCTAT";
+		exp_r_2.Plus_ID = "+";
+		exp_r_2.QualityCode = "6AAAA//E//";
 
-	PairedReader get_pe_fastq(tmp_r1, tmp_r2);
-	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads = get_pe_fastq.next_reads(100);
-        size_t n_r = pe_reads->size();
-        printf("nr %lu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());
-	BOOST_CHECK(n_r == 1);
-	for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {
-		BOOST_CHECK(is_equal_read(*it->first, exp_r_1) == true);
-		BOOST_CHECK(is_equal_read(*it->second, exp_r_2) == true);
-		delete it->first;
-		delete it->second;
+		PairedReader get_pe_fastq(tmp_r1, tmp_r2);
+		std::vector<std::pair<fq_read*, fq_read*>> *pe_reads = get_pe_fastq.next_reads(100);
+			size_t n_r = pe_reads->size();
+			printf("nr %lu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());
+		BOOST_CHECK(n_r == 1);
+		for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {
+			BOOST_CHECK(is_equal_read(*it->first, exp_r_1) == true);
+			BOOST_CHECK(is_equal_read(*it->second, exp_r_2) == true);
+			delete it->first;
+			delete it->second;
+		}
 	}
 }
 

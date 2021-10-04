@@ -123,6 +123,12 @@ option "restrict-barcode-length" -
 flag
 off
 
+option "writer-buffer-gb" -
+"Restrict the buffer for all writing threads to a maximum of value in giga bytes."
+double
+optional
+default="1.0"
+
 option  "verbose" v
 "Verbose.\n"
 flag
