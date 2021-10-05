@@ -19,6 +19,9 @@ struct fq_read{
 	string Plus_ID;
 	string QualityCode;
 	fq_read() : Seq_ID(""),Sequence(""),Plus_ID(""),QualityCode("") {};
+	size_t get_size(){
+		return Seq_ID.capacity() + Sequence.capacity() + Plus_ID.capacity() + QualityCode.capacity();
+	}
 	~fq_read(){
 
 	};

@@ -119,7 +119,7 @@ void demux_loop(string read1, string read2, vector<Barcode*> &barcodes,
 	unordered_map<string, string> *map_i7 = &i7->Correction_map;
 	unordered_map<string, string> *map_i5 = &i5->Correction_map;
 	unordered_map<string, string> *map_i1 = &i1->Correction_map;
-	PairedReader pr(read1, read2);
+	PairedReader pr(read1, read2, 0);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads;
 	bool reads_available = true;
 	std::pair<fq_read*, fq_read*> processed_mates;
@@ -397,10 +397,11 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	bool skip_check = false;
 	bool restrict_barcode_length = false;
 	double size_writer_buffer_gb = 1;
+	double queue_buffer_gb = 0;
 	bool verbose = true;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
 			tmp_path, pe, chunk_size, reading_threads, writing_threads,
-			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
+			processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, queue_buffer_gb, verbose);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -447,10 +448,11 @@ void test_demux_reads(vector<string> *paths_r1_r2_csv){
 	bool skip_check = false;
 	bool restrict_barcode_length = false;
 	double size_writer_buffer_gb = 1;
+	double queue_buffer_gb = 0;
 	bool verbose = true;
 	demux_paired_end(barcode_sample_map, barcodes, read1, read2, i7_i5_i1_info_map,
 		tmp_path, pe, chunk_size, reading_threads, writing_threads,
-		processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
+		processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, queue_buffer_gb, verbose);
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
@@ -553,10 +555,11 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 		bool skip_check = false;
 		bool restrict_barcode_length = false;
 		double size_writer_buffer_gb = i;
+		double queue_buffer_gb = 0;
 		bool verbose = true;
 		demux_paired_end(barcode_sample_map, barcodes, tmp_path_r1, tmp_path_r2, i7_i5_i1_info_map,
 					tmp_path, pe, chunk_size, reading_threads, writing_threads,
-					processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, verbose);
+					processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check, restrict_barcode_length, size_writer_buffer_gb, queue_buffer_gb, verbose);
 
 		string tmp_r1 = tmp_path + PATH_SEP + string("test_sample_R1.fastq.gz");
 		string tmp_r2 = tmp_path + PATH_SEP + string("test_sample_R2.fastq.gz");
@@ -574,7 +577,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 		exp_r_2.Plus_ID = "+";
 		exp_r_2.QualityCode = "6AAAA//E//";
 
-		PairedReader get_pe_fastq(tmp_r1, tmp_r2);
+		PairedReader get_pe_fastq(tmp_r1, tmp_r2, 0);
 		std::vector<std::pair<fq_read*, fq_read*>> *pe_reads = get_pe_fastq.next_reads(100);
 			size_t n_r = pe_reads->size();
 			printf("nr %lu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());

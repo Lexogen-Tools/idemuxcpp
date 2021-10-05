@@ -49,14 +49,15 @@ const char *idemuxCPP_args_info_help[] = {
   "  -5, --i5-rc                   Should be set when the i5 barcode has been\n                                  sequenced as reversecomplement. Make sure to\n                                  enter non-reverse complementsequences in the\n                                  barcode file.  (default=off)",
   "  -i, --i1-start=INT            Start position of the i1 index (1-based) on\n                                  read 2.\n                                    (default=`11')",
   "      --i1-read=INT             Read in which the i1 index should be corrected\n                                  (1 or 2).\n                                    (default=`2')",
-  "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block.\n                                    (default=`4000000')",
+  "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block. It competes with the\n                                  'queue-buffer-gb' option.\n                                    (default=`4000000')",
   "  -r, --reading-threads=INT     Number of threads used for reading gz files.\n                                  Either 1 or 2 (one thread per input file is\n                                  used).\n                                    (default=`2')",
   "  -w, --writing-threads=INT     Number of threads used for writing gz files.\n                                  Default is the number of processor cores.\n",
   "  -p, --processing-threads=INT  Number of threads used for processing the error\n                                  correction. Default is the number of\n                                  processor cores.\n",
-  "  -d, --demux-only              Do a one on one mapping for the barcodes\n                                  specified in the sample sheet. No error\n                                  correction will be done. Barcodes that do not\n                                  match are written to the undetermined reads\n                                  file.  (default=off)",
-  "      --skip-check              Skip initial compatibility check of input\n                                  files.  (default=off)",
-  "      --restrict-barcode-length Restrict the readout i7, i5 barcode length to\n                                  the maximum barcode length in the sample\n                                  sheet.  (default=off)",
-  "      --writer-buffer-gb=DOUBLE Restrict the buffer for all writing threads to\n                                  a maximum of value in giga bytes.\n                                  (default=`1.0')",
+  "  -d, --demux-only              Do a one on one mapping for the barcodes\n                                  specified in the sample sheet. No error\n                                  correction will be done. Barcodes that do not\n                                  match are written to the undetermined reads\n                                  file.\n                                    (default=off)",
+  "      --skip-check              Skip initial compatibility check of input\n                                  files.\n                                    (default=off)",
+  "      --restrict-barcode-length Restrict the readout i7, i5 barcode length to\n                                  the maximum barcode length in the sample\n                                  sheet.\n                                    (default=off)",
+  "      --writer-buffer-gb=DOUBLE Restrict the buffer in total to a maximum of\n                                  value in giga bytes. The buffer is divided\n                                  among all output sample files which are\n                                  specified in the SDF. It should be set to a\n                                  very high value (a few GB or almost all main\n                                  memory). It is better to set this much higher\n                                  than the 'queue-buffer-gb' parameter, because\n                                  once the reading queue is processed, it will\n                                  be written to disk. Thus, the\n                                  'queue-buffer-gb' can be used to adjust the\n                                  memory usage. The 'writer-buffer-gb' affects\n                                  mainly the output file size. A larger writing\n                                  buffer leads to smaller fastq.gz files.\n                                    (default=`10.0')",
+  "      --queue-buffer-gb=DOUBLE  Restrict the buffer for reads in the queue in\n                                  total to a maximum of value in giga bytes. It\n                                  competes with the 'queue-size' option.\n                                  However, it is a little bit slower. To be\n                                  sure to use just one criterion, one of them\n                                  can be set to 0. The 'queue-buffer-gb'\n                                  threshold works only with\n                                  'reading-threads'=1. The 'queue-buffer-gb'\n                                  parameter mainly reduces the overall memory\n                                  usage. However, the real memory usage may be\n                                  a little bit more.\n                                    (default=`0.0')",
   "  -v, --verbose                 Verbose.\n                                    (default=off)",
     0
 };
@@ -107,6 +108,7 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->skip_check_given = 0 ;
   args_info->restrict_barcode_length_given = 0 ;
   args_info->writer_buffer_gb_given = 0 ;
+  args_info->queue_buffer_gb_given = 0 ;
   args_info->verbose_given = 0 ;
 }
 
@@ -143,8 +145,10 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->demux_only_flag = 0;
   args_info->skip_check_flag = 0;
   args_info->restrict_barcode_length_flag = 0;
-  args_info->writer_buffer_gb_arg = 1.0;
+  args_info->writer_buffer_gb_arg = 10.0;
   args_info->writer_buffer_gb_orig = NULL;
+  args_info->queue_buffer_gb_arg = 0.0;
+  args_info->queue_buffer_gb_orig = NULL;
   args_info->verbose_flag = 0;
   
 }
@@ -175,7 +179,8 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->skip_check_help = idemuxCPP_args_info_help[21] ;
   args_info->restrict_barcode_length_help = idemuxCPP_args_info_help[22] ;
   args_info->writer_buffer_gb_help = idemuxCPP_args_info_help[23] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[24] ;
+  args_info->queue_buffer_gb_help = idemuxCPP_args_info_help[24] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[25] ;
   
 }
 
@@ -286,6 +291,7 @@ idemuxCPP_cmdline_parser_release (struct idemuxCPP_args_info *args_info)
   free_string_field (&(args_info->writing_threads_orig));
   free_string_field (&(args_info->processing_threads_orig));
   free_string_field (&(args_info->writer_buffer_gb_orig));
+  free_string_field (&(args_info->queue_buffer_gb_orig));
   
   
 
@@ -358,6 +364,8 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "restrict-barcode-length", 0, 0 );
   if (args_info->writer_buffer_gb_given)
     write_into_file(outfile, "writer-buffer-gb", args_info->writer_buffer_gb_orig, 0);
+  if (args_info->queue_buffer_gb_given)
+    write_into_file(outfile, "queue-buffer-gb", args_info->queue_buffer_gb_orig, 0);
   if (args_info->verbose_given)
     write_into_file(outfile, "verbose", 0, 0 );
   
@@ -1276,6 +1284,7 @@ idemuxCPP_cmdline_parser_internal (
         { "skip-check",	0, NULL, 0 },
         { "restrict-barcode-length",	0, NULL, 0 },
         { "writer-buffer-gb",	1, NULL, 0 },
+        { "queue-buffer-gb",	1, NULL, 0 },
         { "verbose",	0, NULL, 'v' },
         { 0,  0, 0, 0 }
       };
@@ -1405,7 +1414,7 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case 'q':	/* Queue size for reads that will be processed in one block.
+        case 'q':	/* Queue size for reads that will be processed in one block. It competes with the 'queue-buffer-gb' option.
 .  */
         
         
@@ -1457,7 +1466,8 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case 'd':	/* Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file..  */
+        case 'd':	/* Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file.
+.  */
         
         
           if (update_arg((void *)&(args_info->demux_only_flag), 0, &(args_info->demux_only_given),
@@ -1522,7 +1532,8 @@ idemuxCPP_cmdline_parser_internal (
               goto failure;
           
           }
-          /* Skip initial compatibility check of input files..  */
+          /* Skip initial compatibility check of input files.
+.  */
           else if (strcmp (long_options[option_index].name, "skip-check") == 0)
           {
           
@@ -1534,7 +1545,8 @@ idemuxCPP_cmdline_parser_internal (
               goto failure;
           
           }
-          /* Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet..  */
+          /* Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet.
+.  */
           else if (strcmp (long_options[option_index].name, "restrict-barcode-length") == 0)
           {
           
@@ -1546,16 +1558,32 @@ idemuxCPP_cmdline_parser_internal (
               goto failure;
           
           }
-          /* Restrict the buffer for all writing threads to a maximum of value in giga bytes..  */
+          /* Restrict the buffer in total to a maximum of value in giga bytes. The buffer is divided among all output sample files which are specified in the SDF. It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.
+.  */
           else if (strcmp (long_options[option_index].name, "writer-buffer-gb") == 0)
           {
           
           
             if (update_arg( (void *)&(args_info->writer_buffer_gb_arg), 
                  &(args_info->writer_buffer_gb_orig), &(args_info->writer_buffer_gb_given),
-                &(local_args_info.writer_buffer_gb_given), optarg, 0, "1.0", ARG_DOUBLE,
+                &(local_args_info.writer_buffer_gb_given), optarg, 0, "10.0", ARG_DOUBLE,
                 check_ambiguity, override, 0, 0,
                 "writer-buffer-gb", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. However, it is a little bit slower. To be sure to use just one criterion, one of them can be set to 0. The 'queue-buffer-gb' threshold works only with 'reading-threads'=1. The 'queue-buffer-gb' parameter mainly reduces the overall memory usage. However, the real memory usage may be a little bit more.
+.  */
+          else if (strcmp (long_options[option_index].name, "queue-buffer-gb") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->queue_buffer_gb_arg), 
+                 &(args_info->queue_buffer_gb_orig), &(args_info->queue_buffer_gb_given),
+                &(local_args_info.queue_buffer_gb_given), optarg, 0, "0.0", ARG_DOUBLE,
+                check_ambiguity, override, 0, 0,
+                "queue-buffer-gb", '-',
                 additional_error))
               goto failure;
           

@@ -91,11 +91,11 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *i1_read_help; /**< @brief Read in which the i1 index should be corrected (1 or 2).
  help description.  */
-  int queue_size_arg;	/**< @brief Queue size for reads that will be processed in one block.
+  int queue_size_arg;	/**< @brief Queue size for reads that will be processed in one block. It competes with the 'queue-buffer-gb' option.
  (default='4000000').  */
-  char * queue_size_orig;	/**< @brief Queue size for reads that will be processed in one block.
+  char * queue_size_orig;	/**< @brief Queue size for reads that will be processed in one block. It competes with the 'queue-buffer-gb' option.
  original value given at command line.  */
-  const char *queue_size_help; /**< @brief Queue size for reads that will be processed in one block.
+  const char *queue_size_help; /**< @brief Queue size for reads that will be processed in one block. It competes with the 'queue-buffer-gb' option.
  help description.  */
   int reading_threads_arg;	/**< @brief Number of threads used for reading gz files. Either 1 or 2 (one thread per input file is used).
  (default='2').  */
@@ -115,15 +115,30 @@ struct idemuxCPP_args_info
  original value given at command line.  */
   const char *processing_threads_help; /**< @brief Number of threads used for processing the error correction. Default is the number of processor cores.
  help description.  */
-  int demux_only_flag;	/**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file. (default=off).  */
-  const char *demux_only_help; /**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file. help description.  */
-  int skip_check_flag;	/**< @brief Skip initial compatibility check of input files. (default=off).  */
-  const char *skip_check_help; /**< @brief Skip initial compatibility check of input files. help description.  */
-  int restrict_barcode_length_flag;	/**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet. (default=off).  */
-  const char *restrict_barcode_length_help; /**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet. help description.  */
-  double writer_buffer_gb_arg;	/**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. (default='1.0').  */
-  char * writer_buffer_gb_orig;	/**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. original value given at command line.  */
-  const char *writer_buffer_gb_help; /**< @brief Restrict the buffer for all writing threads to a maximum of value in giga bytes. help description.  */
+  int demux_only_flag;	/**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file.
+ (default=off).  */
+  const char *demux_only_help; /**< @brief Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file.
+ help description.  */
+  int skip_check_flag;	/**< @brief Skip initial compatibility check of input files.
+ (default=off).  */
+  const char *skip_check_help; /**< @brief Skip initial compatibility check of input files.
+ help description.  */
+  int restrict_barcode_length_flag;	/**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet.
+ (default=off).  */
+  const char *restrict_barcode_length_help; /**< @brief Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet.
+ help description.  */
+  double writer_buffer_gb_arg;	/**< @brief Restrict the buffer in total to a maximum of value in giga bytes. The buffer is divided among all output sample files which are specified in the SDF. It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.
+ (default='10.0').  */
+  char * writer_buffer_gb_orig;	/**< @brief Restrict the buffer in total to a maximum of value in giga bytes. The buffer is divided among all output sample files which are specified in the SDF. It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.
+ original value given at command line.  */
+  const char *writer_buffer_gb_help; /**< @brief Restrict the buffer in total to a maximum of value in giga bytes. The buffer is divided among all output sample files which are specified in the SDF. It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.
+ help description.  */
+  double queue_buffer_gb_arg;	/**< @brief Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. However, it is a little bit slower. To be sure to use just one criterion, one of them can be set to 0. The 'queue-buffer-gb' threshold works only with 'reading-threads'=1. The 'queue-buffer-gb' parameter mainly reduces the overall memory usage. However, the real memory usage may be a little bit more.
+ (default='0.0').  */
+  char * queue_buffer_gb_orig;	/**< @brief Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. However, it is a little bit slower. To be sure to use just one criterion, one of them can be set to 0. The 'queue-buffer-gb' threshold works only with 'reading-threads'=1. The 'queue-buffer-gb' parameter mainly reduces the overall memory usage. However, the real memory usage may be a little bit more.
+ original value given at command line.  */
+  const char *queue_buffer_gb_help; /**< @brief Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. However, it is a little bit slower. To be sure to use just one criterion, one of them can be set to 0. The 'queue-buffer-gb' threshold works only with 'reading-threads'=1. The 'queue-buffer-gb' parameter mainly reduces the overall memory usage. However, the real memory usage may be a little bit more.
+ help description.  */
   int verbose_flag;	/**< @brief Verbose.
  (default=off).  */
   const char *verbose_help; /**< @brief Verbose.
@@ -150,6 +165,7 @@ struct idemuxCPP_args_info
   unsigned int skip_check_given ;	/**< @brief Whether skip-check was given.  */
   unsigned int restrict_barcode_length_given ;	/**< @brief Whether restrict-barcode-length was given.  */
   unsigned int writer_buffer_gb_given ;	/**< @brief Whether writer-buffer-gb was given.  */
+  unsigned int queue_buffer_gb_given ;	/**< @brief Whether queue-buffer-gb was given.  */
   unsigned int verbose_given ;	/**< @brief Whether verbose was given.  */
 
 } ;

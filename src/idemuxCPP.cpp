@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
 	bool skip_check = false;
 	bool restrict_barcode_length = false;
 	double size_writer_buffer_gb;
+	double queue_buffer_gb;
 	bool verbose = false;
 
 	string relative_exepath = string(argv[0]);
@@ -78,6 +79,7 @@ int main(int argc, char **argv) {
 	}
 
 	queue_size = args_info.queue_size_arg;
+	queue_buffer_gb = args_info.queue_buffer_gb_arg;
 	reading_threads = args_info.reading_threads_arg;
 
 	if (args_info.writing_threads_given) {
@@ -138,13 +140,13 @@ int main(int argc, char **argv) {
 		demux_single_end(barcode_sample_map, barcodes, read1_file,
 					i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads,
 					processing_threads,barcode_corrections_file, skip_check, restrict_barcode_length,
-					size_writer_buffer_gb, verbose);
+					size_writer_buffer_gb, queue_buffer_gb, verbose);
 	}
 	else{
 		demux_paired_end(barcode_sample_map, barcodes, read1_file, read2_file,
 			i7_i5_i1_info_map, outputdirectory, p, queue_size, reading_threads, writing_threads,
 			processing_threads, barcode_corrections_file, skip_check, restrict_barcode_length,
-			size_writer_buffer_gb, verbose);
+			size_writer_buffer_gb, queue_buffer_gb, verbose);
 	}
 
 	delete barcode_sample_map;

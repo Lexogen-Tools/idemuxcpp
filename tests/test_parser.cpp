@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_pass ) {
 		}
 		delete r;
 
-                PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2);
+        PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2, 0);
 
 		BOOST_CHECK_NO_THROW(
 		p.peek_into_fastq_files(paired_reader, it->has_i7,
@@ -241,7 +241,7 @@ BOOST_AUTO_TEST_CASE( test_peek_into_fastq_files_fq_fail ) {
 		}
 		delete r;
 
-                PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2);
+        PairedReader paired_reader = PairedReader(it->fq_gz_1, it->fq_gz_2, 0);
 
 		BOOST_CHECK_THROW(
 				p.peek_into_fastq_files(paired_reader, it->has_i7,
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE( test_fq_gz_parser ) {
 
 	string fq_1 = FQ_RES + PATH_SEP + string("i7_i5_i1_read_1.fastq.gz");
 	string fq_2 = FQ_RES + PATH_SEP + string("i7_i5_i1_read_2.fastq.gz");
-	PairedReader get_pe_fastq(fq_1, fq_2);
+	PairedReader get_pe_fastq(fq_1, fq_2, 0);
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
 			get_pe_fastq.next_reads(100);
 	for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {

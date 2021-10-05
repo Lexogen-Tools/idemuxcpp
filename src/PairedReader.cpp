@@ -1,5 +1,6 @@
 
 #include <thread>
+#include <math.h>
 #include "config.h"
 #include "PairedReader.h"
 #include "FastqReader.h"
@@ -7,7 +8,8 @@
 #ifdef HAVE_LIBBAMTOOLS
 #include "BamReader.h"
 #endif
-PairedReader::PairedReader(string fastqgz_1, string fastqgz_2) {
+
+PairedReader::PairedReader(string fastqgz_1, string fastqgz_2, double queue_buffer_gb) : Queue_buffer_bytes(size_t(queue_buffer_gb*pow(1024,3))){
 
 	if (fastqgz_1.length() > 3){
 		string suffix = fastqgz_1.substr(fastqgz_1.length()-3);
@@ -34,7 +36,7 @@ PairedReader::PairedReader(string fastqgz_1, string fastqgz_2) {
 	IsBam = false;
 }
 
-PairedReader::PairedReader(string bam_file_alternating) {
+PairedReader::PairedReader(string bam_file_alternating, double queue_buffer_gb) : Queue_buffer_bytes(size_t(queue_buffer_gb*pow(1024,3))) {
 
 	if (bam_file_alternating.length() > 0){
 #ifdef HAVE_LIBBAMTOOLS
@@ -47,13 +49,19 @@ PairedReader::PairedReader(string bam_file_alternating) {
 	Reader2 = NULL;
 }
 
-void fill_reads_interleaved(IFastqReader* reader, size_t max_size, std::vector<std::pair<fq_read*, fq_read*>> *pairs) {
-	for (size_t i = 0; i < max_size; i++) {
+void PairedReader::fill_reads_interleaved(IFastqReader* reader, size_t max_size, std::vector<std::pair<fq_read*, fq_read*>> *pairs) {
+	size_t bytes_read = 0;
+	while((Queue_buffer_bytes > 0 && (bytes_read < Queue_buffer_bytes)) ||
+			(max_size > 0 && (pairs->size() < max_size))){
 		std::pair<fq_read*, fq_read*> pair = reader->next_read_pair();
 		//pair.first = reader->next_read();
 		//pair.second = reader->next_read();
 		if(pair.first != NULL && pair.second != NULL){
 			pairs->push_back(pair);
+			if(Queue_buffer_bytes > 0){
+				bytes_read += pair.first->get_size();
+				bytes_read += pair.second->get_size();
+			}
 		}
 		else{
 			break;
@@ -70,15 +78,22 @@ std::vector<std::pair<fq_read*, fq_read*>>* PairedReader::next_reads(
 	}
 	else{
 		fq_read *read1, *read2;
-		for (size_t i = 0; i < max_size; i++) {
+		size_t bytes_read = 0;
+		while((Queue_buffer_bytes > 0 && (bytes_read < Queue_buffer_bytes)) ||
+				(max_size > 0 && (pairs->size() < max_size))){
 			read1 = Reader1->next_read();
 			read2 = Reader2->next_read();
 			if (read1 != NULL && read2 != NULL) {
 				pairs->push_back(std::pair<fq_read*, fq_read*>(read1, read2));
+				if(Queue_buffer_bytes > 0){
+					bytes_read += read1->get_size();
+					bytes_read += read2->get_size();
+				}
 			}
 			else{
 				delete read1;
 				delete read2;
+				break;
 			}
 		}
 	}
@@ -107,30 +122,30 @@ std::vector<std::pair<fq_read*, fq_read*>>* PairedReader::next_reads2(
 		fill_reads_interleaved(Reader1, max_size, pairs);
 	}
 	else{
-		fq_read** reads1 = new fq_read*[max_size];
-		fq_read** reads2 = new fq_read*[max_size];
-
 		if (reading_threads == 2){
+			fq_read** reads1 = new fq_read*[max_size];
+			fq_read** reads2 = new fq_read*[max_size];
+
 			std::thread to1(fill_reads,  Reader1, max_size, &reads1);
 			std::thread to2(fill_reads,  Reader2, max_size, &reads2);
 			to1.join();
 			to2.join();
+
+			for(size_t i = 0; i < max_size; i++){
+				if(reads1[i] != NULL && reads2[i] != NULL){
+					pairs->push_back(std::pair<fq_read*, fq_read*>(reads1[i], reads2[i]));
+				}
+				else{
+					break;
+				}
+			}
+			delete[] reads1;
+			delete[] reads2;
 		}
 		else{
-			fill_reads(Reader1, max_size, &reads1);
-			fill_reads(Reader2, max_size, &reads2);
+			// use 1 thread
+			pairs = this->next_reads(max_size);
 		}
-
-		for(size_t i = 0; i < max_size; i++){
-			if(reads1[i] != NULL && reads2[i] != NULL){
-				pairs->push_back(std::pair<fq_read*, fq_read*>(reads1[i], reads2[i]));
-			}
-			else{
-				break;
-			}
-		}
-		delete[] reads1;
-		delete[] reads2;
 	}
 	return pairs;
 }

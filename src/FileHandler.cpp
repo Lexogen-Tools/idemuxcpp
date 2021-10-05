@@ -18,7 +18,7 @@ void FileHandler::init_all_file_handles(double total_buffer_gb){
 	string barcode, sample_name;
 	size_t given_buffer_size_per_file_bytes = size_t(floor((total_buffer_gb*pow(1024,3))/(Barcode_file_map->size()*2.0)));
 	size_t buffer_size_bytes = max(1ul, given_buffer_size_per_file_bytes);
-	printf("buffer size in bytes for writing: %ul\n",buffer_size_bytes);
+
 	for(auto it = Barcode_file_map->begin(); it != Barcode_file_map->end(); it++){
 		barcode = it->first;
 		sample_name = it->second;

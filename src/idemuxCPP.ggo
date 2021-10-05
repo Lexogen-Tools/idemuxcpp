@@ -87,7 +87,7 @@ optional
 default="2"
 
 option  "queue-size" q
-"Queue size for reads that will be processed in one block.\n"
+"Queue size for reads that will be processed in one block. It competes with the 'queue-buffer-gb' option.\n"
 int
 optional
 default="4000000"
@@ -109,25 +109,40 @@ int
 optional
 
 option "demux-only" d
-"Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. Barcodes that do not match are written to the undetermined reads file."
+"Do a one on one mapping for the barcodes specified in the sample sheet. No error correction will be done. \
+Barcodes that do not match are written to the undetermined reads file.\n"
 flag
 off
 
 option "skip-check" -
-"Skip initial compatibility check of input files."
+"Skip initial compatibility check of input files.\n"
 flag
 off
 
 option "restrict-barcode-length" -
-"Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet."
+"Restrict the readout i7, i5 barcode length to the maximum barcode length in the sample sheet.\n"
 flag
 off
 
 option "writer-buffer-gb" -
-"Restrict the buffer for all writing threads to a maximum of value in giga bytes."
+"Restrict the buffer in total to a maximum of value in giga bytes. \
+The buffer is divided among all output sample files which are specified in the SDF. \
+It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than \
+the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written \
+to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. \
+The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.\n"
 double
 optional
-default="1.0"
+default="10.0"
+
+option "queue-buffer-gb" -
+"Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. \
+However, it is a little bit slower. \
+To be sure to use just one criterion, one of them can be set to 0. The 'queue-buffer-gb' threshold works only with 'reading-threads'=1. \
+The 'queue-buffer-gb' parameter mainly reduces the overall memory usage. However, the real memory usage may be a little bit more.\n"
+double
+optional
+default="0.0"
 
 option  "verbose" v
 "Verbose.\n"

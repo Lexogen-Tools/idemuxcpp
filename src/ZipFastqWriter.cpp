@@ -9,7 +9,7 @@ ZipFastqWriter::ZipFastqWriter(string outfile, size_t buffer_size_bytes) : Outpu
 	size_t max_size = size_t(-1);
 	this->BufferSize = min(max(buffer_size_bytes,1ul),max_size-1);
 	// increase string capacity
-	this->Buffer.reserve(BufferSize);
+	// this->Buffer.reserve(BufferSize);
 
 	GZ_file_handle = gzopen(outfile.c_str(),"wb4");
 	if(GZ_file_handle==NULL){
@@ -61,7 +61,6 @@ int ZipFastqWriter::write(const char* data, size_t len) {
 	// 1. only append to buffer and write in ZipFastqWriter::flush()
 	if(buffer_length/2 + len/2 < BufferSize/2){
 		this->Buffer.append(data);
-		std::cout << "append" << std::endl;
 	}
 	else{
 		// 2. Buffer would overflow --> write buffer, clear it and append.
