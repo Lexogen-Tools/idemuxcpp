@@ -1,5 +1,5 @@
 # use the official gcc image, based on debian
-image: gcc
+image: ubuntu:bionic
 
 build:
   stage: build
