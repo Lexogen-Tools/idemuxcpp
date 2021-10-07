@@ -17,7 +17,7 @@ FileHandler::FileHandler(unordered_map<string,string>& barcode_file_map, string 
 void FileHandler::init_all_file_handles(double total_buffer_gb){
 	string barcode, sample_name;
 	size_t given_buffer_size_per_file_bytes = size_t(floor((total_buffer_gb*pow(1024,3))/(Barcode_file_map->size()*2.0)));
-	size_t buffer_size_bytes = max(1ul, given_buffer_size_per_file_bytes);
+	size_t buffer_size_bytes = max(size_t(1), given_buffer_size_per_file_bytes);
 
 	for(auto it = Barcode_file_map->begin(); it != Barcode_file_map->end(); it++){
 		barcode = it->first;

@@ -130,7 +130,7 @@ bool set_maximal_file_limit(size_t new_max_limit){
 	int received_limit = getrlimit(RLIMIT_NOFILE, &old_limit);
 	if(received_limit == 0)
 	{
-		printf("Open files limit soft %ld, hard %ld, required %ld\n", old_limit.rlim_cur, old_limit.rlim_max, new_max_limit);
+		printf("Open files limit soft %ld, hard %ld, required %zu\n", old_limit.rlim_cur, old_limit.rlim_max, new_max_limit);
 		if((old_limit.rlim_cur < new_max_limit) || (old_limit.rlim_max < new_max_limit)){
 			size_t real_new_limit = min(new_max_limit,(size_t)RLIM_INFINITY);
 			if (old_limit.rlim_cur < new_max_limit)
@@ -139,7 +139,7 @@ bool set_maximal_file_limit(size_t new_max_limit){
 			    new_limit.rlim_max = real_new_limit;
 			int set_limit = setrlimit(RLIMIT_NOFILE, &new_limit);
 			if(set_limit == 0){
-				fprintf(stdout, "Maximum open file limit has been increased to %ld\n", real_new_limit);
+				fprintf(stdout, "Maximum open file limit has been increased to %zu\n", real_new_limit);
 				return true;
 			}
 			else{

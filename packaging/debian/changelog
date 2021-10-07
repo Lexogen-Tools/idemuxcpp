@@ -3,7 +3,7 @@ idemuxcpp (0.1.9-1) UNRELEASED; urgency=medium
   * Limit open file handles proportional to number of writing threads
   * New reader buffer and writer buffer parameter
 
- -- Gregor Entzian <gregor.entzian@lexogen.com>  Wed, 07 Oct 2021 14:30:00 -0400
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Thu, 07 Oct 2021 14:30:00 -0400
 
 idemuxcpp (0.1.8-1) UNRELEASED; urgency=medium
 

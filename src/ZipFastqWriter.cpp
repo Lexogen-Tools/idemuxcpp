@@ -7,7 +7,7 @@
 
 ZipFastqWriter::ZipFastqWriter(string outfile, size_t buffer_size_bytes) : OutputFile(outfile), Buffer("") {
 	size_t max_size = size_t(-1);
-	this->BufferSize = min(max(buffer_size_bytes,1ul),max_size-1);
+	this->BufferSize = min(max(buffer_size_bytes,size_t(1)),max_size-1);
 	// increase string capacity
 	// this->Buffer.reserve(BufferSize);
 

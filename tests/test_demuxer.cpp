@@ -580,7 +580,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 		PairedReader get_pe_fastq(tmp_r1, tmp_r2, 0);
 		std::vector<std::pair<fq_read*, fq_read*>> *pe_reads = get_pe_fastq.next_reads(100);
 			size_t n_r = pe_reads->size();
-			printf("nr %lu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());
+			printf("nr %zu %s %s", n_r, tmp_r1.c_str(), tmp_r2.c_str());
 		BOOST_CHECK(n_r == 1);
 		for (auto it = pe_reads->begin(); it != pe_reads->end(); it++) {
 			BOOST_CHECK(is_equal_read(*it->first, exp_r_1) == true);
