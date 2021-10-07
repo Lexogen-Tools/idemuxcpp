@@ -1,4 +1,4 @@
-sudo: false
+os: linux
 dist: bionic
 language: cpp
 
@@ -39,8 +39,7 @@ before_deploy:
 
 deploy:
   provider: releases
-  api_key: $GITHUB_TOKEN
-  skip_cleanup: true
+  token: $GITHUB_TOKEN
   file_glob: true
   overwrite: true
   file:
