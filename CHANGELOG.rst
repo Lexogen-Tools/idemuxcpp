@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.9 (2021-10-07)
+------------------
+* Limit open file handles proportional to number of writing threads
+* New reader buffer and writer buffer parameter
+
 0.1.8 (2021-03-02)
 ------------------
 * added comma in correction count csv
