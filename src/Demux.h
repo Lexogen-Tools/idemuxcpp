@@ -117,30 +117,32 @@ string process_mate_pair(std::pair<fq_read*, fq_read*> &mate_pair,
 		{
 			size_t i1_start = it_i1_info->second.start_index;
 			size_t i1_end = it_i1_info->second.end_index;
+			// correct only i1 with length > 0
+			if(i1_start < i1_end){
+				if(it_i1_info->second.read_index == 1)
+					i1_bc = extract_i1(r1c, i1_start, i1_end);
+				else
+					i1_bc = extract_i1(r2c, i1_start, i1_end);
 
-			if(it_i1_info->second.read_index == 1)
-				i1_bc = extract_i1(r1c, i1_start, i1_end);
-			else
-				i1_bc = extract_i1(r2c, i1_start, i1_end);
+				auto iti1c = map_i1->find(i1_bc);
+				if (iti1c != map_i1->end()) {
+					string _i1_corrected = iti1c->second;
+					//if _i1_corrected in i1_wanted:
+					auto it1 = i1_wanted->find(_i1_corrected);
+					if (it1 != i1_wanted->end()) {
+						if(it_i1_info->second.read_index == 1){
+							cut_out_i1(r1c, i1_start, i1_end);
+							r2c->Seq_ID.append("+").append(i1_bc);
+						}
+						else{
+							cut_out_i1(r2c, i1_start, i1_end);
+							r1c->Seq_ID.append("+").append(i1_bc);
+						}
 
-			auto iti1c = map_i1->find(i1_bc);
-			if (iti1c != map_i1->end()) {
-				string _i1_corrected = iti1c->second;
-				//if _i1_corrected in i1_wanted:
-				auto it1 = i1_wanted->find(_i1_corrected);
-				if (it1 != i1_wanted->end()) {
-					if(it_i1_info->second.read_index == 1){
-						cut_out_i1(r1c, i1_start, i1_end);
-						r2c->Seq_ID.append("+").append(i1_bc);
+						if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
+							corrected_i1 = true;
+						i1_bc = _i1_corrected;
 					}
-					else{
-						cut_out_i1(r2c, i1_start, i1_end);
-						r1c->Seq_ID.append("+").append(i1_bc);
-					}
-
-					if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
-						corrected_i1 = true;
-					i1_bc = _i1_corrected;
 				}
 			}
 		}
@@ -216,22 +218,24 @@ string process_read(fq_read* read,
 		{
 			size_t i1_start = it_i1_info->second.start_index;
 			size_t i1_end = it_i1_info->second.end_index;
+			// correct only i1 with length > 0
+			if(i1_start < i1_end){
+				if(it_i1_info->second.read_index == 1)
+					i1_bc = extract_i1(&read_out, i1_start, i1_end);
 
-			if(it_i1_info->second.read_index == 1)
-				i1_bc = extract_i1(&read_out, i1_start, i1_end);
-
-			auto iti1c = map_i1->find(i1_bc);
-			if (iti1c != map_i1->end()) {
-				string _i1_corrected = iti1c->second;
-				//if _i1_corrected in i1_wanted:
-				auto it1 = i1_wanted->find(_i1_corrected);
-				if (it1 != i1_wanted->end()) {
-					if(it_i1_info->second.read_index == 1){
-						cut_out_i1(&read_out, i1_start, i1_end);
+				auto iti1c = map_i1->find(i1_bc);
+				if (iti1c != map_i1->end()) {
+					string _i1_corrected = iti1c->second;
+					//if _i1_corrected in i1_wanted:
+					auto it1 = i1_wanted->find(_i1_corrected);
+					if (it1 != i1_wanted->end()) {
+						if(it_i1_info->second.read_index == 1){
+							cut_out_i1(&read_out, i1_start, i1_end);
+						}
+						if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
+							corrected_i1 = true;
+						i1_bc = _i1_corrected;
 					}
-					if (counted_corrections_per_index != NULL && i1_bc.compare(_i1_corrected) != 0)
-						corrected_i1 = true;
-					i1_bc = _i1_corrected;
 				}
 			}
 		}
@@ -383,7 +387,7 @@ void demux_paired_end(unordered_map<string, string> *barcode_sample_map,
 		unordered_map<std::pair<ZipFastqWriter*, ZipFastqWriter*>*,
 				vector<std::pair<fq_read*, fq_read*>>> map_pairs;
 		if (pe_reads != NULL && pe_reads->size() > 0) {
-			int max_reads = (int)pe_reads->size();
+			int max_reads = int(pe_reads->size());
 #pragma omp parallel for num_threads(nproc_processing) shared(pe_reads, i7_wanted, i5_wanted, i1_wanted,map_i7, map_i5, map_i1, i7_i5_i1_info_map, file_handler, map_pairs, counted_corrections_per_index)
 			for (int i = 0; i < max_reads; i++){
 				std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
@@ -546,7 +550,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 		unordered_map<ZipFastqWriter*,
 				vector<fq_read*>> map_reads;
 		if (se_reads.size() > 0) {
-			int max_reads = (int)se_reads.size();
+			int max_reads = int(se_reads.size());
 #pragma omp parallel for num_threads(nproc_processing) shared(se_reads, i7_wanted, i5_wanted, i1_wanted,map_i7, map_i5, map_i1, i7_i5_i1_info_map, file_handler, map_reads, counted_corrections_per_index)
 			for (int i = 0; i < max_reads; i++){
 				fq_read* r = se_reads[i];
@@ -568,7 +572,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 
 			t1 = Clock::now();
 #pragma omp parallel for num_threads(nproc_writing) shared(read_counter, keys, map_reads, file_handler)
-			for (int i = 0; i < (int)keys.size(); i++) {
+			for (int i = 0; i < int(keys.size()); i++) {
 				ZipFastqWriter *key = keys[i];
 				vector<fq_read*> val = map_reads[key];
 				string s1 = "";
@@ -582,7 +586,7 @@ void demux_single_end(unordered_map<string, string> *barcode_sample_map,
 				key->flush();
 			}
 			// count the number of reads in an separate loop (maybe faster without locks)
-			for (int i = 0; i < (int)keys.size(); i++) {
+			for (int i = 0; i < int(keys.size()); i++) {
 				ZipFastqWriter *key = keys[i];
 				string sample_name = file_handler->get_sample_name(key);
 				vector<fq_read*> val = map_reads[key];
