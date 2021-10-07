@@ -21,6 +21,7 @@ addons:
     - libboost-system-dev
     - libboost-iostreams-dev
     - libboost-test-dev
+    - libbamtools-dev
 
 before_script:
 - autoreconf -i
