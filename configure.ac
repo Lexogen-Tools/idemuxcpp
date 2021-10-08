@@ -102,15 +102,38 @@ fi
 AC_LIB_LINKFLAGS([dl])
 
 # check for bamtools-dev
-AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
+HAVE_LIBBAMTOOLS=no
+AS_IF([test "$HAVE_PKG_CONFIG" = "yes"],[
+  PKG_CHECK_MODULES([BAMTOOLS], [bamtools-1 >= 2.5.1], [
+  AC_DEFINE([HAVE_LIBBAMTOOLS],[1])
+  HAVE_LIBBAMTOOLS=yes
+  ], [
+       HAVE_LIBBAMTOOLS=no
+       AC_DEFINE([HAVE_LIBBAMTOOLS],[0])
+     ])
+],[])
+
+# add makefile vars
+#AC_SUBST([HAVE_LIBBAMTOOLS],[1])
+if test "$HAVE_LIBBAMTOOLS" = "yes"; then
+  AC_SUBST([LIBBAMTOOLS])
+# Warning: the file I need is bamtools/api/BamReader.h, however in the pkg_config it says that it is in ../include/
+# the header references <api/BamReader.h> similar to headers referenced within BamReader.h which cannot be found!
+# Thus, I add /include/bamtools/
+  AC_SUBST([BAMTOOLS_CFLAGS],"${BAMTOOLS_CFLAGS}/bamtools/")
+  AC_SUBST([BAMTOOLS_LIBS])
+fi
+
+AS_IF([test "$HAVE_PKG_CONFIG" != "yes" -o "$HAVE_LIBBAMTOOLS" != "yes"],[
+ AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
       [  AC_MSG_NOTICE([Found file in path /usr/include/bamtools/api. Test linking with updated CXXFLAGS...])
          CXXFLAGS="$CXXFLAGS -I/usr/include/bamtools/"
       ], 
       [ AC_MSG_NOTICE([Bamtools library not found in /usr/include/bamtools/api/BamReader.h! Let us hope it is in the include path])
-])
-AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <api/BamReader.h>], [], [Linking against bamtools library has failed!])
-if test "$HAVE_LIBBAMTOOLS" != "yes"; then
-AC_MSG_WARN([
+ ])
+ AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <bamtools/api/BamReader.h>], [], [Linking against bamtools library has failed!])
+ if test "$HAVE_LIBBAMTOOLS" != "yes"; then
+ AC_MSG_WARN([
 ********************************************************************************
    Please install the bamtools library!
    (https://github.com/pezmaster31/bamtools)
@@ -121,8 +144,10 @@ AC_MSG_WARN([
    then you can ignore this message.
 ********************************************************************************])
 fi
+],[])
 
 AM_CONDITIONAL([HAVE_LIBBAMTOOLS], [test "$HAVE_LIBBAMTOOLS" != "no"])
+
 
 ###############################################################################
 # Boost unit tests check
@@ -151,7 +176,10 @@ if test x"$tests" = x"yes"; then
   AC_LIB_HAVE_LINKFLAGS([boost_unit_test_framework], [], [#include <boost/test/unit_test.hpp>] , [using boost::unit_test::test_suite;
                                                          test_suite* test= BOOST_TEST_SUITE( "Unit test example 1" ); if (test == NULL) { return 1; } else { return 0; }], [Could not link the boost_test library!])
   if test "$HAVE_LIBBOOST_UNIT_TEST_FRAMEWORK" != "yes"; then
-  AC_MSG_FAILURE([ERROR: please install the boost_test library!])
+    AC_MSG_FAILURE([ERROR: please install the boost_test library!])
+  else
+    # lrt is requred by boost_unit_tests for clock_* in glibc < 2.1.7
+    LIBS="$LIBS -lrt"
   fi
 fi
 
