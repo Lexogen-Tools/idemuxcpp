@@ -42,6 +42,7 @@ deploy:
   token: $GITHUB_TOKEN
   file_glob: true
   overwrite: true
+  cleanup: false
   file:
   - "${DIST_GZIP}"
   - "${DIST_ZIP}"
