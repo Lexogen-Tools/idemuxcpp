@@ -120,7 +120,8 @@ if test "$HAVE_LIBBAMTOOLS" = "yes"; then
 # Warning: the file I need is bamtools/api/BamReader.h, however in the pkg_config it says that it is in ../include/
 # the header references <api/BamReader.h> similar to headers referenced within BamReader.h which cannot be found!
 # Thus, I add /include/bamtools/
-  AC_SUBST([BAMTOOLS_CFLAGS],"${BAMTOOLS_CFLAGS}/bamtools/")
+  new_cflags=m4_join([/], m4_normalize("${BAMTOOLS_CFLAGS}"), "bamtools/")
+  AC_SUBST([BAMTOOLS_CFLAGS], "${new_cflags}")
   AC_SUBST([BAMTOOLS_LIBS])
 fi
 
