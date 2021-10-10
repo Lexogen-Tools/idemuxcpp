@@ -5,8 +5,8 @@ test_barcode_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS}
 test_barcode_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBBOOST_FILESYSTEM_LIB) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS)
 test_barcode_SOURCES = test_barcode.cpp ../src/Barcode.h ../src/Barcode.cpp
 
-test_demuxer_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS}
-test_demuxer_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBZ) $(LIBBOOST_FILESYSTEM) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS) $(LIBDL) $(LIBBAMTOOLS)
+test_demuxer_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS} $(BAMTOOLS_CFLAGS)
+test_demuxer_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBZ) $(LIBBOOST_FILESYSTEM) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS) $(LIBDL) $(LIBBAMTOOLS) $(BAMTOOLS_LIBS)
 test_demuxer_SOURCES = test_demuxer.cpp \
                        ../src/Barcode.h \
                        ../src/Barcode.cpp \
@@ -36,8 +36,8 @@ endif HAVE_LIBBAMTOOLS
 
 
 
-test_parser_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS}
-test_parser_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBZ) $(LIBBOOST_FILESYSTEM) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS) $(LIBDL) $(LIBBAMTOOLS)
+test_parser_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS} $(BAMTOOLS_CFLAGS)
+test_parser_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBZ) $(LIBBOOST_FILESYSTEM) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS) $(LIBDL) $(LIBBAMTOOLS) $(BAMTOOLS_LIBS)
 test_parser_SOURCES = test_parser.cpp \
                       ../src/helper.h \
                       ../src/Barcode.h \
