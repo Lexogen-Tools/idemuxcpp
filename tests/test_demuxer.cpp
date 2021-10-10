@@ -494,13 +494,13 @@ bool is_equal_read(fq_read &r1, fq_read r2) {
 	bool is_equal = r1.Seq_ID.compare(r2.Seq_ID) == 0;
 	if(!is_equal)
 		printf("Error: different id %s %s\n", r1.Seq_ID.c_str(), r2.Seq_ID.c_str());
-	is_equal = r1.Sequence.compare(r2.Sequence) == 0 & is_equal;
+	is_equal = (r1.Sequence.compare(r2.Sequence) == 0) & is_equal;
 	if(!is_equal)
 			printf("Error: different sequence %s %s\n", r1.Sequence.c_str(), r2.Sequence.c_str());
-	is_equal = r1.Plus_ID.compare(r2.Plus_ID) == 0 & is_equal;
+	is_equal = (r1.Plus_ID.compare(r2.Plus_ID) == 0) & is_equal;
 	if(!is_equal)
 			printf("Error: different plus id %s %s\n", r1.Plus_ID.c_str(), r2.Plus_ID.c_str());
-	is_equal = r1.QualityCode.compare(r2.QualityCode) == 0 & is_equal;
+	is_equal = (r1.QualityCode.compare(r2.QualityCode) == 0) & is_equal;
 	if(!is_equal)
 			printf("Error: different quality code %s %s\n", r1.QualityCode.c_str(), r2.QualityCode.c_str());
 	return is_equal;
