@@ -3,7 +3,7 @@ m4_define([idemuxCPP_version_major], [0])
 m4_define([idemuxCPP_version_minor], [1])
 m4_define([idemuxCPP_version_patch], [9])
 
-my_url="my_url"
+m4_define([my_url], ["https://github.com/Lexogen-Tools/idemuxcpp"])
 AC_PREREQ([2.59])
 # 5 argument version only available with aclocal >= 2.64
 AC_INIT( [idemuxcpp], 
