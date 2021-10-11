@@ -180,7 +180,7 @@ if test x"$tests" = x"yes"; then
     AC_MSG_FAILURE([ERROR: please install the boost_test library!])
   else
     # lrt is requred by boost_unit_tests for clock_* in glibc < 2.1.7
-    LIBS="$LIBS -lrt"
+    AC_LIB_HAVE_LINKFLAGS([rt], [], [] , [], [Could not link the rt library!])
   fi
 fi
 
