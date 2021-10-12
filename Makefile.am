@@ -1,8 +1,16 @@
 AUTOMAKE_OPTIONS = foreign
 
+ACLOCAL_AMFLAGS = -I m4
+
+top_builddir= .
+CODE_COVERAGE_DIRECTORY=.
+CODE_COVERAGE_BRANCH_COVERAGE=0
+CODE_COVERAGE_LCOV_SHOPTS_DEFAULT=--no-external
+# --no-recursion
+include $(top_builddir)/aminclude_static.am
+
 # the subdirectories of the project to go into
 SUBDIRS = src doc misc tests
-
 pkgconfigdir = $(libdir)/pkgconfig
 
 EXTRA_DIST =  packaging/debian \
@@ -11,4 +19,7 @@ EXTRA_DIST =  packaging/debian \
               LICENCE \
               misc/barcodes/* \
               tests/resources/*
+
+clean-local: code-coverage-clean
+distclean-local: code-coverage-dist-clean
 

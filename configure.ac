@@ -10,8 +10,8 @@ AC_INIT([idemuxcpp],[idemuxCPP_version_major.idemuxCPP_version_minor.idemuxCPP_v
 
 AC_CANONICAL_HOST
 AC_CONFIG_AUX_DIR([.])
-AC_CONFIG_SRCDIR([src/idemuxCPP.cpp])
 AC_CONFIG_HEADERS([src/config.h])
+AC_CONFIG_SRCDIR([src/idemuxCPP.cpp])
 AC_CONFIG_MACRO_DIR([m4])
 
 # backwards compatibility for autoconf >= 2.64
@@ -81,13 +81,28 @@ AC_ARG_ENABLE([debug],
 AC_MSG_RESULT([$debuger])
 if test x"$debuger" = x"yes"; then
 	AC_DEFINE([DEBUG], [], [Run in DEBUG mode with additional assertions and debug output])
-	AM_CXXFLAGS="$AM_CXXFLAGS -pg -g -Wno-uninitialized -O0 -pthread"
+	AM_CXXFLAGS="$AM_CXXFLAGS -pg -g -Wno-uninitialized -O0"
 	AM_LDFLAGS="$AM_LDFLAGS -g -Wno-uninitialized -O0"
 	#AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wall -Werror -Wno-uninitialized -Wno-deprecated"
 else
 	AC_DEFINE([NDEBUG], [], [Run in normal mode with minimal assertions])
-	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated -pthread"
+	AM_CXXFLAGS="$AM_CXXFLAGS -O3 -fno-strict-aliasing -Wno-uninitialized -Wno-deprecated"
 fi
+
+AX_PTHREAD([], [
+ AC_MSG_FAILURE([ERROR: please install the pthread library!])
+])
+
+LIBS="$PTHREAD_LIBS $LIBS"
+CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+
+m4_define([AMINCLUDE_STATIC], [aminclude_static.am])
+# m4_define([CODE_COVERAGE_DIRECTORY], [src])
+# m4_define([CODE_COVERAGE_BRANCH_COVERAGE], [0])
+# m4_define([CODE_COVERAGE_LCOV_SHOPTS_DEFAULT], [--no-recursion])
+# AC_SUBST([CODE_COVERAGE_LCOV_SHOPTS_DEFAULT], [--no-recursion])
+# CODE_COVERAGE_LCOV_SHOPTS_DEFAULT="--no-recursion"
+AX_CODE_COVERAGE()
 
 ############  CHECKS  ############################################
 
