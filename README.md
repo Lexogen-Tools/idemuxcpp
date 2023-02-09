@@ -172,8 +172,69 @@ However, idemuxCPP will do its best to tell you where the problem lies, once thi
 See [below](#sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
 *disallowed*.
 
+## 3. Extract non-demultiplexed read data from a sequencing run
+The read input files for idemux are non-demultiplexed read files which you can get by using demultiplexing software to extract reads from a sequencing run without demultiplexing by sample.  
+You can use any demultiplexing software available to you, but the resulting read file(s) should contain all reads of the sequencing run you want to demultiplex with idemux.
+Further, the reads should contain the read-out of the i7 + i5 barcode sequences in the read ID.
 
-## 3. Running idemuxCPP
+The following part of this section outlines how to use Illumina's bcl2fastq software to obtain the reads.
+
+### Demultiplexing with bcl2fastq:
+```
+bcl2fastq -R /path/to/sequencing/run -o /path/to/output -l WARNING --no-lane-splitting --sample-sheet Illumina_EMPTY_SampleSheet.csv --barcode-mismatches 0 --mask-short-adapter-reads 10
+```
+
+This commands bcl2fastq to "demultiplex" the run at */path/to/sequencing/run* to the output directory */path/to/output*.
+The content of the file *Illumina_EMPTY_SampleSheet.csv* has to match Illumina's format for the respective sequencer.
+
+The following text is an example for the content of a SampleSheet for a Illumina Nextseq run:
+```
+
+   [Header],,,,,,,
+   IEMFileVersion,4,,,,,,
+   Date,30.05.2017,,,,,,
+   Workflow,GenerateFASTQ,,,,,,
+   Application,NextSeq FASTQ Only,,,,,,
+   Assay,TruSeq RNA,,,,,,
+   Description,,,,,,,
+   Chemistry,Default,,,,,,
+   ,,,,,,,
+   [Reads],,,,,,,
+   ,,,,,,,
+   [Settings],,,,,,,
+   ,,,,,,,
+   [Data],,,,,,,
+   
+   Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+   1,1,,,9999,AAAAAAAAAAAA,9999,AAAAAAAAAAAA,,
+```
+
+As you can see, no settings are specified and only one 'sample' was defined with a squence combination that is not likely to be close to any of the utilized barcode sequences.
+**You have to adjust the length of the A\* stretches to the sequenced length of the i7/i5 barcodes!**
+This specification is necessary to command bcl2fastq to write the i7+i5 sequence information in each read in the *Undetermined_S0_R1_001.fastq.gz* (*Undetermined_S0_R2_001.fastq.gz*) file(s)
+The resulting reads in *Undetermined_S0_R1_001.fastq.gz* (*Undetermined_S0_R2_001.fastq.gz*) should follow this formatting style:
+
+```
+   @NB502007:379:HM7H2BGXF:1:11101:19231:1159 1:N:0:TTAGGACGCAAA+GGGTCTGCCGAA
+   GCTCATCCATCTTTTTGAAAACTCTTCATACTCGTTAGATCGGAAGAG
+   +
+   AAAAAEEEAEEEEEEAEEEEEEEEEEEEEEEEEEEE/E/EEEEE/EEE
+   @NB502007:379:HM7H2BGXF:1:11101:17406:1159 1:N:0:AAGTAACAGCTT+AATCGTGGACGG
+   CACACCTCCGTTCACGACGCTCTTCCGATATAGATGTAACTGGAGGAA
+   +
+   AAAAAEEEEEAEE/EEEEEEEEEE/EEEEAEA/EEEEEEEEEEEEEEE
+   @NB502007:379:HM7H2BGXF:1:11101:18203:1159 1:N:0:CTGCCAACACGA+GCTGTGGTTCAT
+   GACATGTATACAGTCTACGGATGAACGTTTAGATCGGAAGAGCACACG
+   +
+   AAAAAEEEEEEEEEEEEEEEEEEEEEEEEEAEEEEEEEEEEEEEEEEE
+   @NB502007:379:HM7H2BGXF:1:11101:7322:1159 1:N:0:TACATGGCCACT+ATGTTCCAGTGA
+   CTTGGTCACGCTACTGTACTCCAGCCAGGGCGACAGAGCAAGACCTAT
+   +
+   AAAAAEEEEEEEEEEEE/EEEEEEEEAEEEEEAEEEEEEEEEEEAEEE
+   ...
+ ```
+
+## 4. Running idemuxCPP
 Once you have installed the tool you can run it by typing ``idemuxCPP`` in the terminal.
 
 idemuxCPP accepts the following arguments:
