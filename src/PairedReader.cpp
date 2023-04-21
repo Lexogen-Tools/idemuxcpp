@@ -5,7 +5,7 @@
 #include "PairedReader.h"
 #include "FastqReader.h"
 #include "BoostZipReader.h"
-#ifdef HAVE_LIBBAMTOOLS
+#if HAVE_LIBBAMTOOLS
 #include "BamReader.h"
 #endif
 
@@ -39,7 +39,7 @@ PairedReader::PairedReader(string fastqgz_1, string fastqgz_2, double queue_buff
 PairedReader::PairedReader(string bam_file_alternating, double queue_buffer_gb) : Queue_buffer_bytes(size_t(queue_buffer_gb*pow(1024,3))) {
 
 	if (bam_file_alternating.length() > 0){
-#ifdef HAVE_LIBBAMTOOLS
+#if HAVE_LIBBAMTOOLS
 		Reader1 = new BamReader(bam_file_alternating);
 #else
 		throw runtime_error("Error: bam files are not supported with this compilation!");

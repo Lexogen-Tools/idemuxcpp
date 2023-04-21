@@ -19,7 +19,7 @@
 #include "FileHandlerSE.h"
 #include "PairedReader.h"
 #include "FastqReader.h"
-#ifdef HAVE_LIBBAMTOOLS
+#if HAVE_LIBBAMTOOLS
 #include "BamReader.h"
 #endif
 #include "BoostZipReader.h"
@@ -273,7 +273,7 @@ IFastqReader *init_reader_single_end(string reads_file){
 		string suffix_lower = suffix;
 		string_to_lower(suffix_lower);
 		if(suffix_lower.compare(".bam") == 0){
-#ifdef HAVE_LIBBAMTOOLS
+#if HAVE_LIBBAMTOOLS
 			reader = new BamReader(reads_file);
 #else
 			throw runtime_error("Error: bam files are not supported with this compilation!");
