@@ -116,14 +116,14 @@ AS_IF([test "$HAVE_PKG_CONFIG" = "yes"],[
 # add makefile vars
 #AC_SUBST([HAVE_LIBBAMTOOLS],[1])
 if test "$HAVE_LIBBAMTOOLS" = "yes"; then
-  AC_SUBST([LIBBAMTOOLS])
 # Warning: the file I need is bamtools/api/BamReader.h, however in the pkg_config it says that it is in ../include/
 # the header references <api/BamReader.h> similar to headers referenced within BamReader.h which cannot be found!
-# Thus, I add /include/bamtools/
-  new_cflags=m4_join([/], m4_normalize("${BAMTOOLS_CFLAGS}"), "bamtools/")
-  AC_SUBST([BAMTOOLS_CFLAGS], "${new_cflags}")
-  AC_SUBST([BAMTOOLS_LIBS])
+# Also pkg_config is not correct for some bamtools versions, I set it explicitly to /usr/include/bamtools/
+  CXXFLAGS="${CXXFLAGS} -I /usr/include/bamtools/"
 fi
+# check with updated linker flags
+AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <api/BamReader.h>], [], [Linking against bamtools library has failed!])
+
 
 AS_IF([test "$HAVE_PKG_CONFIG" != "yes" -o "$HAVE_LIBBAMTOOLS" != "yes"],[
  AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
