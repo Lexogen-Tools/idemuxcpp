@@ -241,7 +241,8 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 			string observed_header = "";
 			for (auto ithp = map_column_index.begin(); ithp != map_column_index.end(); ithp++)
 				observed_header += "," + ithp->first;
-			observed_header = observed_header.substr(1);
+			if (observed_header.size() > 0)
+				observed_header = observed_header.substr(1);
 			string message = string_format(
 								"Incorrect sample sheet header. Expected minimal header: %s\n"
 										"Observed header: %s", expected_header.c_str(), observed_header.c_str());
