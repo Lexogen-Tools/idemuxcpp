@@ -82,14 +82,66 @@ std::vector<std::string> readCSVRow(const std::string &row) {
 Parser::Parser() {
 }
 
+/**
+ * Remove byte order mark (BOM) from string.
+ *	UTF-8[a] 	  EF BB BF
+ *	UTF-16 (BE)   FE FF
+ *	UTF-16 (LE)   FF FE
+ *	UTF-32 (BE)   00 00 FE FF
+ *	UTF-32 (LE)   FF FE 00 00
+ *	UTF-7[a] 	  2B 2F 76
+ *	UTF-1[a] 	  F7 64 4C
+ *	UTF-EBCDIC[a] DD 73 66 73
+ *	SCSU[a] 	  0E FE FF
+ *	BOCU-1[a] 	  FB EE 28
+ *	GB18030[a] 	  84 31 95 33
+ */
+string Parser::remove_bom(string s){
+	const string utf8_bom({(char)0xEF, (char)0xBB, (char)0xBF});
+	const string utf16be_bom({(char)0xFE, (char)0xFF});
+	const string utf16le_bom({(char)0xFF, (char)0xFE});
+	const string utf32be_bom({(char)0x00, (char)0x00, (char)0xFE, (char)0xFF});
+	const string utf32le_bom({(char)0xFF, (char)0xFE, (char)0x00, (char)0x00});
+	const string utf7_bom({(char)0x2B, (char)0x2F, (char)0x76});
+	const string utf1_bom({(char)0xF7, (char)0x64, (char)0x4C});
+	const string utfebcdic_bom({(char)0xDD, (char)0x73, (char)0x66, (char)0x73});
+	const string utfscsu_bom({(char)0x0E, (char)0xFE, (char)0xFF});
+	const string utfbocu1_bom({(char)0xFB, (char)0xEE, (char)0x28});
+	const string utfgb18030_bom({(char)0x84, (char)0x31, (char)0x95, (char)0x33});
+	unordered_set<string> boms({utf8_bom, utf16be_bom, utf16le_bom, utf32be_bom,
+			utf32le_bom, utf7_bom, utf1_bom, utfebcdic_bom, utfscsu_bom,
+			utfbocu1_bom, utfgb18030_bom});
+
+	string bom;
+	size_t index;
+	for(auto itb = boms.begin(); itb != boms.end(); itb++){
+		bom = (*itb);
+		index = s.find(bom);
+		if(index < s.length() && index >= 0){
+			auto it = s.begin()+index;
+			if(it != s.end()){
+				s.erase(it, s.begin()+bom.length());
+
+				break;
+			}
+		}
+	}
+	return s;
+}
+
 /// Read CSV file, Excel dialect. Accept "quoted fields ""with quotes"""
 std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
 	std::vector<std::vector<std::string>> table;
 	std::string row;
+	bool is_start = true;
 	while (!in.eof()) {
 		std::getline(in, row);
 		if (in.bad() || in.fail()) {
 			break;
+		}
+		if(is_start){
+			row = remove_bom(row);
+			is_start = false;
 		}
 		std::vector<std::string> fields = readCSVRow(row);
 		table.push_back(fields);

@@ -39,6 +39,7 @@ struct i1_info {
 class Parser {
 public:
 	Parser();
+	string remove_bom(string s);
 	std::vector<std::vector<std::string>> readCSV(std::istream &in);
 	unordered_map<string, string>* parse_sample_sheet(string sample_sheet,
 			bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
