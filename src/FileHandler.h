@@ -10,8 +10,9 @@ using namespace std;
 
 class FileHandler {
 public:
-  FileHandler(unordered_map<string,string>& barcode_file_map, string output_folder, double memory_buffer_gb=1);
-  void init_all_file_handles(double total_buffer_gb);
+  FileHandler(unordered_map<string,string>& barcode_file_map, string output_folder, bool paired_output = false);
+  void init_all_file_handles();
+  void init_all_file_handles_single_end();
   std::pair<ZipFastqWriter*,ZipFastqWriter*>* get_file_handles(string &barcode);
   string get_sample_name(std::pair<ZipFastqWriter*,ZipFastqWriter*>* file_pair_key);
   virtual ~FileHandler();

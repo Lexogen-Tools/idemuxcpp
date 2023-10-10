@@ -4,10 +4,9 @@
 idemuxCPP \- idemuxCPP
 .SH SYNOPSIS
 .B idemuxCPP
-[\fI\,OPTIONS\/\fR]...
+[\fI\,OPTION\/\fR]...
 .SH DESCRIPTION
 \&../src/idemuxCPP
-idemuxCPP 0.2.0
 .PP
 Demultiplex RNA\-seq reads from fastq.gz files into separate files according to
 their indices.
@@ -139,21 +138,11 @@ sheet.
 .IP
 (default=off)
 .TP
-\fB\-\-writer\-buffer\-gb\fR=\fI\,DOUBLE\/\fR Restrict the buffer in total to a maximum of
-value in giga bytes. The buffer is divided
-among all output sample files which are
-specified in the SDF. It should be set to a
-very high value (a few GB or almost all main
-memory). It is better to set this much higher
-than the 'queue\-buffer\-gb' parameter, because
-once the reading queue is processed, it will
-be written to disk. Thus, the
-\&'queue\-buffer\-gb' can be used to adjust the
-memory usage. The 'writer\-buffer\-gb' affects
-mainly the output file size. A larger writing
-buffer leads to smaller fastq.gz files.
+\fB\-\-gzip\-block\-size\fR=\fI\,LONG\/\fR
+Bytes threshold for blocks of reads that are
+compressed in one step. Default 1MB.
 .IP
-(default=`10.0')
+(default=`1048576')
 .TP
 \fB\-\-queue\-buffer\-gb\fR=\fI\,DOUBLE\/\fR
 Restrict the buffer for reads in the queue in

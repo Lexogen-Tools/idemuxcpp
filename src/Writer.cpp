@@ -50,8 +50,6 @@ void Writer::write_barcode_summary(
 		std::string barcode_corrections_file) {
 	ofstream csvfile(barcode_corrections_file, std::ofstream::out);
 
-	unordered_map<string, size_t>* count_map;
-
 	string csv_header = "barcode_type\tbarcode\tcount_corrected";
 	csvfile << csv_header << std::endl;
 	string barcode_type;

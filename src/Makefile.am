@@ -43,8 +43,6 @@ idemuxCPP_SOURCES =  ${GENGETOPT_CMDL} \
                    PairedReader.cpp \
                    FileHandler.h \
                    FileHandler.cpp \
-                   FileHandlerSE.h \
-                   FileHandlerSE.cpp \
                    Barcode.h \
                    Barcode.cpp \
                    helper.h \

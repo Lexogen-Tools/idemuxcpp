@@ -14,14 +14,12 @@ using namespace std;
 
 FastqReader::FastqReader(string filename) {
 	this->FastqFileHandle.open(filename, std::ifstream::in);
-	bool test = this->FastqFileHandle.eof();
 }
 
 fq_read* FastqReader::next_read() {
 	std::string line;
 	fq_read *read = new fq_read();
 	short i = 0;
-	bool test = this->FastqFileHandle.eof();
 	while (!this->FastqFileHandle.eof() && i < 4) {
 		std::getline(this->FastqFileHandle, line);
 		if (this->FastqFileHandle.bad() || FastqFileHandle.fail()) {

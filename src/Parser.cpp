@@ -67,7 +67,7 @@ std::vector<std::string> readCSVRow(const std::string &row) {
 			break;
 		}
 	}
-	for(int i = 0; i < fields.size(); i++){
+	for(size_t i = 0; i < fields.size(); i++){
 		string tmp_str = fields[i];
 		//remove newline signs
 		tmp_str.erase(std::remove(tmp_str.begin(), tmp_str.end(), '\n'), tmp_str.end());
@@ -283,7 +283,7 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		}
 	}
 
-	for (int i = 0; i < minimal_header_list.size(); i++){
+	for (size_t i = 0; i < minimal_header_list.size(); i++){
 		auto ith = map_column_index.find(minimal_header_list[i]);
 		if (ith == map_column_index.end()){
 			string expected_header = "";
@@ -649,7 +649,8 @@ void Parser::peek_into_fastq_files(PairedReader &get_pe_fastq, bool has_i7,
 	std::vector<std::pair<fq_read*, fq_read*>> *pe_reads =
 			get_pe_fastq.next_reads(lines_to_check);
 	//fq_read* pe_reads = get_pe_fastq.next_reads(lines_to_check);
-	for (size_t i = 0; i < pe_reads->size(); i++) {
+	size_t number_reads = pe_reads->size();
+	for (size_t i = 0; i < number_reads; i++) {
 		//for(size_t i = 0; pe_reads[i+1].Seq_ID != ""; i+=2){
 		// mate_pair in pe_reads:
 		std::pair<fq_read*, fq_read*> mate_pair = pe_reads->at(i);
@@ -674,50 +675,16 @@ void Parser::peek_into_fastq_files(PairedReader &get_pe_fastq, bool has_i7,
 	std::cout << "Input file formatting seems fine." << std::endl;
 }
 
-/**
- * single end file check
- */
-void Parser::peek_into_fastq_file(IFastqReader *reader, bool has_i7,
-				bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
-				unordered_map<string, i1_info> &i7_i5_i1_info_map,
-                                size_t max_length_i7, size_t max_length_i5){
-	fprintf(stdout,
-			"Peeking into fastq file to check for barcode formatting errors\n");
-
-	int lines_to_check = 1000;
-	int counter = 0;
-	fprintf(stdout, "Checking fastq input files...\n");
-	for(int i = 0; i < lines_to_check; i++){
-		fq_read* r = reader->next_read();
-		if(r){
-			check_fastq_header(r, has_i7, has_i5, i7_length, i5_length, max_length_i7, max_length_i5);
-			if (has_i1){
-				pair<string,string> bcs_mate1 = Parser::parse_indices(r->Seq_ID, max_length_i7, max_length_i5);
-				string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
-				auto it_i1_info = i7_i5_i1_info_map.find(i7_i5_bc);
-				if (it_i1_info != i7_i5_i1_info_map.end()){
-					int i1_start = it_i1_info->second.start_index;
-					int i1_end = it_i1_info->second.end_index;
-					if (it_i1_info->second.read_index == 1)
-						check_mate2_length(r, i1_start, i1_end);
-				}
-			}
-			delete r;
-		}
-		else{
-			delete r;
-			break;
-		}
-	}
-	std::cout << "Input file formatting seems fine." << std::endl;
-}
 
 void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 		bool has_i7, bool has_i5, bool has_i1, vector<int> &i7_length, vector<int> &i5_length,
 		unordered_map<string, i1_info> &i7_i5_i1_info_map,
                 size_t max_length_i7, size_t max_length_i5) {
-
-	check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length, max_length_i7, max_length_i5);
+	if (mate_pair.second != NULL)
+		check_fastq_headers(mate_pair, has_i7, has_i5, i7_length, i5_length, max_length_i7, max_length_i5);
+	else
+		check_fastq_header(mate_pair.first, has_i7, has_i5, i7_length, i5_length,
+		        max_length_i7, max_length_i5);
 	if (has_i1){
 		pair<string,string> bcs_mate1 = Parser::parse_indices(mate_pair.first->Seq_ID, max_length_i7, max_length_i5);
 		string i7_i5_bc = bcs_mate1.first + "\n" + bcs_mate1.second;
@@ -727,6 +694,8 @@ void Parser::check_mate_pair(std::pair<fq_read*, fq_read*> mate_pair,
 			int i1_end = it_i1_info->second.end_index;
 			if (it_i1_info->second.read_index == 1)
 				check_mate2_length(mate_pair.first, i1_start, i1_end);
+			if (it_i1_info->second.read_index == 2 && mate_pair.second == NULL)
+				throw runtime_error("Error: i1 is specified for read2 file, but read2 is empty!");
 			if (it_i1_info->second.read_index == 2)
 				check_mate2_length(mate_pair.second, i1_start, i1_end);
 		}
@@ -750,7 +719,7 @@ void Parser::check_mate2_length(fq_read *mate2, int i1_start, int i1_end) {
 
 string Parser::list_to_string(vector<int> list){
 	string res = "{";
-	for(int i = 0; i < list.size(); i++)
+	for(size_t i = 0; i < list.size(); i++)
 		res += to_string(list[i]) + ",";
 	res = res.substr(0,res.length()-1) + "}";
 	return res;

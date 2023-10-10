@@ -2,6 +2,7 @@
 #define ZIPFASTQWRITER_H_
 
 #include <string>
+#include <vector>
 #include <zlib.h>
 #include "FastqReader.h"
 
@@ -9,23 +10,18 @@ using namespace std;
 
 class ZipFastqWriter {
 public:
-	ZipFastqWriter(string outfile, size_t buffer_size_bytes);
+	ZipFastqWriter(string outfile);
 	ZipFastqWriter(const ZipFastqWriter&) = delete; //no copy
 	ZipFastqWriter& operator=(const ZipFastqWriter&) = delete; // no assignment
-	int write(const char* data, size_t len);
-	void write_read(fq_read* r);
-	void write_read_list(fq_read** reads);
-	void flush();
+	int write(std::vector<uint8_t> *out_data);
 	virtual ~ZipFastqWriter();
 	inline string get_output_name(){
 		return OutputFile;
 	}
+	static int compress_memory(uint8_t *in_data, size_t in_data_size, std::vector<uint8_t> *out_data, int compression_level);
 private:
-	int write_fragments(const char* data, size_t len, size_t buffer_size);
 	string OutputFile;
-	gzFile GZ_file_handle;
-	string Buffer;
-	size_t BufferSize;
+	FILE* File_handle;
 };
 
 #endif /* ZIPFASTQWRITER_H_ */

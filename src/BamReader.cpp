@@ -13,7 +13,7 @@ using namespace std;
 
 BamReader::BamReader(string filename) {
 	this->FileHandle = new BamTools::BamReader();
-	bool is_open = this->FileHandle->Open(filename);
+	this->FileHandle->Open(filename);
 }
 
 //const regex regex_i5("B2Z([ACGUPTN]+)");

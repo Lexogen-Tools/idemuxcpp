@@ -66,26 +66,91 @@ void Correction_Counter::count_correction(string i7, string i5, string i1, bool 
 	}
 }
 
+
+Correction_Counter&
+Correction_Counter::operator+=(const Correction_Counter& toAdd)
+{
+	//check if barcode indices are the same.
+	bool b_same = true;
+
+	size_t i;
+	for(i = 0; i < toAdd.I7_codes.size(); i++){
+		if(this->I7_codes[i] != toAdd.I7_codes[i]){
+			b_same = false;
+			break;
+		}
+	}
+	for(i = 0; i < toAdd.I5_codes.size(); i++){
+			if(this->I5_codes[i] != toAdd.I5_codes[i]){
+				b_same = false;
+				break;
+			}
+		}
+	for(i = 0; i < toAdd.I1_codes.size(); i++){
+			if(this->I1_codes[i] != toAdd.I1_codes[i]){
+				b_same = false;
+				break;
+			}
+		}
+	if (!b_same){
+		fprintf(stderr, "Error: cannot add correction counters with different barcode sets!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	for(auto it = toAdd.I7_indices.begin(); it != toAdd.I7_indices.end(); it++){
+		if(this->I7_indices.find(it->first) != this->I7_indices.end()){
+			this->I7_indices[it->first] += it->second;
+		}
+		else{
+			this->I7_indices[it->first] = it->second;
+		}
+	}
+
+	for(auto it = toAdd.I5_indices.begin(); it != toAdd.I5_indices.end(); it++){
+			if(this->I5_indices.find(it->first) != this->I5_indices.end()){
+				this->I5_indices[it->first] += it->second;
+			}
+			else{
+				this->I5_indices[it->first] = it->second;
+			}
+		}
+
+	for(auto it = toAdd.I1_indices.begin(); it != toAdd.I1_indices.end(); it++){
+			if(this->I1_indices.find(it->first) != this->I1_indices.end()){
+				this->I1_indices[it->first] += it->second;
+			}
+			else{
+				this->I1_indices[it->first] = it->second;
+			}
+		}
+
+	for(auto it = toAdd.Counts_combination.begin(); it != toAdd.Counts_combination.end(); it++){
+		if(this->Counts_combination.find(it->first) != this->Counts_combination.end()){
+			this->Counts_combination[it->first] += it->second;
+		}
+		else{
+			this->Counts_combination[it->first] = it->second;
+		}
+	}
+	return *this;
+}
+
+
 /*
  * each line contains the corrected code, if it was corrected.
  */
 void Correction_Counter::write_correction(string filename, unordered_map<string, string> &barcode_sample_map){
 	ofstream csvfile(filename, std::ofstream::out);
 
-	unordered_map<string, uint16_t>* count_map;
-	vector<string>* code_order;
-
 	string csv_header = "sample_name,i7,i5,i1,combination_corrected,i7_corrected,i5_corrected,i1_corrected";
 	csvfile << csv_header << std::endl;
 	string i7, i5, i1;
-	uint64_t count_i7, count_i5, count_i1;
 	barcode_counts undetermined_counts = {0,0,0,0};
 	for(auto it = Counts_combination.begin(); it != Counts_combination.end(); it++){
 		uint64_t code_idc = it->first;
 		uint16_t ui_i1 = uint16_t(code_idc);
 		uint16_t ui_i5 = uint16_t(code_idc >> 16);
 		uint16_t ui_i7 = uint16_t(code_idc >> 32);
-		count_i7 = count_i5 = count_i1 = 0;
 		if(ui_i1 > 0)
 			i1 = I1_codes[ui_i1-1];
 		else

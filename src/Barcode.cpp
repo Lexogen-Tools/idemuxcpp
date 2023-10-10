@@ -32,7 +32,7 @@ Barcode::Barcode(string barcode_type,
 unordered_set<int>* Barcode::get_set_sizes() {
 	unordered_set<int> *set_sizes = new unordered_set<int>();
 	int length;
-	for(int i = 0; i < this->Lengths.size(); i++){
+	for(size_t i = 0; i < this->Lengths.size(); i++){
 		length = this->Lengths[i];
 		auto it = allowed_lengths.find(length);
 		if (it != allowed_lengths.end()) {
@@ -121,7 +121,6 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 	delete tmp_sizes;
 	std::sort(sizes.begin(), sizes.end());
 	bool drop_none = true;
-	int set_size;
 
 	//size_t path_buffer = 10000;
 	//char *buffer = (char*)malloc(sizeof(char)*path_buffer);
@@ -206,7 +205,7 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 		        set<string>* barcode_set = new set<string>();
                 Parser::get_map_from_resource(entry.path().string(), corr_map, barcode_set);
                 //test if all codes are contained in the map for a certain length.
-                int n_codes_contained = 0;
+                size_t n_codes_contained = 0;
                 for (auto it_test = length_and_codes[length].begin();
                         it_test != length_and_codes[length].end(); it_test++) {
                     auto it_contained = barcode_set->find(*it_test);
@@ -233,11 +232,11 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
                         }
                     }
                     n_loaded_maps++;
-                    delete corr_map;
-                    delete barcode_set;
                     //all codes for this length are contained in the set for the given size --> break.
                     found = true;
                 }
+                delete corr_map;
+                delete barcode_set;
 		    }
             //revert for the case that this loop is running twice
             reverse = !reverse;
@@ -248,7 +247,7 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 		printf(
 				"Warning: No fitting Lexogen barcode set found for %s. No "
 						"error correction will take place for this barcode. Are you using "
-						"valid Lexogen barodes?\n", this->get_name().c_str());
+						"valid Lexogen barcodes?\n", this->get_name().c_str());
 	}
 
 	if(this->Correction_map.size() == 0){

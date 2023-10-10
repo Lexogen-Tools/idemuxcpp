@@ -1,110 +1,122 @@
 #include <string>
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
 #include <zlib.h>
 #include <stdexcept>
 #include "FastqReader.h"
 #include "ZipFastqWriter.h"
 
-ZipFastqWriter::ZipFastqWriter(string outfile, size_t buffer_size_bytes) : OutputFile(outfile), Buffer("") {
-	size_t max_size = size_t(-1);
-	this->BufferSize = min(max(buffer_size_bytes,size_t(1)),max_size-1);
-	// increase string capacity
-	// this->Buffer.reserve(BufferSize);
+/**
+ * Compress memory via zlib and include header (equivalent to block-gzip).
+ * Inspired by https://stackoverflow.com/questions/4538586/how-to-compress-a-buffer-with-zlib and https://www.zlib.net/zlib_how.html
+ *
+ * @param in_data - arbitrary array of input data.
+ * @param in_data_size - length of input data.
+ * @param out_data - already allocated (new()-ed) output data.
+ * @param compression_level - zlib compression level (value between 0 and 9).
+ */
+int ZipFastqWriter::compress_memory(uint8_t *in_data, size_t in_data_size, std::vector<uint8_t> *out_data, int compression_level)
+{
+	int result = 0;
+	std::vector<uint8_t> *buffer = out_data;
 
-	GZ_file_handle = gzopen(outfile.c_str(),"wb4");
-	if(GZ_file_handle==NULL){
+	const size_t BUFSIZE = 128 * 1024;
+	uint8_t temp_buffer[BUFSIZE];
+
+	z_stream strm;
+	strm.zalloc = Z_NULL;
+	strm.zfree = Z_NULL;
+	strm.opaque = Z_NULL;
+	strm.next_in = reinterpret_cast<uint8_t *>(in_data);
+	strm.avail_in = in_data_size;
+	strm.next_out = temp_buffer;
+	strm.avail_out = BUFSIZE;
+
+	int windowBits = 15; // default value according to zlib manual.
+	windowBits += 16; // 16 means that it should write the header and crc32.
+
+	if(Z_OK != deflateInit2(&strm, compression_level,Z_DEFLATED, windowBits, 9, Z_DEFAULT_STRATEGY)){
+		std::cerr << "Error: no gzip init!" << std::endl;
+	}
+
+	gz_header header {0};
+	header.name = Z_NULL;
+	header.comment = Z_NULL;
+	header.extra = Z_NULL;
+	if(Z_OK != deflateSetHeader(&strm, &header)){
+		std::cerr << "Error: no zlib deflateSetHeader!" << std::endl;
+	}
+	while (strm.avail_in != 0)
+	{
+		int res = deflate(&strm, Z_NO_FLUSH);
+		if(res == Z_OK){
+			//std::cerr << "deflate Z_OK" << std::endl;
+		}
+		if (strm.avail_out == 0)
+		{
+			buffer->insert(buffer->end(), temp_buffer, temp_buffer + BUFSIZE);
+			strm.next_out = temp_buffer;
+			strm.avail_out = BUFSIZE;
+		}
+	}
+
+	int deflate_res = Z_OK;
+	while (deflate_res == Z_OK)
+	{
+		if (strm.avail_out == 0)
+		{
+			buffer->insert(buffer->end(), temp_buffer, temp_buffer + BUFSIZE);
+			strm.next_out = temp_buffer;
+			strm.avail_out = BUFSIZE;
+		}
+		deflate_res = deflate(&strm, Z_FINISH);
+	}
+
+	if(deflate_res == Z_STREAM_END){
+		//std::cerr << "gz stream end" << std::endl;
+	}
+	buffer->insert(buffer->end(), temp_buffer, temp_buffer + BUFSIZE - strm.avail_out);
+	deflateEnd(&strm);
+
+	return result;
+}
+
+
+ZipFastqWriter::ZipFastqWriter(string outfile) : OutputFile(outfile) {
+	File_handle = fopen(outfile.c_str(),"w");
+	if(File_handle==NULL){
 		string message = "Error: could not open gz file for writing!\n";
 		throw(runtime_error(message));
 	}
 
-	gzflush(GZ_file_handle,1);
-	if (gzclose(GZ_file_handle) != Z_OK){
+	fflush(File_handle);
+	if (fclose(File_handle) != 0){
 		std::cerr << "failed gzclose" << std::endl;
 	}
 }
 
-int ZipFastqWriter::write_fragments(const char* data, size_t len, size_t buffer_size){
-	int result = 0;
-	size_t max_gz_write = unsigned(-1) -1;
-	size_t new_buffer_size = min(buffer_size, max_gz_write);
 
-	GZ_file_handle = gzopen(OutputFile.c_str(),"ab4");
-	if(GZ_file_handle==NULL){
+int ZipFastqWriter::write(std::vector<uint8_t> *out_data){
+	int result = 0;
+	File_handle = fopen(OutputFile.c_str(), "a");
+	if(File_handle==NULL){
 		string message = "Error: could not open gz file for writing!\n";
 		throw(runtime_error(message));
 	}
-
-	// data does not even fit into buffer --> directly write it.
-	if(len > new_buffer_size){
-		size_t offset;
-		unsigned current_length;
-		for(size_t i = 0; i < len; i+=new_buffer_size){
-			offset = i;
-			current_length = unsigned(min(new_buffer_size, len - offset));
-			result = result | gzwrite(GZ_file_handle, &data[offset], current_length);
-		}
-	}
-	else{
-		gzwrite(GZ_file_handle, data, len);
-	}
-
-	gzflush(GZ_file_handle,1);
-	if (gzclose(GZ_file_handle) != Z_OK){
+	size_t compressed_size = out_data->size();
+	uint8_t* out_array = (uint8_t*)malloc(sizeof(uint8_t)*compressed_size);
+	copy(out_data->begin(), out_data->end(), out_array);
+	fwrite((void*)out_array, sizeof(uint8_t), compressed_size, File_handle);
+	free(out_array);
+	if (fclose(File_handle) != 0){
 		std::cerr << "failed gzclose" << std::endl;
+		result = 1;
 	}
 	return result;
-}
-
-int ZipFastqWriter::write(const char* data, size_t len) {
-	int result = 0;
-	size_t buffer_length = this->Buffer.length();
-	// 1. only append to buffer and write in ZipFastqWriter::flush()
-	if(buffer_length/2 + len/2 < BufferSize/2){
-		this->Buffer.append(data);
-	}
-	else{
-		// 2. Buffer would overflow --> write buffer, clear it and append.
-		this->flush();
-		buffer_length = this->Buffer.length();
-		if(buffer_length/2 + len/2 < BufferSize/2){
-			this->Buffer.append(data);
-		}
-		else{
-			// 3. if buffer is to small for input data, write it directly.
-			//if(len >= BufferSize){
-			this->write_fragments(data, len, len);
-		}
-	}
-	return result;
-}
-
-void ZipFastqWriter::write_read(fq_read* r) {
-		string read = r->to_string();
-		auto res = this->write(read.c_str(), read.length());
-		if(res==0) throw std::runtime_error("Error: could not write read from list to file!");
-}
-
-void ZipFastqWriter::write_read_list(fq_read** reads) {
-	for(int i = 0; reads[i] != NULL; i++){
-		this->write_read(reads[i]);
-	}
-}
-
-void ZipFastqWriter::flush(){
-	size_t buffer_length = this->Buffer.length();
-	if(buffer_length > 0){
-		this->write_fragments(Buffer.c_str(), buffer_length, buffer_length);
-		this->Buffer.clear();
-	}
 }
 
 ZipFastqWriter::~ZipFastqWriter() {
-	this->flush();
-	/*
-	gzflush(GZ_file_handle,1);
-	if (gzclose(GZ_file_handle) != Z_OK){
-		std::cerr << "failed gzclose" << std::endl;
-	}
-	*/
 }
 

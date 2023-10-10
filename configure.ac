@@ -49,13 +49,6 @@ AM_INIT_AUTOMAKE([1.9])
 # use the C++ compiler for the following checks
 AC_LANG([C++])
 
-# include openMP for multithreading.
-dnl Check for OpenMP and prepare flags
-
-dnl AX_OPENMP([],[])
-AC_OPENMP
-AC_SUBST(OPENMP_CXXFLAGS)
-AC_SUBST(AM_CXXFLAGS,"$OPENMP_CXXFLAGS")
 
 ###############################################################################
 ###############################################################################
@@ -81,7 +74,7 @@ AC_ARG_ENABLE([debug],
 AC_MSG_RESULT([$debuger])
 if test x"$debuger" = x"yes"; then
 	AC_DEFINE([DEBUG], [], [Run in DEBUG mode with additional assertions and debug output])
-	AM_CXXFLAGS="$AM_CXXFLAGS -pg -g -Wno-uninitialized -O0"
+	AM_CXXFLAGS="$AM_CXXFLAGS -g -Wno-uninitialized -O0 -pthread"
 	AM_LDFLAGS="$AM_LDFLAGS -g -Wno-uninitialized -O0"
 	#AM_CXXFLAGS="$AM_CXXFLAGS -g -O0 -Wall -Werror -Wno-uninitialized -Wno-deprecated"
 else

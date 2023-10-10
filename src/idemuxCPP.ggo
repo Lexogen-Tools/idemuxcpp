@@ -136,16 +136,11 @@ option "restrict-barcode-length" -
 flag
 off
 
-option "writer-buffer-gb" -
-"Restrict the buffer in total to a maximum of value in giga bytes. \
-The buffer is divided among all output sample files which are specified in the SDF. \
-It should be set to a very high value (a few GB or almost all main memory). It is better to set this much higher than \
-the 'queue-buffer-gb' parameter, because once the reading queue is processed, it will be written \
-to disk. Thus, the 'queue-buffer-gb' can be used to adjust the memory usage. \
-The 'writer-buffer-gb' affects mainly the output file size. A larger writing buffer leads to smaller fastq.gz files.\n"
-double
+option "gzip-block-size" -
+"Bytes threshold for blocks of reads that are compressed in one step. Default 1MB.\n"
+long
 optional
-default="10.0"
+default="1048576"
 
 option "queue-buffer-gb" -
 "Restrict the buffer for reads in the queue in total to a maximum of value in giga bytes. It competes with the 'queue-size' option. \
