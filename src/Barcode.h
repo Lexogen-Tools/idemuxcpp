@@ -8,7 +8,7 @@ using namespace std;
 
 class Barcode {
 public:
-  Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement = false);
+  Barcode(string barcode_type,  unordered_map<string,std::vector<string>> &ix_barcodes, bool reverse_complement = false, bool auto_detect = false);
   vector<int> Lengths;
 
   // attribute getters
@@ -90,9 +90,12 @@ public:
   void check_length();
   void load_correction_map(string relative_exepath, string correction_maps_path = "");
   void create_one_to_one_map();
+  string get_name(bool reverse = false);
 
   //barcode name is i7,i5,i1 (name of the resources directory).
-  string Name;
+  string _Name;
+  bool reverse_complement;
+  bool auto_detect;
   unordered_map<string,string> Correction_map;
   unordered_map<string,string> _sample_map;
   unordered_set<int> allowed_lengths;

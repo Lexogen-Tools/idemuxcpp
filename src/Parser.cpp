@@ -232,7 +232,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 		bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		string relative_exepath, string correction_maps_path, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode) {
-	// we use these to keep track which lengths are beeing used for each barcode
+	// we use these to keep track which lengths are being used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
 
 	// we use these to keep track of which single match to which sample(s)

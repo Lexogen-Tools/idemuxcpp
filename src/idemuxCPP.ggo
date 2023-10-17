@@ -74,6 +74,11 @@ sequences in the barcode file."
 flag
 off
 
+option "auto_detect" -
+"Automatically detect if barcodes are specified in FWD or REV direction.\n"
+flag
+off
+
 option  "i1-start" i
 "Start position of the i1 index (1-based) on read 2.\n"
 int
