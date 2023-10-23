@@ -46,8 +46,9 @@ const char *idemuxCPP_args_info_help[] = {
   "\nOptional arguments:",
   "  -b, --barcode-corrections=STRING\n                                Outputs a csv file that contains the number of\n                                  corrected barcodes",
   "  -m, --correction-map-prefix=STRING\n                                Set the path where the correction maps are\n                                  stored.",
-  "  -5, --i5-rc                   Should be set when the i5 barcode has been\n                                  sequenced as reversecomplement. Make sure to\n                                  enter non-reverse complementsequences in the\n                                  barcode file.  (default=off)",
-  "      --auto_detect             Automatically detect if barcodes are specified\n                                  in FWD or REV direction.\n                                    (default=off)",
+  "  -7, --i7-rc                   Should be set when the i7 barcode has been\n                                  sequenced as reverse complement. Make sure to\n                                  enter reverse complement sequences in the\n                                  barcode file.  (default=off)",
+  "  -5, --i5-rc                   Should be set when the i5 barcode has been\n                                  sequenced as reverse complement. Make sure to\n                                  enter reverse complement sequences in the\n                                  barcode file.  (default=off)",
+  "      --auto-detect             Automatically detect if barcodes are specified\n                                  in FWD or REV direction.\n                                    (default=off)",
   "  -i, --i1-start=INT            Start position of the i1 index (1-based) on\n                                  read 2.\n                                    (default=`11')",
   "      --i1-read=INT             Read in which the i1 index should be corrected\n                                  (1 or 2).\n                                    (default=`2')",
   "  -q, --queue-size=INT          Queue size for reads that will be processed in\n                                  one block. It competes with the\n                                  'queue-buffer-gb' option.\n                                    (default=`4000000')",
@@ -98,6 +99,7 @@ void clear_given (struct idemuxCPP_args_info *args_info)
   args_info->paired_given = 0 ;
   args_info->barcode_corrections_given = 0 ;
   args_info->correction_map_prefix_given = 0 ;
+  args_info->i7_rc_given = 0 ;
   args_info->i5_rc_given = 0 ;
   args_info->auto_detect_given = 0 ;
   args_info->i1_start_given = 0 ;
@@ -133,6 +135,7 @@ void clear_args (struct idemuxCPP_args_info *args_info)
   args_info->barcode_corrections_orig = NULL;
   args_info->correction_map_prefix_arg = NULL;
   args_info->correction_map_prefix_orig = NULL;
+  args_info->i7_rc_flag = 0;
   args_info->i5_rc_flag = 0;
   args_info->auto_detect_flag = 0;
   args_info->i1_start_arg = 11;
@@ -171,20 +174,21 @@ void init_args_info(struct idemuxCPP_args_info *args_info)
   args_info->paired_help = idemuxCPP_args_info_help[9] ;
   args_info->barcode_corrections_help = idemuxCPP_args_info_help[11] ;
   args_info->correction_map_prefix_help = idemuxCPP_args_info_help[12] ;
-  args_info->i5_rc_help = idemuxCPP_args_info_help[13] ;
-  args_info->auto_detect_help = idemuxCPP_args_info_help[14] ;
-  args_info->i1_start_help = idemuxCPP_args_info_help[15] ;
-  args_info->i1_read_help = idemuxCPP_args_info_help[16] ;
-  args_info->queue_size_help = idemuxCPP_args_info_help[17] ;
-  args_info->reading_threads_help = idemuxCPP_args_info_help[18] ;
-  args_info->writing_threads_help = idemuxCPP_args_info_help[19] ;
-  args_info->processing_threads_help = idemuxCPP_args_info_help[20] ;
-  args_info->demux_only_help = idemuxCPP_args_info_help[21] ;
-  args_info->skip_check_help = idemuxCPP_args_info_help[22] ;
-  args_info->restrict_barcode_length_help = idemuxCPP_args_info_help[23] ;
-  args_info->writer_buffer_gb_help = idemuxCPP_args_info_help[24] ;
-  args_info->queue_buffer_gb_help = idemuxCPP_args_info_help[25] ;
-  args_info->verbose_help = idemuxCPP_args_info_help[26] ;
+  args_info->i7_rc_help = idemuxCPP_args_info_help[13] ;
+  args_info->i5_rc_help = idemuxCPP_args_info_help[14] ;
+  args_info->auto_detect_help = idemuxCPP_args_info_help[15] ;
+  args_info->i1_start_help = idemuxCPP_args_info_help[16] ;
+  args_info->i1_read_help = idemuxCPP_args_info_help[17] ;
+  args_info->queue_size_help = idemuxCPP_args_info_help[18] ;
+  args_info->reading_threads_help = idemuxCPP_args_info_help[19] ;
+  args_info->writing_threads_help = idemuxCPP_args_info_help[20] ;
+  args_info->processing_threads_help = idemuxCPP_args_info_help[21] ;
+  args_info->demux_only_help = idemuxCPP_args_info_help[22] ;
+  args_info->skip_check_help = idemuxCPP_args_info_help[23] ;
+  args_info->restrict_barcode_length_help = idemuxCPP_args_info_help[24] ;
+  args_info->writer_buffer_gb_help = idemuxCPP_args_info_help[25] ;
+  args_info->queue_buffer_gb_help = idemuxCPP_args_info_help[26] ;
+  args_info->verbose_help = idemuxCPP_args_info_help[27] ;
   
 }
 
@@ -340,10 +344,12 @@ idemuxCPP_cmdline_parser_dump(FILE *outfile, struct idemuxCPP_args_info *args_in
     write_into_file(outfile, "barcode-corrections", args_info->barcode_corrections_orig, 0);
   if (args_info->correction_map_prefix_given)
     write_into_file(outfile, "correction-map-prefix", args_info->correction_map_prefix_orig, 0);
+  if (args_info->i7_rc_given)
+    write_into_file(outfile, "i7-rc", 0, 0 );
   if (args_info->i5_rc_given)
     write_into_file(outfile, "i5-rc", 0, 0 );
   if (args_info->auto_detect_given)
-    write_into_file(outfile, "auto_detect", 0, 0 );
+    write_into_file(outfile, "auto-detect", 0, 0 );
   if (args_info->i1_start_given)
     write_into_file(outfile, "i1-start", args_info->i1_start_orig, 0);
   if (args_info->i1_read_given)
@@ -1267,8 +1273,9 @@ idemuxCPP_cmdline_parser_internal (
         { "paired",	0, NULL, 0 },
         { "barcode-corrections",	1, NULL, 'b' },
         { "correction-map-prefix",	1, NULL, 'm' },
+        { "i7-rc",	0, NULL, '7' },
         { "i5-rc",	0, NULL, '5' },
-        { "auto_detect",	0, NULL, 0 },
+        { "auto-detect",	0, NULL, 0 },
         { "i1-start",	1, NULL, 'i' },
         { "i1-read",	1, NULL, 0 },
         { "queue-size",	1, NULL, 'q' },
@@ -1289,7 +1296,7 @@ idemuxCPP_cmdline_parser_internal (
       custom_opterr = opterr;
       custom_optopt = optopt;
 
-      c = custom_getopt_long (argc, argv, "hV1:2:o:s:b:m:5i:q:r:w:p:dv", long_options, &option_index);
+      c = custom_getopt_long (argc, argv, "hV1:2:o:s:b:m:75i:q:r:w:p:dv", long_options, &option_index);
 
       optarg = custom_optarg;
       optind = custom_optind;
@@ -1386,7 +1393,17 @@ idemuxCPP_cmdline_parser_internal (
             goto failure;
         
           break;
-        case '5':	/* Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file..  */
+        case '7':	/* Should be set when the i7 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file..  */
+        
+        
+          if (update_arg((void *)&(args_info->i7_rc_flag), 0, &(args_info->i7_rc_given),
+              &(local_args_info.i7_rc_given), optarg, 0, 0, ARG_FLAG,
+              check_ambiguity, override, 1, 0, "i7-rc", '7',
+              additional_error))
+            goto failure;
+        
+          break;
+        case '5':	/* Should be set when the i5 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file..  */
         
         
           if (update_arg((void *)&(args_info->i5_rc_flag), 0, &(args_info->i5_rc_given),
@@ -1514,13 +1531,13 @@ idemuxCPP_cmdline_parser_internal (
           }
           /* Automatically detect if barcodes are specified in FWD or REV direction.
 .  */
-          else if (strcmp (long_options[option_index].name, "auto_detect") == 0)
+          else if (strcmp (long_options[option_index].name, "auto-detect") == 0)
           {
           
           
             if (update_arg((void *)&(args_info->auto_detect_flag), 0, &(args_info->auto_detect_given),
                 &(local_args_info.auto_detect_given), optarg, 0, 0, ARG_FLAG,
-                check_ambiguity, override, 1, 0, "auto_detect", '-',
+                check_ambiguity, override, 1, 0, "auto-detect", '-',
                 additional_error))
               goto failure;
           

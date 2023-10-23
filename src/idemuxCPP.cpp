@@ -28,7 +28,9 @@ int main(int argc, char **argv) {
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
 	string correction_maps_path = "";
-	bool i5_rc = false;
+    bool i5_rc = false;
+    bool i7_rc = false;
+    bool auto_detect = false;
 	bool single_end_mode = false;
 	int default_i1_read = 2; //read in which the i1 index should be corrected (1 or 2).
 	int default_i1_start = 10; // zero based index
@@ -101,6 +103,9 @@ int main(int argc, char **argv) {
         restrict_barcode_length = args_info.restrict_barcode_length_flag;
 
 	i5_rc = args_info.i5_rc_flag;
+    i7_rc = args_info.i7_rc_flag;
+    auto_detect = args_info.auto_detect_flag;
+
 
 	if (args_info.i1_start_arg < 1){
 		fprintf(stderr, "Error: please enter a starting position >=1!\n");
@@ -121,7 +126,7 @@ int main(int argc, char **argv) {
 	vector<Barcode*> barcodes;
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = p.parse_sample_sheet(
-			sample_sheet_file, i5_rc, barcodes, i7_i5_i1_info_map, relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
+			sample_sheet_file, i5_rc, i7_rc, auto_detect, barcodes, i7_i5_i1_info_map, relative_exepath, correction_maps_path, demux_only, default_i1_read, default_i1_start, single_end_mode);
 
 	//we need to open files at least for all samples + some extra files.
 	/*

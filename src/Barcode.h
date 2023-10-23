@@ -86,7 +86,7 @@ public:
       return _return_val;
   }
 
-  void post_init(bool reverse_complement);
+  void post_init();
   void check_length();
   void load_correction_map(string relative_exepath, string correction_maps_path = "");
   void create_one_to_one_map();

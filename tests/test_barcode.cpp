@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( test_barcode_rc )
 {
 	unordered_map<string,  std::vector<string>>* l = correct_length();
 	Barcode bc("i5", *l, true);
-	BOOST_CHECK(string("i5_rc").compare(bc.Name) == 0);
+	BOOST_CHECK(string("i5_rc").compare(bc.get_name()) == 0);
 	delete l;
 }
 

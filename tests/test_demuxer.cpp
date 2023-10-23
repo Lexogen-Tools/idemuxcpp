@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <set>
 #include "../src/Parser.h"
 #include "../src/Barcode.h"
 #include "../src/PairedReader.h"
@@ -104,6 +105,16 @@ vector<string>* demux_i7_i5() {
 	return paths;
 }
 
+vector<string>* demux_aviti_i7_rc_i5_rc() {
+    string res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
+            + string("end_to_end");
+    string read_1 = res + PATH_SEP + string("aviti_i7_rc_i5_rc_read_1.fastq.gz");
+    string read_2 = res + PATH_SEP + string("aviti_i7_rc_i5_rc_read_2.fastq.gz");
+    string csv = res + PATH_SEP + string("aviti_i7_rc_i5_rc_sample_sheet.csv");
+    vector<string> *paths = new vector<string>( { read_1, read_2, csv });
+    return paths;
+}
+
 void demux_loop(string read1, string read2, vector<Barcode*> &barcodes,
 		unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		void cb(string, std::pair<fq_read*, fq_read*>&)) {
@@ -197,7 +208,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i5_i1 ) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes,i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes,i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 
 	Barcode *i1 = barcodes[2];
 
@@ -263,7 +274,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i1) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 	Barcode *i1 = barcodes[2];
 
 	//int i1_end = I1_START + i1->length;
@@ -293,7 +304,8 @@ void test_demux_i7_i5_callback(string corrected_bc,
 
 	BOOST_CHECK(i7_corr == expected_i7);
 	//std::cout << i5_corr << " " << i5_corr << std::endl;
-	BOOST_CHECK(i5_corr == expected_i5);
+	if(i5_corr != expected_i5)
+	    BOOST_CHECK(i5_corr == expected_i5);
 	BOOST_CHECK(i1_corr == expected_i1);
 
 	BOOST_CHECK(m1->Sequence.length() == m1->QualityCode.length());
@@ -313,13 +325,57 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i5) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 	Barcode *i1 = barcodes[2];
 
 	//int i1_end = I1_START + i1->length;
 
 	demux_loop(read1, read2, barcodes, i7_i5_i1_info_map,
 			test_demux_i7_i5_callback);
+}
+
+BOOST_AUTO_TEST_CASE(test_demux_aviti_i7_rc_i5_rc) {
+    vector<string> *paths = demux_aviti_i7_rc_i5_rc();
+
+    string read1, read2, csv;
+    read1 = paths->at(0);
+    read2 = paths->at(1);
+    csv = paths->at(2);
+    Parser pe;
+    vector<Barcode*> barcodes;
+    unordered_map<string, i1_info> i7_i5_i1_info_map;
+    std::cout << csv << std::endl;
+    boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
+    unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
+            csv, true, true, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+    Barcode *i1 = barcodes[2];
+
+    //int i1_end = I1_START + i1->length;
+
+    demux_loop(read1, read2, barcodes, i7_i5_i1_info_map,
+            test_demux_i7_i5_callback);
+}
+
+BOOST_AUTO_TEST_CASE(test_demux_aviti_i7_rc_i5_rc_auto_detect) {
+    vector<string> *paths = demux_aviti_i7_rc_i5_rc();
+
+    string read1, read2, csv;
+    read1 = paths->at(0);
+    read2 = paths->at(1);
+    csv = paths->at(2);
+    Parser pe;
+    vector<Barcode*> barcodes;
+    unordered_map<string, i1_info> i7_i5_i1_info_map;
+    std::cout << csv << std::endl;
+    boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
+    unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
+            csv, false, false, true, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+    Barcode *i1 = barcodes[2];
+
+    //int i1_end = I1_START + i1->length;
+
+    demux_loop(read1, read2, barcodes, i7_i5_i1_info_map,
+            test_demux_i7_i5_callback);
 }
 
 void test_demux_i1_callback(string corrected_bc,
@@ -361,7 +417,7 @@ BOOST_AUTO_TEST_CASE(test_demux_i1) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 	Barcode *i1 = barcodes[2];
 
 	//int i1_end = I1_START + i1->length;
@@ -384,7 +440,7 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 
 	int chunk_size = 1000;
 	int reading_threads = 2;
@@ -405,8 +461,9 @@ BOOST_AUTO_TEST_CASE(test_demux_paired_end) {
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
-	std::unordered_map<string, string> *tsv_lines =
-			Parser::get_map_from_resource(tmp_path, "demultipexing_stats.tsv");
+	std::unordered_map<string, string> *tsv_lines = new std::unordered_map<string, string>();
+	set<string>* barcode_set = new set<string>();
+    Parser::get_map_from_resource(tmp_path + PATH_SEP + "demultipexing_stats.tsv", tsv_lines, barcode_set);
 	string read_count;
 	for (auto it = tsv_lines->begin(); it != tsv_lines->end(); it++) {
 		// test all sample lines (without header line).
@@ -435,7 +492,7 @@ void test_demux_reads(vector<string> *paths_r1_r2_csv){
 	std::cout << csv << std::endl;
 	boost::filesystem::path p(utils::getExecutablePath()); //.parent_path();
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			csv, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			csv, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 
 	int chunk_size = 1000;
 	int reading_threads = 2;
@@ -456,8 +513,9 @@ void test_demux_reads(vector<string> *paths_r1_r2_csv){
 
 	//string stats_file = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
 	//ifstream stats_file_stream(stats_file.c_str());
-	std::unordered_map<string, string> *tsv_lines =
-			Parser::get_map_from_resource(tmp_path, "demultipexing_stats.tsv");
+    std::unordered_map<string, string> *tsv_lines = new std::unordered_map<string, string>();
+    set<string>* barcode_set = new set<string>();
+    Parser::get_map_from_resource(tmp_path + PATH_SEP + "demultipexing_stats.tsv", tsv_lines, barcode_set);
 	string read_count;
 	for (auto it = tsv_lines->begin(); it != tsv_lines->end(); it++) {
 		// test all sample lines (without header line).
@@ -543,7 +601,7 @@ BOOST_AUTO_TEST_CASE( test_demux_i7_i1_1_read ) {
 	vector<Barcode*> barcodes;
 	unordered_map<string, i1_info> i7_i5_i1_info_map;
 	unordered_map<string, string> *barcode_sample_map = pe.parse_sample_sheet(
-			tmp_path_samplesheet, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
+			tmp_path_samplesheet, false, false, false, barcodes, i7_i5_i1_info_map, p.string(), "", false, 2, I1_START);
 
 	int chunk_size = 1000;
 	int reading_threads = 2;

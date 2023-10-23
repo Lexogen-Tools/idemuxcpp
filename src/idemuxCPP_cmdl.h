@@ -77,8 +77,10 @@ struct idemuxCPP_args_info
   char * correction_map_prefix_arg;	/**< @brief Set the path where the correction maps are stored..  */
   char * correction_map_prefix_orig;	/**< @brief Set the path where the correction maps are stored. original value given at command line.  */
   const char *correction_map_prefix_help; /**< @brief Set the path where the correction maps are stored. help description.  */
-  int i5_rc_flag;	/**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. (default=off).  */
-  const char *i5_rc_help; /**< @brief Should be set when the i5 barcode has been sequenced as reversecomplement. Make sure to enter non-reverse complementsequences in the barcode file. help description.  */
+  int i7_rc_flag;	/**< @brief Should be set when the i7 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file. (default=off).  */
+  const char *i7_rc_help; /**< @brief Should be set when the i7 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file. help description.  */
+  int i5_rc_flag;	/**< @brief Should be set when the i5 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file. (default=off).  */
+  const char *i5_rc_help; /**< @brief Should be set when the i5 barcode has been sequenced as reverse complement. Make sure to enter reverse complement sequences in the barcode file. help description.  */
   int auto_detect_flag;	/**< @brief Automatically detect if barcodes are specified in FWD or REV direction.
  (default=off).  */
   const char *auto_detect_help; /**< @brief Automatically detect if barcodes are specified in FWD or REV direction.
@@ -158,8 +160,9 @@ struct idemuxCPP_args_info
   unsigned int paired_given ;	/**< @brief Whether paired was given.  */
   unsigned int barcode_corrections_given ;	/**< @brief Whether barcode-corrections was given.  */
   unsigned int correction_map_prefix_given ;	/**< @brief Whether correction-map-prefix was given.  */
+  unsigned int i7_rc_given ;	/**< @brief Whether i7-rc was given.  */
   unsigned int i5_rc_given ;	/**< @brief Whether i5-rc was given.  */
-  unsigned int auto_detect_given ;	/**< @brief Whether auto_detect was given.  */
+  unsigned int auto_detect_given ;	/**< @brief Whether auto-detect was given.  */
   unsigned int i1_start_given ;	/**< @brief Whether i1-start was given.  */
   unsigned int i1_read_given ;	/**< @brief Whether i1-read was given.  */
   unsigned int queue_size_given ;	/**< @brief Whether queue-size was given.  */

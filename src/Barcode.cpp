@@ -10,6 +10,9 @@
 #include "helper.h"
 #include "Parser.h"
 #include "Barcode.h"
+#include <boost/filesystem.hpp>
+#include <set>
+using namespace boost::filesystem;
 
 using namespace std;
 
@@ -23,7 +26,7 @@ Barcode::Barcode(string barcode_type,
 	for (auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
 		this->_sample_map[it->first] =
 				it->second.size() > 0 ? it->second[0] : "";
-	post_init(reverse_complement);
+	post_init();
 }
 
 unordered_set<int>* Barcode::get_set_sizes() {
@@ -53,7 +56,7 @@ string Barcode::get_name(bool reverse) {
 	    return this->_Name;
 }
 
-void Barcode::post_init(bool reverse_complement) {
+void Barcode::post_init() {
     this->check_length();
 }
 
@@ -195,34 +198,26 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 		bool reverse = false;
 		bool found = false;
 		//run twice if auto_detect is enabled to also check the rc
-		for (int j = 0; j <= this->auto_detect + 1; j++) {
-            for (int i = 0; found == false && i < sizes.size(); i++) {
-                set_size = sizes[i];
-                string file_str = "base_mapping_b" + to_string(set_size) + "_l"
-                        + to_string(length) + ".tsv";
-                unordered_map<string, string> *corr_map = Parser::get_map_from_resource(
-                        barcode_path_prefix + PATH_SEP + this->get_name(reverse), file_str);
+		for (int j = 0; j <= this->auto_detect && found == false; j++) {
+		    string dir_path = barcode_path_prefix + PATH_SEP + this->get_name(reverse) + PATH_SEP + "l" + to_string(length);
+		    for (directory_entry& entry : directory_iterator(dir_path))
+		    {
+		        unordered_map<string, string>* corr_map = new unordered_map<string, string>();
+		        set<string>* barcode_set = new set<string>();
+                Parser::get_map_from_resource(entry.path().string(), corr_map, barcode_set);
                 //test if all codes are contained in the map for a certain length.
                 int n_codes_contained = 0;
                 for (auto it_test = length_and_codes[length].begin();
                         it_test != length_and_codes[length].end(); it_test++) {
-                    auto it_contained = corr_map->find(*it_test);
-                    if (it_contained == corr_map->end()) {
+                    auto it_contained = barcode_set->find(*it_test);
+                    if (it_contained == barcode_set->end()) {
                         break;
                     }
                     n_codes_contained++;
                 }
-
                 if (n_codes_contained == length_and_codes[length].size()) {
-                    if(found == true){
-                        delete corr_map;
-                        string message = "Error: Auto detection activated but given set of barcodes is ambiguous!\n"
-                                         "Define read orientation of indices and rerun without auto detection";
-                        throw(runtime_error(message));
-                    }
-                    printf(
-                            "Correct set found (%d matching codes). Used set is %d barcodes with %d nt length.\n",
-                            n_codes_contained, set_size, length);
+                    printf("Correct set found (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
+                                        length_and_codes[length].size(), barcode_set->size(), length);
                     for(auto it_codes = corr_map->begin(); it_codes != corr_map->end(); it_codes++){
                         auto it_found_code = this->Correction_map.find(it_codes->first);
                         if (it_found_code == this->Correction_map.end()){
@@ -230,6 +225,7 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
                         }
                         else if (it_found_code->second != it_codes->second){
                             delete corr_map;
+                            delete barcode_set;
                             string message = "Error: the sample sheet contains barcodes, which cannot be uniquely mapped to your correction tables!\n"
                                              "The barcode %s is mapped to %s in the current correction table and to %s in the previous correction table!";
                             message = string_format(message,it_codes->first.c_str(), it_codes->second.c_str(), it_found_code->second.c_str());
@@ -237,20 +233,16 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
                         }
                     }
                     n_loaded_maps++;
+                    delete corr_map;
+                    delete barcode_set;
                     //all codes for this length are contained in the set for the given size --> break.
                     found = true;
                 }
-                delete corr_map;
-            }
+		    }
             //revert for the case that this loop is running twice
             reverse = !reverse;
 		}
 	}
-	//TODO: don't understand this
-	if (this->Correction_map.size() > 0 && n_loaded_maps == this->Lengths.size()){
-                delete barcodes_given;
-		return;
-        }
 
 	if (!contains_allowed_length) {
 		printf(
@@ -259,22 +251,13 @@ void Barcode::load_correction_map(string relative_exepath, string correction_map
 						"valid Lexogen barodes?\n", this->get_name().c_str());
 	}
 
-	this->Correction_map.clear();
-	for (auto it = barcodes_given->begin(); it != barcodes_given->end(); it++) {
-		this->Correction_map.insert( { *it, *it });
+	if(this->Correction_map.size() == 0){
+        for (auto it = barcodes_given->begin(); it != barcodes_given->end(); it++) {
+            this->Correction_map.insert( { *it, *it });
+        }
 	}
 	delete barcodes_given;
 
-	/*
-	 if barcode.length != 6:
-	 log.warning(f"No fitting Lexogen barcode set found for {barcode.name}. No "
-	 f"error correction will take place for this barcode. Are you using "
-	 f"valid Lexogen barodes?")
-
-	 _bc_list = list(barcode.used_codes)
-	 barcode.correction_map = dict(zip(_bc_list, _bc_list))
-	 return barcode
-	 */
 }
 
 void Barcode::create_one_to_one_map() {

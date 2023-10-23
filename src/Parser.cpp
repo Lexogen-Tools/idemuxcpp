@@ -230,7 +230,7 @@ std::vector<std::vector<std::string>> Parser::readCSV(std::istream &in) {
  ValueError: Will initiate sys.exit(1)
  */
 unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
-		bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+		bool i5_rc, bool i7_rc, bool auto_detect, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 		string relative_exepath, string correction_maps_path, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode) {
 	// we use these to keep track which lengths are being used for each barcode
 	unordered_set<int> i7_lengths, i5_lengths, i1_lengths;
@@ -341,9 +341,6 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 
 		// i5 can be sequenced as reverse complement, translate if needed
 		string tmp_i5 = row[idx_i5];
-		if (i5_rc) {
-			tmp_i5 = reverse_complement(tmp_i5);
-		}
 		string i5_bc = tmp_i5;
 		if (tmp_i5.compare("") == 0) {
 			i5_bc = "";
@@ -433,8 +430,8 @@ unordered_map<string, string>* Parser::parse_sample_sheet(string sample_sheet,
 	}
 	in_file_sample_sheet.close();
 
-	Barcode *i7 = new Barcode("i7", i7_barcodes);
-	Barcode *i5 = new Barcode("i5", i5_barcodes, i5_rc);
+	Barcode *i7 = new Barcode("i7", i7_barcodes, i7_rc, auto_detect);
+	Barcode *i5 = new Barcode("i5", i5_barcodes, i5_rc, auto_detect);
 	Barcode *i1 = new Barcode("i1", i1_barcodes);
 
 	/*

@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 TESTS = test_barcode test_demuxer test_parser
 check_PROGRAMS = test_barcode test_demuxer test_parser
 test_barcode_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS}
-test_barcode_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBRT) $(LIBBOOST_FILESYSTEM_LIB) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS)
+test_barcode_LDADD = ${BOOST_LDFLAGS} ${LIBBOOST_UNIT_TEST_FRAMEWORK} $(LIBRT) $(LIBBOOST_FILESYSTEM_LIB) $(LIBBOOST_FILESYSTEM) $(LIBBOOST_SYSTEM) $(LIBBOOST_IOSTREAMS)
 test_barcode_SOURCES = test_barcode.cpp ../src/Barcode.h ../src/Barcode.cpp
 
 test_demuxer_CPPFLAGS = -I../src/ ${BOOST_CPPFLAGS} $(BAMTOOLS_CFLAGS)

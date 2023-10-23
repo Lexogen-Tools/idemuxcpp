@@ -37,7 +37,6 @@ in order to decrease the runtime. It is 2 times faster than the python version.
 * Correction of barcode sequencing errors to maximize read yield (only works
   with [Lexogen 12 nt UDIs](https://www.lexogen.com/indexing/12nt-dual-indexing-kits/),
   that have been sequenced at least 8 nt.
-* Reverse complementation in case the i5 index has been sequenced as reverse complement
 
 
 ## Getting started
@@ -165,8 +164,8 @@ However, idemuxCPP will do its best to tell you where the problem lies, once thi
 4. In contrast to i7/i5 indices, i1 indices can be used for a subset of samples in the csv file.
 5. Absence of a barcode needs to be indicated by an empty field (no value between
    comas ``,,``).
-6. If your i5 has been sequenced as reverse complement, *do not* enter the reverse
-   complement sequences in the sample sheet. Use the ``--i5-rc`` option!
+6. If your i5 has been sequenced as reverse complement, enter the reverse
+   complement sequences in the sample sheet and use the ``--i5-rc`` option!
 
 
 See [below](#sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
@@ -260,8 +259,8 @@ Optional arguments:
                                 Outputs a csv file that contains the number of
                                   corrected barcodes
   -5, --i5-rc                   Should be set when the i5 barcode has been
-                                  sequenced as reversecomplement. Make sure to
-                                  enter non-reverse complementsequences in the
+                                  sequenced as reverse complement. Make sure to
+                                  enter reverse complement sequences in the
                                   barcode file.  (default=off)
   -i, --i1-start=INT            Start position of the i1 index (1-based) on
                                   read 2.
@@ -302,7 +301,7 @@ Example commands:
 
     # demultiplexing assuming i5 is present as reverse complement in the fastq header
     # if he i5 has been sequenced as reverse complement use this option and provide
-    # the NON reverse complement sequences in the sample sheet.
+    # the reverse complement sequences in the sample sheet.
     idemuxCPP --r1 read_1.fastq.gz --r2 read_2.fastq.gz --sample-sheet samples.csv --out demux
 ```
 
@@ -333,8 +332,8 @@ This allows you to:
 2. To demuliplex lanes where QuantSeq-Pool has been pooled with other libraries and read
    2 has been sequenced longer than the actual barcode.
 
-If you sequenced i5 as a reverse complement, make sure to not fill in reverse complement
-barcodes into the sample sheet, but to use the ``--i5-rc`` parameter.
+If you sequenced i5 as a reverse complement, make sure to fill in reverse complement
+barcodes into the sample sheet and to use the ``--i5-rc`` parameter.
 
 ## Help
 If you are demuliplexing a large number of samples (more than 500) you might encounter the
