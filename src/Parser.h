@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <algorithm>
+#include <set>
 #include "Barcode.h"
 #include "helper.h"
 #include "FastqReader.h"
@@ -42,7 +43,7 @@ public:
 	string remove_bom(string s);
 	std::vector<std::vector<std::string>> readCSV(std::istream &in);
 	unordered_map<string, string>* parse_sample_sheet(string sample_sheet,
-			bool i5_rc, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
+			bool i5_rc, bool i7_rc, bool auto_detect, vector<Barcode*> &barcodes_out, unordered_map<string, i1_info> &i7_i5_i1_info_map,
 			string relative_exepath, string correction_maps_path, bool demux_only, int default_i1_read, int default_i1_start, bool single_end_mode = false);
 	string reverse_complement(string sequence);
 	bool has_valid_barcode_combinations(Barcode &i7, Barcode &i5, Barcode &i1);
@@ -109,21 +110,16 @@ public:
 	 * load error correction map from misc folder.
 	 */
 	static
-	unordered_map<string, string>* get_map_from_resource(string package,
-			string resource) {
-		printf("Loading error correction map from %s\n", resource.c_str());
-		unordered_map<string, string> *mapping =
-				new unordered_map<string, string>();
+	void get_map_from_resource(string filepath, unordered_map<string, string>* mapping, set<string>* barcodes) {
+		printf("Loading error correction map from %s\n", filepath.c_str());
 
 		ifstream dataFile;
-		string filepath = package + PATH_SEP + resource;
 		dataFile.open(filepath);
 		fprintf(stdout, "checking file for valid barcodes: %s\n", filepath.c_str());
 		int tabidx;
 		int return_idx; //for windows files
 		string v1, v2;
 		if (dataFile.fail()) {
-			delete mapping;
 			string message = string_format(
 					"Error: failed to open the correction map file! Please copy it "
 							"to the following location: %s\n", filepath.c_str());
@@ -141,11 +137,11 @@ public:
 					v2 = temp.substr(tabidx + 1, return_idx - tabidx - 1);
 					//std::cout << "row" << v1 << ", " << v2 << std::endl;
 					mapping->insert( { v1, v2 });
+					barcodes->insert(v2);
 				}
 				temp = "";
 			}
 		}
-		return mapping;
 
 	}
 

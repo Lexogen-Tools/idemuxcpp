@@ -67,10 +67,22 @@ option "correction-map-prefix" m
 string
 optional
 
-option  "i5-rc" 5
-"Should be set when the i5 barcode has been sequenced as reverse\
-complement. Make sure to enter non-reverse complement\
+option  "i7-rc" 7
+"Should be set when the i7 barcode has been sequenced as reverse \
+complement. Make sure to enter reverse complement \
 sequences in the barcode file."
+flag
+off
+
+option  "i5-rc" 5
+"Should be set when the i5 barcode has been sequenced as reverse \
+complement. Make sure to enter reverse complement \
+sequences in the barcode file."
+flag
+off
+
+option "auto-detect" -
+"Automatically detect if barcodes are specified in FWD or REV direction.\n"
 flag
 off
 
