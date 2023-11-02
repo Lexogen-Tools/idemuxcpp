@@ -1,29 +1,49 @@
-# use the official gcc image, based on debian
+# use a debian-based image.
 image: ubuntu:bionic
+
 
 build:
   stage: build
-  before_script:
-     - apt update && apt -y install g++ make autoconf automake 
+  script:
+    - apt update && apt -y install g++ make autoconf automake 
        libtool gnulib gengetopt zlib1g-dev libboost-dev libboost-filesystem-dev 
        libboost-system-dev libboost-iostreams-dev libboost-test-dev 
        libbamtools-dev
-  script:
     - autoreconf -fi
-    - ./configure --enable-tests
+    - ./configure --enable-tests --prefix="$(pwd)/install-${CI_COMMIT_SHORT_SHA}"
     - make -j
+    - make install
     - cd tests; make check -j;
   artifacts:
     paths:
-      - src/idemuxCPP
-      - tests/test_barcode
-      - tests/test_demuxer
-      - tests/test_parser
+      - install-${CI_COMMIT_SHORT_SHA}/bin/idemuxCPP
+      - install-${CI_COMMIT_SHORT_SHA}/share/idemuxcpp/
 
-#run tests
-#test:
-#  stage: test
-#  script:
-#    - tests/test_barcode --log_level=all
-#    - tests/test_demuxer --log_level=all
-#    - tests/test_parser --log_level=all
+# run integration tests
+test_integration:
+  stage: test
+  needs: ["build"]
+  script:
+    - apt update && apt -y install 
+       zlib1g-dev libboost-dev libboost-filesystem-dev 
+       libboost-system-dev libboost-iostreams-dev libboost-test-dev 
+       libbamtools-dev
+    - export INSTALL_DIR="$(pwd)/install-${CI_COMMIT_SHORT_SHA}"
+    - tmpread1=`mktemp`
+    - echo -e "@header1 :AAAAACGGCAGG+AAAAGTTATTCT\nAAAAGTTATTCT\n+\nEEEEEEEEEEEE\n"\
+              "@header2 :AAAACATGCGTT+AAACAAGTCCGA\nAAACAAGTCCGA\n+\nEEEEEEEEEEEE\n"\
+              "@header3 :AAAATCCCAGTT+AAACCTTTTGAA\nAAACCTTTTGAA\n+\nEEEEEEEEEEEE\n"\
+              "@header4 :AAAAAAAAAAAA+AAAAAAAAAAAA\nAAAAAAAAAAAA\n+\nEEEEEEEEEEEE"\
+      | gzip - > ${tmpread1}.fastq.gz
+    - tmpsdf=`mktemp`
+    - echo -e "sample_name,i7,i5,i1\n"\
+              "1,AAAAACGGCAGG,AAAAGTTATTCT,\n"\
+              "2,AAAACATGCGTT,AAACAAGTCCGA,\n"\
+              "3,AAAATCCCAGTT,AAACCTTTTGAA,"\
+      > ${tmpsdf}
+    - tmpoutput=`mktemp -d`
+    - ${INSTALL_DIR}/bin/idemuxCPP -1 ${tmpread1}.fastq.gz -s ${tmpsdf} -o ${tmpoutput} -m "${INSTALL_DIR}/share/idemuxcpp/barcodes/"
+    - cat ${tmpoutput}/demultipexing_stats.tsv | sort > ${tmpoutput}/a.txt
+    - echo -e "1\t1\n2\t1\n3\t1\nsample_name\twritten_reads\nundetermined\t1" > ${tmpoutput}/b.txt
+    - diff ${tmpoutput/}/a.txt ${tmpoutput}/b.txt
+    - echo $?
