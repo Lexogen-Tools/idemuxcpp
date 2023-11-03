@@ -99,39 +99,44 @@ fi
 AC_LIB_LINKFLAGS([dl])
 
 # check for bamtools-dev
+AC_ARG_ENABLE(bamtools, 
+AS_HELP_STRING([--disable-bamtools], [Disable bamtools]))
+AM_CONDITIONAL(DISABLE_BAMTOOLS, test x$enable_bamtools = xno)
+
 HAVE_LIBBAMTOOLS=no
-AS_IF([test "$HAVE_PKG_CONFIG" = "yes"],[
-  PKG_CHECK_MODULES([BAMTOOLS], [bamtools-1 >= 2.5.1], [
-  AC_DEFINE([HAVE_LIBBAMTOOLS],[1])
-  HAVE_LIBBAMTOOLS=yes
-  ], [
-       HAVE_LIBBAMTOOLS=no
-       AC_DEFINE([HAVE_LIBBAMTOOLS],[0])
-     ])
-],[])
+if test x$enable_bamtools != xno; then
+  AS_IF([test "$HAVE_PKG_CONFIG" = "yes"],[
+    PKG_CHECK_MODULES([BAMTOOLS], [bamtools-1 >= 2.5.1], [
+    AC_DEFINE([HAVE_LIBBAMTOOLS],[1])
+    HAVE_LIBBAMTOOLS=yes
+    ], [
+         HAVE_LIBBAMTOOLS=no
+         AC_DEFINE([HAVE_LIBBAMTOOLS],[0])
+       ])
+  ],[])
 
-# add makefile vars
-#AC_SUBST([HAVE_LIBBAMTOOLS],[1])
-if test "$HAVE_LIBBAMTOOLS" = "yes"; then
-# Warning: the file I need is bamtools/api/BamReader.h, however in the pkg_config it says that it is in ../include/
-# the header references <api/BamReader.h> similar to headers referenced within BamReader.h which cannot be found!
-# Also pkg_config is not correct for some bamtools versions, I set it explicitly to /usr/include/bamtools/
-  CXXFLAGS="${CXXFLAGS} -I /usr/include/bamtools/"
-fi
-# check with updated linker flags
-AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <api/BamReader.h>], [], [Linking against bamtools library has failed!])
+  # add makefile vars
+  #AC_SUBST([HAVE_LIBBAMTOOLS],[1])
+  if test "$HAVE_LIBBAMTOOLS" = "yes"; then
+  # Warning: the file I need is bamtools/api/BamReader.h, however in the pkg_config it says that it is in ../include/
+  # the header references <api/BamReader.h> similar to headers referenced within BamReader.h which cannot be found!
+  # Also pkg_config is not correct for some bamtools versions, I set it explicitly to /usr/include/bamtools/
+    CXXFLAGS="${CXXFLAGS} -I /usr/include/bamtools/"
+  fi
+  # check with updated linker flags
+  AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <api/BamReader.h>], [], [Linking against bamtools library has failed!])
 
 
-AS_IF([test "$HAVE_PKG_CONFIG" != "yes" -o "$HAVE_LIBBAMTOOLS" != "yes"],[
- AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
-      [  AC_MSG_NOTICE([Found file in path /usr/include/bamtools/api. Test linking with updated CXXFLAGS...])
-         CXXFLAGS="$CXXFLAGS -I/usr/include/bamtools/"
-      ], 
-      [ AC_MSG_NOTICE([Bamtools library not found in /usr/include/bamtools/api/BamReader.h! Let us hope it is in the include path])
- ])
- AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <bamtools/api/BamReader.h>], [], [Linking against bamtools library has failed!])
- if test "$HAVE_LIBBAMTOOLS" != "yes"; then
- AC_MSG_WARN([
+  AS_IF([test "$HAVE_PKG_CONFIG" != "yes" -o "$HAVE_LIBBAMTOOLS" != "yes"],[
+   AC_CHECK_FILE("/usr/include/bamtools/api/BamReader.h", 
+        [  AC_MSG_NOTICE([Found file in path /usr/include/bamtools/api. Test linking with updated CXXFLAGS...])
+           CXXFLAGS="$CXXFLAGS -I/usr/include/bamtools/"
+        ], 
+        [ AC_MSG_NOTICE([Bamtools library not found in /usr/include/bamtools/api/BamReader.h! Let us hope it is in the include path])
+    ])
+   AC_LIB_HAVE_LINKFLAGS([bamtools], [z], [#include <bamtools/api/BamReader.h>], [], [Linking against bamtools library has failed!])
+   if test "$HAVE_LIBBAMTOOLS" != "yes"; then
+   AC_MSG_WARN([
 ********************************************************************************
    Please install the bamtools library!
    (https://github.com/pezmaster31/bamtools)
@@ -141,9 +146,9 @@ AS_IF([test "$HAVE_PKG_CONFIG" != "yes" -o "$HAVE_LIBBAMTOOLS" != "yes"],[
    If you don't need bam files as input (fastq and fastq.gz should work), 
    then you can ignore this message.
 ********************************************************************************])
+  fi
+  ],[])
 fi
-],[])
-
 AM_CONDITIONAL([HAVE_LIBBAMTOOLS], [test "$HAVE_LIBBAMTOOLS" != "no"])
 
 
@@ -152,6 +157,7 @@ AM_CONDITIONAL([HAVE_LIBBAMTOOLS], [test "$HAVE_LIBBAMTOOLS" != "no"])
 ###############################################################################
 
 AX_BOOST_BASE([1.55], [], AC_MSG_ERROR([Could not find a useful version of boost]))
+
 AC_LIB_HAVE_LINKFLAGS([boost_system], [], [] , [], [Could not link the boost_system library!])
 if test "$HAVE_LIBBOOST_SYSTEM" != "yes"; then
 AC_MSG_FAILURE([ERROR: please install the boost_system library!])
