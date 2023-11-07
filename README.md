@@ -92,28 +92,30 @@ Then proceed with `./configure` and `make` like in the previous [section](#from-
 <th> Fedora </th>
 </tr></thead><tbody><tr>
 <td style="vertical-align:top">
-<details><summary>Debian_11</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_11/i386/idemuxcpp_0.1.9-1_i386.deb"> idemuxcpp - 0.1.9 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_11/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p>
+<details><summary>Debian_12</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_12/i386/idemuxcpp_0.2.0-1_i386.deb"> idemuxcpp - 0.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_12/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p>
 </details>
-<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_0.1.9-1_i386.deb"> idemuxcpp - 0.1.9 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p>
+<details><summary>Debian_11</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_11/i386/idemuxcpp_0.2.0-1_i386.deb"> idemuxcpp - 0.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_11/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p>
 </details>
-<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_0.1.9-1_i386.deb"> idemuxcpp - 0.1.9 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p>
+<details><summary>Debian_10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/i386/idemuxcpp_0.2.0-1_i386.deb"> idemuxcpp - 0.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_10/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p>
+</details>
+<details><summary>Debian_9.0</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/i386/idemuxcpp_0.2.0-1_i386.deb"> idemuxcpp - 0.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Debian_9.0/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p>
 </details></td>
 <td style="vertical-align:top">
-<details><summary>xUbuntu_21.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_21.04/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-<details><summary>xUbuntu_20.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.10/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-<details><summary>xUbuntu_19.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_19.04/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p>
-</details><details><summary>xUbuntu_16.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/i386/idemuxcpp_0.1.9-1_i386.deb"> idemuxcpp - 0.1.9 - 32 bit</a></p>
-<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/amd64/idemuxcpp_0.1.9-1_amd64.deb"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
+<details><summary>xUbuntu_23.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_23.04/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_22.10</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_22.10/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_22.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_22.04/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
+<details><summary>xUbuntu_20.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_20.04/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
+</details><details><summary>xUbuntu_18.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_18.04/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p>
+</details><details><summary>xUbuntu_16.04</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/i386/idemuxcpp_0.2.0-1_i386.deb"> idemuxcpp - 0.2.0 - 32 bit</a></p>
+<p><a href="https://download.opensuse.org/repositories/home:/Lexogen/xUbuntu_16.04/amd64/idemuxcpp_0.2.0-1_amd64.deb"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
 </td>
 <td style="vertical-align:top">
-<details><summary>Fedora 34</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_34/x86_64/idemuxcpp-0.1.9-319.1.x86_64.rpm"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-<details><summary>Fedora 33</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_33/x86_64/idemuxcpp-0.1.9-319.1.x86_64.rpm"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
-<details><summary>Fedora 32</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_32/x86_64/idemuxcpp-0.1.9-319.1.x86_64.rpm"> idemuxcpp - 0.1.9 - 64 bit</a></p></details>
+<details><summary>Fedora 37</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_37/x86_64/idemuxcpp-0.2.0-8.1.x86_64.rpm"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
+<details><summary>Fedora 36</summary><p><a href="https://download.opensuse.org/repositories/home:/Lexogen/Fedora_36/x86_64/idemuxcpp-0.2.0-8.1.x86_64.rpm"> idemuxcpp - 0.2.0 - 64 bit</a></p></details>
 </td>
 </tr></tbody></table>
 
@@ -166,6 +168,7 @@ However, idemuxCPP will do its best to tell you where the problem lies, once thi
    comas ``,,``).
 6. If your i5 has been sequenced as reverse complement, enter the reverse
    complement sequences in the sample sheet and use the ``--i5-rc`` option!
+   If you are not sure, you can also use the ``--auto-detect`` option as alternative.
 
 
 See [below](#sample-sheet-examples). for more showcases of sample/barcode combinations that are *allowed* or
