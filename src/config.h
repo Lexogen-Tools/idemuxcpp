@@ -14,7 +14,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define if you have the libbamtools library. */
-#define HAVE_LIBBAMTOOLS 0
+#define HAVE_LIBBAMTOOLS 1
 
 /* Define if you have the libboost_filesystem library. */
 #define HAVE_LIBBOOST_FILESYSTEM 1
@@ -71,7 +71,7 @@
 #define PACKAGE_NAME "idemuxcpp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "idemuxcpp 0.1.9"
+#define PACKAGE_STRING "idemuxcpp 0.2.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "idemuxcpp"
@@ -80,7 +80,7 @@
 #define PACKAGE_URL "https://github.com/Lexogen-Tools/idemuxcpp"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.1.9"
+#define PACKAGE_VERSION "0.2.0"
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -88,7 +88,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.1.9"
+#define VERSION "0.2.0"
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */

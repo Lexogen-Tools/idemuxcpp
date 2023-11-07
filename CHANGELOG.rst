@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.0 (2023-11-07)
+------------------
+* Auto-detect barcode orientation (--auto-detect)
+* Added additional mapping tables (for Aviti)
+
 0.1.9 (2021-10-07)
 ------------------
 * Limit open file handles proportional to number of writing threads

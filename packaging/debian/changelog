@@ -1,3 +1,10 @@
+idemuxcpp (0.2.0-1) UNRELEASED; urgency=medium
+
+  * Auto-detect barcode orientation (--auto-detect)
+  * Added additional mapping tables (for Aviti)
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Tue, 07 Nov 2023 11:35:00 -0400
+
 idemuxcpp (0.1.9-1) UNRELEASED; urgency=medium
 
   * Limit open file handles proportional to number of writing threads

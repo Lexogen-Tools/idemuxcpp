@@ -1,15 +1,12 @@
 
 m4_define([idemuxCPP_version_major], [0])
-m4_define([idemuxCPP_version_minor], [1])
-m4_define([idemuxCPP_version_patch], [9])
+m4_define([idemuxCPP_version_minor], [2])
+m4_define([idemuxCPP_version_patch], [0])
 
 m4_define([my_url], [https://github.com/Lexogen-Tools/idemuxcpp])
 AC_PREREQ([2.59])
 # 5 argument version only available with aclocal >= 2.64
-AC_INIT( [idemuxcpp], 
-         idemuxCPP_version_major.idemuxCPP_version_minor.idemuxCPP_version_patch, 
-         [], 
-         [idemuxcpp], [my_url] )
+AC_INIT([idemuxcpp],[idemuxCPP_version_major.idemuxCPP_version_minor.idemuxCPP_version_patch],[],[idemuxcpp],[my_url ])
 
 AC_CANONICAL_HOST
 AC_CONFIG_AUX_DIR([.])
@@ -187,9 +184,6 @@ fi
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
 
-# Checks for header files.
-AC_HEADER_STDC
-
 
 ###############################################################################
 # help2man check
@@ -211,5 +205,6 @@ AC_CONFIG_FILES([misc/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
 
 # generate the final Makefile etc.
-AC_OUTPUT([packaging/idemuxcpp.spec packaging/PKGBUILD])
+AC_CONFIG_FILES([packaging/idemuxcpp.spec packaging/PKGBUILD])
+AC_OUTPUT
 
