@@ -1,14 +1,15 @@
 # use a debian-based image.
 image: ubuntu:bionic
 
+before_script:
+   - apt update && apt -y install g++ make autoconf automake 
+     libtool gnulib gengetopt zlib1g-dev libboost-dev libboost-filesystem-dev 
+     libboost-system-dev libboost-iostreams-dev libboost-test-dev 
+     libbamtools-dev
 
 build:
   stage: build
   script:
-    - apt update && apt -y install g++ make autoconf automake 
-       libtool gnulib gengetopt zlib1g-dev libboost-dev libboost-filesystem-dev 
-       libboost-system-dev libboost-iostreams-dev libboost-test-dev 
-       libbamtools-dev
     - autoreconf -fi
     - ./configure --enable-tests --prefix="$(pwd)/install-${CI_COMMIT_SHORT_SHA}"
     - make -j
@@ -19,15 +20,23 @@ build:
       - install-${CI_COMMIT_SHORT_SHA}/bin/idemuxCPP
       - install-${CI_COMMIT_SHORT_SHA}/share/idemuxcpp/
 
+unit-tests:
+  stage: test
+  needs: ["build"]
+  script:
+    - printf "================\n Run Unit Tests \n================\n"
+    - apt update && apt install -y lcov
+    - autoreconf -fi
+    - ./configure --enable-code-coverage
+    - make check-code-coverage -j
+  coverage:
+    '/^\s*lines\.*\:\s*(\d*\.?\d*\%)/'
+
 # run integration tests
 test_integration:
   stage: test
   needs: ["build"]
   script:
-    - apt update && apt -y install 
-       zlib1g-dev libboost-dev libboost-filesystem-dev 
-       libboost-system-dev libboost-iostreams-dev libboost-test-dev 
-       libbamtools-dev
     - export INSTALL_DIR="$(pwd)/install-${CI_COMMIT_SHORT_SHA}"
     - tmpread1=`mktemp`
     - echo -e "@header1 :AAAAACGGCAGG+AAAAGTTATTCT\nAAAAGTTATTCT\n+\nEEEEEEEEEEEE\n"\
