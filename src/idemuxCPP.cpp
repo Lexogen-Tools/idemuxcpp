@@ -29,9 +29,9 @@ int main(int argc, char **argv) {
 	string sample_sheet_file = "";
 	string barcode_corrections_file = "";
 	string correction_maps_path = "";
-    bool i5_rc = false;
-    bool i7_rc = false;
-    bool auto_detect = false;
+	bool i5_rc = false;
+	bool i7_rc = false;
+	bool auto_detect = false;
 	bool single_end_mode = false;
 	int default_i1_read = 2; //read in which the i1 index should be corrected (1 or 2).
 	int default_i1_start = 10; // zero based index
@@ -55,6 +55,8 @@ int main(int argc, char **argv) {
 	if (idemuxCPP_cmdline_parser(argc, argv, &args_info) != 0)
 		exit(EXIT_FAILURE);
 
+	skip_check =  args_info.skip_check_flag;
+
 	single_end_mode = !args_info.paired_flag;
 	if (args_info.bam_given){
 		read1_file = args_info.bam_arg;
@@ -63,8 +65,8 @@ int main(int argc, char **argv) {
 		if (args_info.r1_given) {
 			read1_file = args_info.r1_arg;
 		} else {
-			fprintf(stderr, "Error: please enter a read1.fastq.gz file!\n");
-			exit(EXIT_FAILURE);
+			fprintf(stderr, "Info: no read1 fastq file given! Trying to read from stdin without format check.\n");
+			skip_check = true;
 		}
 		if (args_info.r2_given) {
 			read2_file = args_info.r2_arg;
@@ -101,13 +103,11 @@ int main(int argc, char **argv) {
 	}
 	demux_only = args_info.demux_only_flag;
 
-        skip_check =  args_info.skip_check_flag;
-
-        restrict_barcode_length = args_info.restrict_barcode_length_flag;
+	restrict_barcode_length = args_info.restrict_barcode_length_flag;
 
 	i5_rc = args_info.i5_rc_flag;
-    i7_rc = args_info.i7_rc_flag;
-    auto_detect = args_info.auto_detect_flag;
+	i7_rc = args_info.i7_rc_flag;
+	auto_detect = args_info.auto_detect_flag;
 
 
 	if (args_info.i1_start_arg < 1){

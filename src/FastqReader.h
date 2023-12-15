@@ -10,6 +10,8 @@
 
 #include <string>
 #include <fstream>
+#include <istream>
+#include <iostream>
 
 using namespace std;
 
@@ -53,6 +55,7 @@ public:
 	virtual ~FastqReader();
 private:
 	std::ifstream FastqFileHandle;
+	std::istream& InputStream;
 };
 
 #endif /* SRC_FASTQREADER_H_ */
