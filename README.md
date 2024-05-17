@@ -192,23 +192,23 @@ The content of the file *Illumina_EMPTY_SampleSheet.csv* has to match Illumina's
 The following text is an example for the content of a SampleSheet for a Illumina Nextseq run:
 ```
 
-   [Header],,,,,,,
-   IEMFileVersion,4,,,,,,
-   Date,30.05.2017,,,,,,
-   Workflow,GenerateFASTQ,,,,,,
-   Application,NextSeq FASTQ Only,,,,,,
-   Assay,TruSeq RNA,,,,,,
-   Description,,,,,,,
-   Chemistry,Default,,,,,,
-   ,,,,,,,
-   [Reads],,,,,,,
-   ,,,,,,,
-   [Settings],,,,,,,
-   ,,,,,,,
-   [Data],,,,,,,
-   
-   Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
-   1,1,,,9999,AAAAAAAAAAAA,9999,AAAAAAAAAAAA,,
+[Header],,,,,,,
+IEMFileVersion,4,,,,,,
+Date,30.05.2017,,,,,,
+Workflow,GenerateFASTQ,,,,,,
+Application,NextSeq FASTQ Only,,,,,,
+Assay,TruSeq RNA,,,,,,
+Description,,,,,,,
+Chemistry,Default,,,,,,
+,,,,,,,
+[Reads],,,,,,,
+,,,,,,,
+[Settings],,,,,,,
+,,,,,,,
+[Data],,,,,,,
+
+Sample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,I5_Index_ID,index2,Sample_Project,Description
+1,1,,,9999,AAAAAAAAAAAA,9999,AAAAAAAAAAAA,,
 ```
 
 As you can see, no settings are specified and only one 'sample' was defined with a squence combination that is not likely to be close to any of the utilized barcode sequences.
