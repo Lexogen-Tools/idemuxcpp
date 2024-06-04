@@ -165,7 +165,6 @@ Barcode::load_correction_map(string relative_exepath,
 
   // load all barcodes for all set sizes and barcode lengths (that were defined in the sample sheet).
   this->Correction_map.clear();
-  int   n_loaded_maps = 0;
   int   length;
   bool  contains_allowed_length = false;
 
