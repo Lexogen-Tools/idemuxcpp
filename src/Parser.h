@@ -248,7 +248,7 @@ virtual
 ~Parser();
 private:
 string
-list_to_string(vector<int> list);
+list_to_string(vector<int> &list);
 };
 
 #endif /* PARSER_H_ */
