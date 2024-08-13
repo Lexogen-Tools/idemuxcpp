@@ -12,6 +12,7 @@ Barcode(string                                        barcode_type,
         unordered_map<string, std::vector<string> > & ix_barcodes,
         bool                                          reverse_complement  = false,
         bool                                          auto_detect         = false);
+// Barcode lengths in sample definition file.
 vector<int> Lengths;
 
 // attribute getters
@@ -106,13 +107,8 @@ get_used_codes(bool drop_none = false)
   return _return_val;
 }
 
-
-void
-post_init();
-
-
-void
-check_length();
+unordered_set<int>*
+read_used_lengths();
 
 
 void

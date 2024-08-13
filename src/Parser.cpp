@@ -814,7 +814,7 @@ Parser::check_mate2_length(fq_read  *mate2,
 
 
 string
-Parser::list_to_string(vector<int> list)
+Parser::list_to_string(vector<int> &list)
 {
   string res = "{";
 
@@ -1043,7 +1043,7 @@ Parser::check_fastq_header(fq_read      *mate,
         "i7 has a different length than specified in the "
         "sample_sheet. "
         "Observed length(i7): %ld\n"
-        "Expected length(i7): %d\n",
+        "Expected length(i7): %s\n",
         bcs_mate1.first.length(), list_to_string(i7_length).c_str());
       throw(runtime_error(message));
     }

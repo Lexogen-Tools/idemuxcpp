@@ -28,32 +28,11 @@ Barcode::Barcode(string                                       barcode_type,
   for (auto it = ix_barcodes.begin(); it != ix_barcodes.end(); it++)
     this->_sample_map[it->first] =
       it->second.size() > 0 ? it->second[0] : "";
-  post_init();
+
+  unordered_set<int>* observed_lengths = this->read_used_lengths();
+  this->Lengths.assign(observed_lengths->begin(), observed_lengths->end());
+  delete observed_lengths;
 }
-
-
-unordered_set<int> *
-Barcode::get_set_sizes()
-{
-  unordered_set<int>  *set_sizes = new unordered_set<int>();
-  int                 length;
-
-  for (size_t i = 0; i < this->Lengths.size(); i++) {
-    length = this->Lengths[i];
-    auto it = allowed_lengths.find(length);
-    if (it != allowed_lengths.end()) {
-      auto  it_96 = lengths_96_barcodes.find(length);
-      if (it_96 != lengths_96_barcodes.end())
-        set_sizes->insert(96);
-
-      auto  it_384 = lengths_384_barcodes.find(length);
-      if (it_384 != lengths_384_barcodes.end())
-        set_sizes->insert(384);
-    }
-  }
-  return set_sizes;
-}
-
 
 string
 Barcode::get_name(bool reverse)
@@ -66,23 +45,15 @@ Barcode::get_name(bool reverse)
     return this->_Name;
 }
 
-
-void
-Barcode::post_init()
-{
-  this->check_length();
-}
-
-
-void
-Barcode::check_length()
+unordered_set<int>*
+Barcode::read_used_lengths()
 {
   // barcodes for each type need to be of the same length. This is as the
   // sequences of 8 nt long barcodes are contained within 10 nt long barcodes,
   // and the ones of 10 in 12. if we dont enforce the same length per barcode there
   // might be a possibility we cant tell with certainty to which sample a
   // barcoded read belongs.
-  unordered_set<int> observed_lengths;
+  unordered_set<int>* observed_lengths = new unordered_set<int>();
 
   for (auto it = this->_sample_map.begin(); it != this->_sample_map.end();
        it++) {
@@ -106,10 +77,11 @@ Barcode::check_length()
         printf("Warning: %s\n", message.c_str());
       }
 
-      observed_lengths.insert(barcode.length());
+      observed_lengths->insert(barcode.length());
     }
   }
-  this->Lengths.assign(observed_lengths.begin(), observed_lengths.end());
+  //this->Lengths.assign(observed_lengths.begin(), observed_lengths.end());
+  return observed_lengths;
 }
 
 
@@ -135,22 +107,10 @@ Barcode::load_correction_map(string relative_exepath,
     fprintf(stdout, "No barcodes have been specified for %s.\n",
             this->get_name().c_str());
     this->Correction_map.clear();
-    //this->Correction_map.insert( { "", "" });
     return;
-    //barcode.correction_map = NULL; //unordered_map<string,string> {"None": "None"};
-    //return NULL;
   }
 
-  unordered_set<int>  *tmp_sizes = this->get_set_sizes();
-  vector<int>         sizes(tmp_sizes->begin(), tmp_sizes->end());
-
-  delete tmp_sizes;
-  std::sort(sizes.begin(), sizes.end());
   bool                drop_none = true;
-
-  //size_t path_buffer = 10000;
-  //char *buffer = (char*)malloc(sizeof(char)*path_buffer);
-  //char * cwd = GETCWD(buffer, path_buffer);
   string              barcode_path_prefix;
 
   if (!correction_maps_path.empty()) {
@@ -205,7 +165,6 @@ Barcode::load_correction_map(string relative_exepath,
 
   // load all barcodes for all set sizes and barcode lengths (that were defined in the sample sheet).
   this->Correction_map.clear();
-  int   n_loaded_maps = 0;
   int   length;
   bool  contains_allowed_length = false;
 
@@ -225,15 +184,23 @@ Barcode::load_correction_map(string relative_exepath,
     }
 
     bool  reverse = false;
-    bool  found   = false;
+
+    /* Take smallest map, where all barcodes fit in:
+     * 1. Read all maps for same length.
+     * 2. Order by maps key set size.
+     * 3. Take first, or error if second best set has same size.
+    */
+    unordered_map<set<string>*, unordered_map<string, string>*> bc_set_to_corr_map;
+
     //run twice if auto_detect is enabled to also check the rc
-    for (int j = 0; j <= this->auto_detect && found == false; j++) {
+    for (int j = 0; j <= this->auto_detect; j++) {
       string dir_path = barcode_path_prefix + PATH_SEP + this->get_name(reverse) + PATH_SEP + "l" +
                         to_string(length);
       for (directory_entry& entry : directory_iterator(dir_path)) {
         unordered_map<string, string> *corr_map     = new unordered_map<string, string>();
         set<string>                   *barcode_set  = new set<string>();
         Parser::get_map_from_resource(entry.path().string(), corr_map, barcode_set);
+
         //test if all codes are contained in the map for a certain length.
         size_t                        n_codes_contained = 0;
         for (auto it_test = length_and_codes[length].begin();
@@ -244,39 +211,76 @@ Barcode::load_correction_map(string relative_exepath,
 
           n_codes_contained++;
         }
-        if (n_codes_contained == length_and_codes[length].size()) {
-          printf(
-            "Correct set found (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
-            length_and_codes[length].size(),
-            barcode_set->size(),
-            length);
-          for (auto it_codes = corr_map->begin(); it_codes != corr_map->end(); it_codes++) {
-            auto it_found_code = this->Correction_map.find(it_codes->first);
-            if (it_found_code == this->Correction_map.end()) {
-              this->Correction_map[it_codes->first] = it_codes->second;
-            } else if (it_found_code->second != it_codes->second) {
-              delete corr_map;
-              delete barcode_set;
-              string message =
-                "Error: the sample sheet contains barcodes, which cannot be uniquely mapped to your correction tables!\n"
-                "The barcode %s is mapped to %s in the current correction table and to %s in the previous correction table!";
-              message = string_format(message,
-                                      it_codes->first.c_str(),
-                                      it_codes->second.c_str(),
-                                      it_found_code->second.c_str());
-              throw(runtime_error(message));
-            }
-          }
-          n_loaded_maps++;
-          //all codes for this length are contained in the set for the given size --> break.
-          found = true;
-        }
 
-        delete corr_map;
-        delete barcode_set;
+        if (n_codes_contained == length_and_codes[length].size()) {
+            bc_set_to_corr_map[barcode_set] = corr_map;
+            printf(
+	    "Info: Matching set found (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
+	    length_and_codes[length].size(),
+	    barcode_set->size(),
+	    length);
+          //all codes for this length are contained in the set for the given size.
+          // The real read set size is not always the set size from the file name. Thus, we don't break and collect all matching tables.
+        }
+        else{
+            delete corr_map;
+            delete barcode_set;
+        }
       }
       //revert for the case that this loop is running twice
       reverse = !reverse;
+    }
+
+
+    vector<size_t> set_sizes;
+    for(auto it = bc_set_to_corr_map.begin(); it != bc_set_to_corr_map.end(); it++){
+        size_t set_size = it->first->size();
+        set_sizes.push_back(set_size);
+    }
+    std::sort(set_sizes.begin(), set_sizes.end());
+
+    if(set_sizes.size() > 0){
+	size_t min_set_size = set_sizes[0];
+	if(set_sizes.size() >= 2 && set_sizes[1] == min_set_size){
+	    string message = "Error: found 2 barcode correction map of the same size (%s nt) that contain all given barcodes! Please use more barcodes or make the correction table unique!";
+	    message = string_format(message, to_string(min_set_size));
+	    throw(runtime_error(message));
+	}
+
+	set<string>* min_barcode_set = NULL;
+
+	for(auto it = bc_set_to_corr_map.begin(); it != bc_set_to_corr_map.end(); it++){
+	      size_t set_size = it->first->size();
+	      if(set_size == min_set_size){
+		  min_barcode_set = it->first;
+		  break;
+	      }
+	}
+
+	if(min_barcode_set != NULL){
+	    length = min_barcode_set->begin()->length();
+	    unordered_map<string, string> *corr_map = bc_set_to_corr_map[min_barcode_set];
+	    printf(
+	      "Correct set found (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
+	      length_and_codes[length].size(),
+	      min_barcode_set->size(),
+	      length);
+	    for (auto it_codes = corr_map->begin(); it_codes != corr_map->end(); it_codes++) {
+	      auto it_found_code = this->Correction_map.find(it_codes->first);
+	      if (it_found_code == this->Correction_map.end()) {
+		this->Correction_map[it_codes->first] = it_codes->second;
+	      }
+	    }
+	}
+	else{
+	    string message = "Error: could not find a valid correction set!";
+	    throw(runtime_error(message));
+	}
+    }
+
+    for(auto it = bc_set_to_corr_map.begin(); it != bc_set_to_corr_map.end(); it++){
+            delete it->first;
+            delete it->second;
     }
   }
 
