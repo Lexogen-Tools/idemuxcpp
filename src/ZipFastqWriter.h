@@ -1,6 +1,7 @@
 #ifndef ZIPFASTQWRITER_H_
 #define ZIPFASTQWRITER_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <zlib.h>
