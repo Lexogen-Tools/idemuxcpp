@@ -1,6 +1,6 @@
 
 m4_define([idemuxCPP_version_major], [0])
-m4_define([idemuxCPP_version_minor], [2])
+m4_define([idemuxCPP_version_minor], [3])
 m4_define([idemuxCPP_version_patch], [0])
 
 m4_define([my_url], [https://github.com/Lexogen-Tools/idemuxcpp])

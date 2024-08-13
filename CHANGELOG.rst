@@ -2,6 +2,13 @@
 History
 =======
 
+0.3.0 (2024-09-13)
+------------------
+* Change parallelization to async tasks
+* Choose correction table with smallest compatible barcode set
+- Remove parameter --writer-buffer-gb
++ Add parameter --gzip-block-size
+
 0.2.0 (2023-11-07)
 ------------------
 * Auto-detect barcode orientation (--auto-detect)

@@ -1,3 +1,12 @@
+idemuxcpp (0.3.0-1) UNRELEASED; urgency=medium
+
+  * Change parallelization to async tasks
+  * Choose correction table with smallest compatible barcode set
+  * Remove parameter --writer-buffer-gb
+  * Add parameter --gzip-block-size
+
+ -- Gregor Entzian <gregor.entzian@lexogen.com>  Tue, 13 Aug 2024 11:11:00 -0400
+
 idemuxcpp (0.2.0-1) UNRELEASED; urgency=medium
 
   * Auto-detect barcode orientation (--auto-detect)
