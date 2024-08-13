@@ -1,5 +1,5 @@
-# Maintainer: Gregor Entzian <gregor dot entzian at tbi dot lexogen dot com>
-# Packager: Gregor Entzian <gregor dot entzian at tbi dot lexogen dot com>
+# Maintainer: Gregor Entzian <gregor dot entzian at lexogen dot com>
+# Packager: Gregor Entzian <gregor dot entzian at lexogen dot com>
 
 pkgbase=idemuxcpp
 pkgname=('idemuxcpp')
