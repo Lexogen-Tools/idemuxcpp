@@ -10,7 +10,7 @@
 
 PairedReader::PairedReader(string fastqgz_1,
                            string fastqgz_2,
-                           double queue_buffer_gb) : Queue_buffer_bytes(max(1ul,
+                           double queue_buffer_gb) : Queue_buffer_bytes(max(size_t(1),
                                                                             size_t (queue_buffer_gb
                                                                                     * pow(1024,
                                                                                           3)))),
@@ -71,7 +71,7 @@ PairedReader::PairedReader(string fastqgz_1,
  */
 PairedReader::PairedReader(string single_read_file,
                            double queue_buffer_gb,
-                           bool   is_interleaved) : Queue_buffer_bytes(max(1ul,
+                           bool   is_interleaved) : Queue_buffer_bytes(max(size_t(1),
                                                                            size_t (queue_buffer_gb *
                                                                                    pow(1024, 3))))
 {
