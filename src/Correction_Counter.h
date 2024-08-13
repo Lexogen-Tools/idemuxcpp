@@ -8,6 +8,7 @@
 #ifndef SRC_CORRECTION_COUNTER_H_
 #define SRC_CORRECTION_COUNTER_H_
 
+#include <cstdint>
 #include <vector>
 #include <string>
 #include <unordered_map>
