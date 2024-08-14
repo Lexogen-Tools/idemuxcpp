@@ -243,7 +243,7 @@ Barcode::load_correction_map(string relative_exepath,
 	size_t min_set_size = set_sizes[0];
 	if(set_sizes.size() >= 2 && set_sizes[1] == min_set_size){
 	    string message = "Error: found 2 barcode correction map of the same size (%s nt) that contain all given barcodes! Please use more barcodes or make the correction table unique!";
-	    message = string_format(message, to_string(min_set_size));
+	    message = string_format(message, to_string(min_set_size).c_str());
 	    throw(runtime_error(message));
 	}
 
