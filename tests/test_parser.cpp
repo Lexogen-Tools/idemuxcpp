@@ -2,6 +2,7 @@
 #include <boost/test/included/unit_test.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 
 #include <iostream>
 #include <unordered_map>
