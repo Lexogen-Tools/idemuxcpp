@@ -426,9 +426,8 @@ test_demux_i7_i5_callback(string                            corrected_bc,
   string  expected_i1 = "";
 
   BOOST_CHECK(i7_corr == expected_i7);
-  //std::cout << i5_corr << " " << i5_corr << std::endl;
-  if (i5_corr != expected_i5)
-    BOOST_CHECK(i5_corr == expected_i5);
+
+  BOOST_CHECK(i5_corr == expected_i5);
 
   BOOST_CHECK(i1_corr == expected_i1);
 

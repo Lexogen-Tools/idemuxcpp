@@ -191,6 +191,7 @@ Barcode::load_correction_map(string relative_exepath,
      * 3. Take first, or error if second best set has same size.
     */
     unordered_map<set<string>*, unordered_map<string, string>*> bc_set_to_corr_map;
+    unordered_map<set<string>*, string> bc_set_to_map_path;
 
     //run twice if auto_detect is enabled to also check the rc
     for (int j = 0; j <= this->auto_detect; j++) {
@@ -199,7 +200,9 @@ Barcode::load_correction_map(string relative_exepath,
       for (directory_entry& entry : directory_iterator(dir_path)) {
         unordered_map<string, string> *corr_map     = new unordered_map<string, string>();
         set<string>                   *barcode_set  = new set<string>();
-        Parser::get_map_from_resource(entry.path().string(), corr_map, barcode_set);
+        string map_path = entry.path().string();
+        Parser::get_map_from_resource(map_path, corr_map, barcode_set);
+        bc_set_to_map_path[barcode_set] = map_path;
 
         //test if all codes are contained in the map for a certain length.
         size_t                        n_codes_contained = 0;
@@ -260,8 +263,10 @@ Barcode::load_correction_map(string relative_exepath,
 	if(min_barcode_set != NULL){
 	    length = min_barcode_set->begin()->length();
 	    unordered_map<string, string> *corr_map = bc_set_to_corr_map[min_barcode_set];
+	    string map_path = bc_set_to_map_path[min_barcode_set];
 	    printf(
-	      "Correct set found (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
+	      "Correct set found in file %s (%ld matching codes). Used set is %ld barcodes with %d nt length.\n",
+	      map_path.c_str(),
 	      length_and_codes[length].size(),
 	      min_barcode_set->size(),
 	      length);
