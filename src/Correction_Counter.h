@@ -35,10 +35,10 @@ struct barcode_counts {
   barcode_counts&
   operator+=(const barcode_counts& toAdd)
   {
-    this->i1  = toAdd.i1;
-    this->i5  = toAdd.i5;
-    this->i7  = toAdd.i7;
-    this->all = toAdd.all;
+    this->i1  += toAdd.i1;
+    this->i5  += toAdd.i5;
+    this->i7  += toAdd.i7;
+    this->all += toAdd.all;
     return *this;
   }
 };
