@@ -186,13 +186,14 @@ process_mate_pair(std::pair<fq_read *, fq_read *> & mate_pair,
   string barcodes_key = string("").append(i7_bc).append("\n").append(i5_bc).append("\n").append(
     i1_bc);
 
-  if (counted_corrections_per_index != NULL)
+  if (counted_corrections_per_index != NULL){
     counted_corrections_per_index->count_correction(i7_bc,
                                                     i5_bc,
                                                     i1_bc,
                                                     corrected_i7,
                                                     corrected_i5,
                                                     corrected_i1);
+  }
 
   return barcodes_key;
 }
@@ -358,7 +359,7 @@ demux(unordered_map<string, string>   *barcode_sample_map,
   Correction_Counter *counted_corrections_per_index = NULL;
 
   if (barcode_corrections_file.compare("") != 0)
-    counted_corrections_per_index = new Correction_Counter(i7_wanted, i5_wanted, i1_wanted);
+    counted_corrections_per_index = new Correction_Counter(i7_wanted, i5_wanted, i1_wanted, barcode_sample_map);
 
   //read_counter = Counter()
   std::cout << "Starting demultiplexing" << std::endl;
@@ -549,7 +550,7 @@ demux(unordered_map<string, string>   *barcode_sample_map,
       tp->file_handler                  = file_handler; // separate filehandler and reset pointers for writing.
       tp->counted_corrections_per_index = NULL;         // separate map & merge afterwards.
       if (barcode_corrections_file.compare("") != 0)
-        tp->counted_corrections_per_index = new Correction_Counter(i7_wanted, i5_wanted, i1_wanted);
+        tp->counted_corrections_per_index = new Correction_Counter(i7_wanted, i5_wanted, i1_wanted, barcode_sample_map);
 
       demux_threads[tp] = std::async(std::launch::async, demux_list_reads, tp);
       pe_reads          = NULL;

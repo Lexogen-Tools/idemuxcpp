@@ -10,7 +10,8 @@ using namespace std;
 
 Correction_Counter::Correction_Counter(unordered_set<string>  *i7codes,
                                        unordered_set<string>  *i5codes,
-                                       unordered_set<string>  *i1codes)
+                                       unordered_set<string>  *i1codes,
+				       const unordered_map<string, string>   *barcode_sample_map) : Barcode_sample_map(barcode_sample_map)
 {
   uint16_t i = 0;
 
@@ -63,14 +64,22 @@ Correction_Counter::count_correction(string i7,
     if (iti1 != I1_indices.end())
       index += iti1->second + 1;
 
+    corrected_i7 = corrected_i7 && i7 != "" && iti7 != I7_indices.end();
+    corrected_i5 = corrected_i5 && i5 != "" && iti5 != I5_indices.end();
+    corrected_i1 = corrected_i1 && i1 != "" && iti1 != I1_indices.end();
+    string  barcodes  = i7 + '\n' + i5 + '\n' + i1;
+    auto it_combi  = Barcode_sample_map->find(barcodes);
+    bool is_wanted_combination = (it_combi != Barcode_sample_map->end());
+    bool combination_corrected = (corrected_i7 || corrected_i5 || corrected_i1) && is_wanted_combination;
+
     auto itcounts = Counts_combination.find(index);
     if (itcounts != Counts_combination.end()) {
-      itcounts->second.all  += 1;
+      itcounts->second.all  += combination_corrected ? 1 : 0;
       itcounts->second.i1   += corrected_i1 ? 1 : 0;
       itcounts->second.i5   += corrected_i5 ? 1 : 0;
       itcounts->second.i7   += corrected_i7 ? 1 : 0;
     } else {
-      Counts_combination[index].all = 1;
+      Counts_combination[index].all = combination_corrected ? 1 : 0;
       Counts_combination[index].i1  = corrected_i1 ? 1 : 0;
       Counts_combination[index].i5  = corrected_i5 ? 1 : 0;
       Counts_combination[index].i7  = corrected_i7 ? 1 : 0;
@@ -184,17 +193,7 @@ Correction_Counter::write_correction(string                         filename,
       string sample_name = it_combi->second;
       csvfile << sample_name << "," << i7 << "," << i5 << "," << i1 << "," << it->second.all <<
       "," << it->second.i7 << "," << it->second.i5 << "," << it->second.i1 << std::endl;
-    } else {
-      undetermined_counts.all += it->second.all;
-      undetermined_counts.i7  += it->second.i7;
-      undetermined_counts.i5  += it->second.i5;
-      undetermined_counts.i1  += it->second.i1;
     }
-  }
-  if (undetermined_counts.all != 0) {
-    string sample_name = "undetermined";
-    csvfile << sample_name << ",,,," << undetermined_counts.all << "," << undetermined_counts.i7 <<
-    "," << undetermined_counts.i5 << "," << undetermined_counts.i1 << std::endl;
   }
 
   csvfile.close();

@@ -47,7 +47,8 @@ class Correction_Counter {
 public:
 Correction_Counter(unordered_set<string>  *i7codes,
                    unordered_set<string>  *i5codes,
-                   unordered_set<string>  *i1codes);
+                   unordered_set<string>  *i1codes,
+		   const unordered_map<string, string>   *barcode_sample_map);
 
 /**
  * Counts the corrections for the combination of the given indices.
@@ -77,6 +78,7 @@ write_correction(string                         filename,
 vector<string> I7_codes;
 vector<string> I5_codes;
 vector<string> I1_codes;
+const unordered_map<string, string>   *Barcode_sample_map;
 unordered_map<string, uint16_t> I7_indices;
 unordered_map<string, uint16_t> I5_indices;
 unordered_map<string, uint16_t> I1_indices;
