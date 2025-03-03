@@ -1,6 +1,7 @@
 #ifndef BARCODE_H_
 #define BARCODE_H_
 
+#include <string>
 #include <vector>
 #include <unordered_set>
 #include <unordered_map>

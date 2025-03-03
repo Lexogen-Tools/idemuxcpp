@@ -4,6 +4,8 @@
 
 #include <unordered_map>
 #include <string>
+#include <fstream>
+#include <sstream>
 #include <set>
 #include "../src/Parser.h"
 #include "../src/Barcode.h"
@@ -1229,4 +1231,72 @@ BOOST_AUTO_TEST_CASE(test_demux_i7_i1_1_read) {
 }
 
 
-// TODO write test for mixed cases
+BOOST_AUTO_TEST_CASE(test_demux_correction_counter) {
+    boost::filesystem::path p(utils::getExecutablePath());
+    string                  tmp_path = make_output_dir_path();
+
+    string          res = Exe_path + PATH_SEP + string("resources") + PATH_SEP
+			  + string("end_to_end");
+    string          read_1  = res + PATH_SEP + string("test_all_corrections_R1.fastq.gz");
+    string          read_2  = res + PATH_SEP + string("test_all_corrections_R2.fastq.gz");
+    string          path_samplesheet     = res + PATH_SEP + string("test_all_corrections.csv");
+
+    Parser                          pe;
+    vector<Barcode *>               barcodes;
+    unordered_map<string, i1_info>  i7_i5_i1_info_map;
+    unordered_map<string, string>   *barcode_sample_map = pe.parse_sample_sheet(
+							    path_samplesheet,
+							    false,
+							    false,
+							    false,
+							    barcodes,
+							    i7_i5_i1_info_map,
+							    p.string(),
+							    "",
+							    false,
+							    2,
+							    I1_START);
+
+    int     chunk_size            = 1000;
+    int     reading_threads       = 2;
+    int     writing_threads       = 1;
+    int     processing_threads    = 1;
+    size_t  gzip_block_size_bytes = 1000;
+
+
+    bool    skip_check              = false;
+    bool    restrict_barcode_length = false;
+    double  queue_buffer_gb         = 0.1;
+    bool    single_end_mode         = false;
+    bool    verbose                 = true;
+    demux(barcode_sample_map, barcodes, read_1, read_2, i7_i5_i1_info_map,
+	  tmp_path, pe, chunk_size, reading_threads, writing_threads,
+	  processing_threads, tmp_path + PATH_SEP + string("count_corrections.tsv"), skip_check,
+	  restrict_barcode_length, queue_buffer_gb, gzip_block_size_bytes, single_end_mode,
+	  verbose);
+
+    // check demultiplexed reads and correction counts.
+    string corrections_path = tmp_path + PATH_SEP + string("count_corrections.tsv");
+    std::ifstream corrections_file_stream(corrections_path);
+    std::stringstream corrections_buffer;
+    corrections_buffer << corrections_file_stream.rdbuf();
+    string sc = corrections_buffer.str();
+    string expected_sc = string("sample_name,i7,i5,i1,combination_corrected,i7_corrected,i5_corrected,i1_corrected\n") +
+	        string("test_sample_1,AAAAACGGCAGG,AAAAGTTATTCT,AAAAACGGCAGG,3,3,3,3\n");
+    BOOST_CHECK_EQUAL(sc.c_str(), expected_sc.c_str());
+
+    string demux_stats_path = tmp_path + PATH_SEP + string("demultipexing_stats.tsv");
+    std::ifstream demux_stats_file_stream(demux_stats_path);
+    std::stringstream demux_stats_buffer;
+    demux_stats_buffer << demux_stats_file_stream.rdbuf();
+    string sd = demux_stats_buffer.str();
+    string expected_sd = string("sample_name	written_reads\n") +
+		string("test_sample_1	4\n")+
+		string("undetermined	4\n");
+    BOOST_CHECK_EQUAL(sd, expected_sd);
+
+    for (auto it = barcodes.begin(); it != barcodes.end(); it++)
+	delete *it;
+    delete barcode_sample_map;
+    utils::rmdir(tmp_path);
+}
