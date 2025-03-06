@@ -674,7 +674,7 @@ demux(unordered_map<string, string>   *barcode_sample_map,
   }
   std::cout << std::endl;
   if (barcode_corrections_file.compare("") != 0) {
-    counted_corrections_per_index->write_correction(barcode_corrections_file, *barcode_sample_map);
+    counted_corrections_per_index->write_correction(barcode_corrections_file);
     delete counted_corrections_per_index;
   }
 

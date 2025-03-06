@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -154,8 +155,7 @@ Correction_Counter::operator+=(const Correction_Counter& toAdd)
  * each line contains the corrected code, if it was corrected.
  */
 void
-Correction_Counter::write_correction(string                         filename,
-                                     unordered_map<string, string> &barcode_sample_map)
+Correction_Counter::write_correction(string filename)
 {
   ofstream        csvfile(filename, std::ofstream::out);
 
@@ -166,6 +166,13 @@ Correction_Counter::write_correction(string                         filename,
   string          i7, i5, i1;
   barcode_counts  undetermined_counts = { 0, 0, 0, 0 };
 
+  vector<std::pair<string, string>> sorted_sample_names;
+  for(auto it = Barcode_sample_map->begin(); it != Barcode_sample_map->end(); it++){
+      sorted_sample_names.push_back(std::pair<string,string>(it->second, it->first));
+  }
+  std::sort(sorted_sample_names.begin(), sorted_sample_names.end());
+
+  unordered_map<string,barcode_counts> sample_name_counts;
   for (auto it = Counts_combination.begin(); it != Counts_combination.end(); it++) {
     uint64_t  code_idc  = it->first;
     uint16_t  ui_i1     = uint16_t(code_idc);
@@ -188,12 +195,44 @@ Correction_Counter::write_correction(string                         filename,
 
     // if combi in samples, else add to undetermined.
     string  barcodes  = i7 + '\n' + i5 + '\n' + i1;
-    auto    it_combi  = barcode_sample_map.find(barcodes);
-    if (it_combi != barcode_sample_map.end()) {
+    auto    it_combi  = Barcode_sample_map->find(barcodes);
+    if (it_combi != Barcode_sample_map->end()) {
       string sample_name = it_combi->second;
-      csvfile << sample_name << "," << i7 << "," << i5 << "," << i1 << "," << it->second.all <<
-      "," << it->second.i7 << "," << it->second.i5 << "," << it->second.i1 << std::endl;
+      sample_name_counts[sample_name] = it->second;
     }
+  }
+  for(auto it = sorted_sample_names.begin(); it != sorted_sample_names.end(); it++){
+      string sample_name = it->first;
+      if(sample_name.compare("undetermined") == 0)
+      	  continue;
+      string str_codes = it->second;
+      int first_index = str_codes.find('\n');
+      if(first_index < 0){
+	  i7 = i5 = i1 = "";
+      }
+      else{
+	  i7 = str_codes.substr(0, first_index);
+	  string i5_i1 = str_codes.substr(first_index+1);
+	  int second_index = i5_i1.find('\n');
+	  if(second_index < 0){
+	      i5 = str_codes;
+	      i1 = "";
+	  }
+	  else{
+	      i5 = i5_i1.substr(0, second_index);
+	      i1 = i5_i1.substr(second_index+1);
+	  }
+      }
+      auto it_bc = sample_name_counts.find(sample_name);
+      barcode_counts counts;
+      if(it_bc != sample_name_counts.end()){
+	  counts = it_bc->second;
+      }
+      else{
+	  counts = { 0, 0, 0, 0 };
+      }
+      csvfile << sample_name << "," << i7 << "," << i5 << "," << i1 << "," << counts.all <<
+	      "," << counts.i7 << "," << counts.i5 << "," << counts.i1 << std::endl;
   }
 
   csvfile.close();

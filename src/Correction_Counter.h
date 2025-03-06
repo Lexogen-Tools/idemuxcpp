@@ -71,8 +71,7 @@ operator+=(const Correction_Counter& toAdd);
  * each line contains the corrected code, if it was corrected.
  */
 void
-write_correction(string                         filename,
-                 unordered_map<string, string> &barcode_sample_map);
+write_correction(string filename);
 
 
 vector<string> I7_codes;
