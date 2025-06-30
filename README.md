@@ -131,7 +131,7 @@ on ubuntu you can install it for example with:
 dpkg -i <idemuxcpp*.deb>
 ```
 
-idemuxCPP will also soon be available via bioconda!
+idemuxCPP is available via [bioconda](https://anaconda.org/bioconda/idemuxcpp)!
 
 
 ## 2. Preparing the sample sheet
